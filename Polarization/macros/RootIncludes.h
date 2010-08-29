@@ -44,7 +44,7 @@
 #include "TLegend.h"
 #include "TMath.h"
 
-
+gStyle->SetPalette(1);
 gSystem->Load("libRooFit") ;
 gSystem->Load("libRooFitCore") ;
 

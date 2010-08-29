@@ -4,11 +4,17 @@ Float_t rapMin = -2.3;
 Float_t rapMax = 2.3;
 Float_t JpsictMin = -1;
 Float_t JpsictMax = 2.5;
-int Angular_Binning = 15;
-const int numberofpTbins=2;//kNbPTBins;
-const int numberofRapbins=kNbRapForPTBins;
 double JpsiMassMin=2.7;
 double JpsiMassMax=3.5;
+
+int Angular_Binning_costh = nBinsCosT/2;
+int Angular_Binning_phi = nBinsPhiPol/2;
+
+const int numberofpTbins=1;//kNbPTBins;
+const int numberofRapbins=1;//kNbRapForPTBins;
+int NpTBinStart=4;
+int NRapBinStart=1;
+
 Int_t AnalyticIndex = 0; //0...without analytical component fits
 Int_t SBComparisonIndex = 0; //0...no SB Comparison
 
@@ -536,3 +542,23 @@ double errinvariantF_CS_rap3[numberofpTbins];
 double errinvariantlambda_HX_rap3[numberofpTbins];
 double errinvariantF_HX_rap3[numberofpTbins];
 
+double chi2_phi_HX;
+double chi2_costh_HX;
+double chi2_phi_CS;
+double chi2_costh_CS;
+
+RooDataSet *MCPROMPT;
+RooDataSet *MCNONPROMPT;
+RooDataSet *MCBACKGROUND;
+
+RooDataSet *redMCPROMPT;
+RooDataSet *redMCNONPROMPT;
+RooDataSet *redMCBACKGROUND;
+
+RooDataHist *redMCPROMPThist;
+RooDataHist *redMCNONPROMPThist;
+RooDataHist *redMCBACKGROUNDhist;
+
+RooDataSet *redredMCPROMPT;
+RooDataSet *redredMCNONPROMPT;
+RooDataSet *redredMCBACKGROUND;
