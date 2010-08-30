@@ -1,3 +1,7 @@
+Char_t *fileNamePromptVal = "RootInput/RooDataSet_Prompt.root";//RooDataSet Prompt MC
+Char_t *fileNameNonPromptVal = "RootInput/RooDataSet_NonPrompt.root";//RooDataSet NonPrompt MC
+Char_t *fileNameBackgroundVal = "RootInput/RooDataSet_Background.root";//RooDataSet Background MC
+
 Float_t PtMin = 0;
 Float_t PtMax = 40;
 Float_t rapMin = -2.3;
@@ -6,10 +10,12 @@ Float_t JpsictMin = -1;
 Float_t JpsictMax = 2.5;
 double JpsiMassMin=2.7;
 double JpsiMassMax=3.5;
+Int_t ValIndex = 0;//1...Valentin running macro
 
-int Angular_Binning_costh = nBinsCosT/2;
-int Angular_Binning_phi = nBinsPhiPol/2;
-
+int rebinCosTh=4;
+int rebinPhi=4;
+int Angular_Binning_costh = nBinsCosT/rebinCosTh;
+int Angular_Binning_phi = nBinsPhiPol/rebinPhi;
 const int numberofpTbins=1;//kNbPTBins;
 const int numberofRapbins=1;//kNbRapForPTBins;
 int NpTBinStart=4;
@@ -110,6 +116,12 @@ TH1* legendMassdatayellowStyle;
 RooDataSet* realdata000;
 
 TH1* polfunchisto_CS;
+TH1* acceptancehist_CS;
+TH1* polfunchist_CS;
+TH1* acceptancehist_HX;
+TH1* polfunchist_HX;
+
+
 TH1* datahistoangular_CS;
 TH1* polfunchisto_HX;
 TH1* datahistoangular_HX;
@@ -502,7 +514,7 @@ double sigovbkgMCTRUTH;
 FILE *outputFile;
 
 TFile *fAcc;
-TH2F *hAcc2D_pol_pT_rap[kNbFrames][kNbPTBins+4][kNbRapForPTBins+1];
+TH2F *hAcc2D_pol_pT_rap[kNbFrames][kNbPTBins+1][kNbRapForPTBins+1];
 
 double NBkgRange;
 double SigOvBkgRange;
@@ -562,3 +574,16 @@ RooDataHist *redMCBACKGROUNDhist;
 RooDataSet *redredMCPROMPT;
 RooDataSet *redredMCNONPROMPT;
 RooDataSet *redredMCBACKGROUND;
+
+TH1* AngularRealData_hist_CS_TH;
+TH1* AngularRealData_hist_HX_TH1;
+
+char titlehFitAccCorr2D_HX[200];
+char titlehFit2D_HX[200];
+char titlehAcc2D_HX[200];
+char titlehData2D_HX[200];
+
+char titlehFitAccCorr2D_CS[200];
+char titlehFit2D_CS[200];
+char titlehAcc2D_CS[200];
+char titlehData2D_CS[200];
