@@ -1,6 +1,6 @@
 gROOT->Reset();
 #include "RootIncludes.h"
-Int_t SavePlotIndex = 0; //0...don't save plots, 1... save plots (.png)
+Int_t SavePlotIndex = 1; //0...don't save plots, 1... save plots (.png)
 Int_t RealDataIndex = 1; //0...fit to MC, 1...fit to Data
 Int_t PromptIndex = 1; //1...fit Prompt Jpsi, 0...fit Non Prompt Jpsi
 Int_t AngularIndex = 1; //0...no polarization fits
@@ -9,7 +9,7 @@ Char_t *fileName3 = "RootInput/PolTree.root";//TNtuple with pol vars (MC Model S
 Char_t *fileName4 = "RootInput/PolTreeTest.root";//TNtuple with pol vars (MC Test Sample)
 Char_t *fileNamePrompt = "RootInput/TTree_pol_Mu0Track0Jpsi_MCpromptR.root";//RooDataSet Prompt MC
 Char_t *fileNameMinBias = "RootInput/TTree_pol_Mu0Track0Jpsi_MCMinBias.root";//RooDataSet Background and NonPrompt MC
-Char_t *fileNameAcceptance = "RootInput/accHistos_HLT_Mu0Track0Jpsi_29Aug2010.root";//RootFile Acceptance maps
+Char_t *fileNameAcceptance = "RootInput/accHistos_HLT_Mu0Track0Jpsi_29Aug2010_2.root";//RootFile Acceptance maps
 
 
 #include "GlobalVars.h"
@@ -132,10 +132,10 @@ void ReadDataSets(){
 	   for(int iPTBin = 1; iPTBin < kNbPTBins+1; iPTBin++){
 	     for(int iRapBin = 1; iRapBin < kNbRapForPTBins+1; iRapBin++){
 	       sprintf(name, "hAcc2D_Onia_%s_pT%d_rap%d", frameLabel[iFrame], iPTBin, iRapBin);
-	       hAcc2D_pol_pT_rap[iFrame][iPTBin][iRapBin] = (TH2F *) gDirectory->Get(name);
+	       hAcc2D_pol_pT_rap[iFrame][iPTBin][iRapBin] = (TH2F *) fAcc->Get(name);//gDirectory->Get(name);
 	       //normalise to 1:
-	       Double_t integral = hAcc2D_pol_pT_rap[iFrame][iPTBin][iRapBin]->GetIntegral();
-	      hAcc2D_pol_pT_rap[iFrame][iPTBin][iRapBin]->Scale(1./integral);
+//	       Double_t integral = hAcc2D_pol_pT_rap[iFrame][iPTBin][iRapBin]->GetIntegral();
+//	      hAcc2D_pol_pT_rap[iFrame][iPTBin][iRapBin]->Scale(1./integral);
 	  }
 	}
 	   }
@@ -663,7 +663,15 @@ void DrawAndSave(){
 		thetaphi_CS->cd(1) ; datahistoangular_CS->Draw("colz");
 		thetaphi_CS->cd(2) ; polfunchisto_CS->Draw("colz");
 
+		TCanvas *thetaphi_CS_acc = new TCanvas("thetaphi_CS_acc","thetaphi_CS_acc",1200, 600);
+		thetaphi_CS_acc->Divide(2);
+		thetaphi_CS_acc->cd(1) ; acceptancehist_CS->Draw("colz");
+		thetaphi_CS_acc->cd(2) ; polfunchist_CS->Draw("colz");
 
+		TCanvas *thetaphi_HX_acc = new TCanvas("thetaphi_HX_acc","thetaphi_HX_acc",1200, 600);
+		thetaphi_HX_acc->Divide(2);
+		thetaphi_HX_acc->cd(1) ; acceptancehist_HX->Draw("colz");
+		thetaphi_HX_acc->cd(2) ; polfunchist_HX->Draw("colz");
 
 	    char title_HX_2D[200];
 	    			sprintf(title_HX_2D,"Helicity 2D Histo, pT = %1.2fGeV-%1.2fGeV, Rap = %1.2f-%1.2f", pTMin, pTMax, RapMin, RapMax);
@@ -822,13 +830,13 @@ void DrawAndSave(){
 	    }
 
 		char oFile_CS_1D[200];
-		sprintf(oFile_CS_1D,"MyFigures/Binning/Pol_CS_1D_pT_%1.2f-%1.2f,Rap_%1.2f-%1.2f.png", pTMin, pTMax, RapMin, RapMax);
+		sprintf(oFile_CS_1D,"MyFigures/Binning/Pol_CS_1D_pT_%1.0f-%1.0f,Rap_%1.0f-%1.0f.png", pTMin, pTMax, RapMin, RapMax);
 		char oFile_CS_2D[200];
-		sprintf(oFile_CS_2D,"MyFigures/Binning/Pol_CS_2D_pT_%1.2f-%1.2f,Rap_%1.2f-%1.2f.png", pTMin, pTMax, RapMin, RapMax);
+		sprintf(oFile_CS_2D,"MyFigures/Binning/Pol_CS_2D_pT_%1.0f-%1.0f,Rap_%1.0f-%1.0f.png", pTMin, pTMax, RapMin, RapMax);
 		char oFile_HX_1D[200];
-		sprintf(oFile_HX_1D,"MyFigures/Binning/Pol_HX_1D_pT_%1.2f-%1.2f,Rap_%1.2f-%1.2f.png", pTMin, pTMax, RapMin, RapMax);
+		sprintf(oFile_HX_1D,"MyFigures/Binning/Pol_HX_1D_pT_%1.0f-%1.0f,Rap_%1.0f-%1.0f.png", pTMin, pTMax, RapMin, RapMax);
 		char oFile_HX_2D[200];
-		sprintf(oFile_HX_2D,"MyFigures/Binning/Pol_HX_2D_pT_%1.2f-%1.2f,Rap_%1.2f-%1.2f.png", pTMin, pTMax, RapMin, RapMax);
+		sprintf(oFile_HX_2D,"MyFigures/Binning/Pol_HX_2D_pT_%1.0f-%1.0f,Rap_%1.0f-%1.0f.png", pTMin, pTMax, RapMin, RapMax);
 
 			thetaphi_CS->SaveAs(oFile_CS_2D);
 		thetaphi2_CS->SaveAs(oFile_CS_1D);
@@ -1476,13 +1484,13 @@ void DrawFinal(){
 		if (SavePlotIndex == 1){
 
 		char oFilePolTheta_CS[200];
-		sprintf(oFilePolTheta_CS,"MyFigures/Binning/CS_LambdaTheta_NpT%1.0f_NRap%1.0f_pTMin%1.2f_pTMax%1.2f_RapMin%1.2f_RapMax%1.2f.png", numberofpTbins, numberofRapbins,pTMin, pTMax, RapMin, RapMax);
+		sprintf(oFilePolTheta_CS,"MyFigures/Binning/CS_LambdaTheta_NpT%1.0f_NRap%1.0f_pTMin%1.0f_pTMax%1.0f_RapMin%1.0f_RapMax%1.0f.png", numberofpTbins, numberofRapbins,pTMin, pTMax, RapMin, RapMax);
 
 		PolThetaCanvas_CS->SaveAs(oFilePolTheta_CS);
 
 
 		char oFilePolPhi_CS[200];
-		sprintf(oFilePolPhi_CS,"MyFigures/Binning/CS_LambdaPhi_NpT%1.0f_NRap%1.0f_pTMin%1.2f_pTMax%1.2f_RapMin%1.2f_RapMax%1.2f.png", numberofpTbins, numberofRapbins,pTMin, pTMax, RapMin, RapMax);
+		sprintf(oFilePolPhi_CS,"MyFigures/Binning/CS_LambdaPhi_NpT%1.0f_NRap%1.0f_pTMin%1.0f_pTMax%1.0f_RapMin%1.0f_RapMax%1.0f.png", numberofpTbins, numberofRapbins,pTMin, pTMax, RapMin, RapMax);
 
 		PolPhiCanvas_CS->SaveAs(oFilePolPhi_CS);
 
@@ -1493,13 +1501,13 @@ void DrawFinal(){
 
 
 		char oFilePolTheta_HX[200];
-		sprintf(oFilePolTheta_HX,"MyFigures/Binning/HX_LambdaTheta_NpT%1.0f_NRap%1.0f_pTMin%1.2f_pTMax%1.2f_RapMin%1.2f_RapMax%1.2f.png", numberofpTbins, numberofRapbins,pTMin, pTMax, RapMin, RapMax);
+		sprintf(oFilePolTheta_HX,"MyFigures/Binning/HX_LambdaTheta_NpT%1.0f_NRap%1.0f_pTMin%1.0f_pTMax%1.0f_RapMin%1.0f_RapMax%1.0f.png", numberofpTbins, numberofRapbins,pTMin, pTMax, RapMin, RapMax);
 
 		PolThetaCanvas_HX->SaveAs(oFilePolTheta_HX);
 
 
 		char oFilePolPhi_HX[200];
-		sprintf(oFilePolPhi_HX,"MyFigures/Binning/HX_LambdaPhi_NpT%1.0f_NRap%1.0f_pTMin%1.2f_pTMax%1.2f_RapMin%1.2f_RapMax%1.2f.png", numberofpTbins, numberofRapbins,pTMin, pTMax, RapMin, RapMax);
+		sprintf(oFilePolPhi_HX,"MyFigures/Binning/HX_LambdaPhi_NpT%1.0f_NRap%1.0f_pTMin%1.0f_pTMax%1.0f_RapMin%1.0f_RapMax%1.0f.png", numberofpTbins, numberofRapbins,pTMin, pTMax, RapMin, RapMax);
 
 		PolPhiCanvas_HX->SaveAs(oFilePolPhi_HX);
 
@@ -2364,7 +2372,7 @@ void CalcAndPrintResults(){
 			printf("Prompt over NonPrompt in Range = %f\n\n", NPromptoverNNonPrompt);
 
 			NBkgRange = NBkgRange*NbkgTot;
-			SigOvBkgRange = NBkgRange/(NPromptRange+NNonPromptRange);
+			SigOvBkgRange = (NPromptRange+NNonPromptRange)/NBkgRange;
 			printf("NBkgRange = %f\n\n", NBkgRange);
 			printf("SigOvBkgRange = %f\n\n", SigOvBkgRange);
 
@@ -2391,6 +2399,8 @@ void CalcAndPrintResults(){
 			fprintf(outputFile2, " +- %f\n", ERRBFRACTION);
 			fprintf(outputFile2, "B-fraction in Range = %f", BFRACTIONRANGE);
 			fprintf(outputFile2, " +- %f\n", ERRBFRACTIONRANGE);
+
+			fprintf(outputFile2, "\nDecayLengthCut = %f\n", DecayLengthCut);
 
 
 			if( outputFile != NULL ){
@@ -2545,8 +2555,30 @@ void FitPol(){
 
 
 			AngularRealData = (RooDataSet*)redrealdata->reduce(reduceDecayLengthCut);
+
+
+						RooBinning rbcosth(-1,1);
+						rbcosth.addUniform(Angular_Binning_costh,-1,1);
+						costh_CS.setBinning(rbcosth);
+
+						RooBinning rbphi(0,360);
+						rbphi.addUniform(Angular_Binning_phi,0,360);
+						phi_CS.setBinning(rbphi);
+
+
 			AngularRealData_hist_CS = new RooDataHist("AngularRealData_hist_CS","",RooArgSet(costh_CS,phi_CS),*AngularRealData);
 			AngularRealData_hist_HX = new RooDataHist("AngularRealData_hist_HX","",RooArgSet(costh_HX,phi_HX),*AngularRealData);
+
+
+
+						RooBinning rbcosth(-1,1);
+						rbcosth.addUniform(100,-1,1);
+						costh_CS.setBinning(rbcosth);
+
+						RooBinning rbphi(0,360);
+						rbphi.addUniform(100,0,360);
+						phi_CS.setBinning(rbphi);
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2564,8 +2596,8 @@ void FitPol(){
 
 
 
-			RooRealVar lambda_theta_CS("lambda_theta_CS","lambda_theta_CS",0,-1,1);
-			RooRealVar lambda_phi_CS("lambda_phi_CS","lambda_phi_CS",0,-1,1);
+			RooRealVar lambda_theta_CS("lambda_theta_CS","lambda_theta_CS",-0.5,-10,10);
+			RooRealVar lambda_phi_CS("lambda_phi_CS","lambda_phi_CS",-0.5,-10,10);
 			RooRealVar lambda_thetaphi_CS("lambda_thetaphi_CS","lambda_thetaphi_CS",0);
 
 
@@ -2573,10 +2605,14 @@ void FitPol(){
 
 			RooGenericPdf polfunc_CS("polfunc_CS","polfunc_CS","3/(4*pi*(3+lambda_theta_CS))*(1+lambda_theta_CS*pow(costh_CS,2)+lambda_phi_CS*(1-pow(costh_CS,2))*cos(2*(phi_CS/180*pi))+lambda_thetaphi_CS*sin(2*acos(costh_CS))*cos(phi_CS/180*pi))",RooArgSet(lambda_theta_CS,lambda_phi_CS,lambda_thetaphi_CS,costh_CS,phi_CS)) ;
 
+//			RooGenericPdf polfunc_CS("polfunc_CS","polfunc_CS","1/(3+lambda_theta_CS))*(1+lambda_theta_CS*pow(costh_CS,2))",RooArgSet(lambda_theta_CS,costh_CS)) ;
+
+
 
 			RooDataHist *AcceptanceHist_CS = new RooDataHist("AcceptanceHist_CS","AcceptanceHist_CS",RooArgSet(costh_CS,phi_CS),hAcc2D_pol_pT_rap[CS][npT][nRap]);
 
 			RooHistPdf AcceptanceHistPdf_CS("AcceptanceHistPdf_CS","AcceptanceHistPdf_CS",RooArgSet(costh_CS,phi_CS),*AcceptanceHist_CS,3);
+
 			RooProdPdf CSPDF("CSPDF","CSPDF",RooArgList(polfunc_CS,AcceptanceHistPdf_CS));
 		//	RooAddPdf CSPDF("CSPDF","CSPDF",RooArgList(AngularHistPdf_CS_Bkg,CSPDF_Prod),SigOvBkgRangeVar);
 
@@ -2588,20 +2624,24 @@ void FitPol(){
 
 			if (RealDataIndex == 0){
 
-			fitresthetaphi_CS = CSPDF.fitTo(*AngularMCtest_hist_CS,Save(1),Minos(0),SumW2Error(kFALSE));
+			fitresthetaphi_CS = CSPDF.fitTo(*AngularMCtest_hist_CS,Save(1),Minos(0),SumW2Error(kTRUE));
 
 			}
 
 
 			else if (RealDataIndex == 1){
 
-			fitresthetaphi_CS = CSPDF.fitTo(*AngularRealData_hist_CS,Save(1),Minos(0),SumW2Error(kFALSE));
+			fitresthetaphi_CS = CSPDF.fitTo(*AngularRealData_hist_CS,Save(1),Minos(0),SumW2Error(kTRUE));
 
 			}
 			}
 
 			char titlepolfunchisto_CS[200];
 			sprintf(titlepolfunchisto_CS,"titlepolfunchisto_CS, pT = %1.2fGeV-%1.2fGeV, Rap = %1.2f-%1.2f", pTMin, pTMax, RapMin, RapMax);
+
+
+			acceptancehist_CS= AcceptanceHistPdf_CS.createHistogram("sdfdsfddf",costh_CS,Binning(Angular_Binning_costh),YVar(phi_CS,Binning(Angular_Binning_phi))) ;
+			polfunchist_CS= polfunc_CS.createHistogram("adgadfjgakldldsšfgjna",costh_CS,Binning(Angular_Binning_costh),YVar(phi_CS,Binning(Angular_Binning_phi))) ;
 
 			polfunchisto_CS = CSPDF.createHistogram(titlepolfunchisto_CS,costh_CS,Binning(Angular_Binning_costh),YVar(phi_CS,Binning(Angular_Binning_phi))) ;
 			if (RealDataIndex == 0){
@@ -2621,6 +2661,10 @@ void FitPol(){
 			}
 			CSPDF.plotOn(phi_CSframe,Normalization(1.0));
 			CSPDF.paramOn(phi_CSframe,Layout(0.25,0.95,0.85),Format("NEU",FixedPrecision(3)),Parameters(RooArgSet(lambda_phi_CS,lambda_theta_CS))) ;
+//			CSPDF.plotOn(phi_CSframe, RooFit::Components(RooArgList(polfunc_CS)), RooFit::LineColor(kRed),RooFit::LineStyle(kDashed));
+//			CSPDF.plotOn(phi_CSframe, RooFit::Components(RooArgList(AcceptanceHistPdf_CS)), RooFit::LineColor(kBlack),RooFit::LineStyle(kDashed));
+//			polfunc_CS.plotOn(phi_CSframe,Normalization(1.0));
+
 
 			costh_CSframe = costh_CS.frame() ;
 			if (RealDataIndex == 0){
@@ -2640,8 +2684,8 @@ void FitPol(){
 //////////////////////--------Helicity--------////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-			RooRealVar lambda_theta_HX("lambda_theta_HX","lambda_theta_HX",0,-1,1);
-			RooRealVar lambda_phi_HX("lambda_phi_HX","lambda_phi_HX",0,-1,1);
+			RooRealVar lambda_theta_HX("lambda_theta_HX","lambda_theta_HX",-0.5,-10,10);
+			RooRealVar lambda_phi_HX("lambda_phi_HX","lambda_phi_HX",-0.5,-10,10);
 			RooRealVar lambda_thetaphi_HX("lambda_thetaphi_HX","lambda_thetaphi_HX",0);
 
 
@@ -2663,20 +2707,24 @@ void FitPol(){
 
 			if (RealDataIndex == 0){
 
-			fitresthetaphi_HX = HXPDF.fitTo(*AngularMCtest_hist_HX,Save(1),Minos(0),SumW2Error(kFALSE));
+			fitresthetaphi_HX = HXPDF.fitTo(*AngularMCtest_hist_HX,Save(1),Minos(0),SumW2Error(kTRUE));
 
 			}
 
 
 			else if (RealDataIndex == 1){
 
-			fitresthetaphi_HX = HXPDF.fitTo(*AngularRealData_hist_HX,Save(1),Minos(0),SumW2Error(kFALSE));//(*AngularRealData_hist_HX,Save(1),Minos(0),SumW2Error(kFALSE));
+			fitresthetaphi_HX = HXPDF.fitTo(*AngularRealData_hist_HX,Save(1),Minos(0),SumW2Error(kTRUE));//(*AngularRealData_hist_HX,Save(1),Minos(0),SumW2Error(kFALSE));
 
 			}
 			}
 
 			char titlepolfunchisto_HX[200];
 			sprintf(titlepolfunchisto_HX,"titlepolfunchisto_HX, pT = %1.2fGeV-%1.2fGeV, Rap = %1.2f-%1.2f", pTMin, pTMax, RapMin, RapMax);
+
+
+			acceptancehist_HX= AcceptanceHistPdf_HX.createHistogram("sdfdsfddf",costh_HX,Binning(Angular_Binning_costh),YVar(phi_HX,Binning(Angular_Binning_phi))) ;
+			polfunchist_HX= polfunc_HX.createHistogram("adgadfjgakldldsšfgjna",costh_HX,Binning(Angular_Binning_costh),YVar(phi_HX,Binning(Angular_Binning_phi))) ;
 
 			polfunchisto_HX = HXPDF.createHistogram(titlepolfunchisto_HX,costh_HX,Binning(Angular_Binning_costh),YVar(phi_HX,Binning(Angular_Binning_phi))) ;
 			if (RealDataIndex == 0){
@@ -2727,15 +2775,7 @@ void Chi2(){
 	printf("nbin = %1.0f, npT = %1.0f, nRap = %1.0f\n", nbin, npT, nRap);
 
 
-	chi2_phi_HX=phi_HXframe->chiSquare();
-	chi2_costh_HX=costh_HXframe->chiSquare();
-	chi2_phi_CS=phi_CSframe->chiSquare();
-	chi2_costh_CS=costh_CSframe->chiSquare();
 
-	printf("\nchi2 costh_CS = %1.2f\n", chi2_costh_CS);
-	printf("\nchi2 phi_CS = %1.2f\n", chi2_phi_CS);
-	printf("\nchi2 costh_HX = %1.2f\n", chi2_costh_HX);
-	printf("\nchi2 phi_HX = %1.2f\n", chi2_phi_HX);
 
 
 
@@ -2759,6 +2799,21 @@ void Chi2(){
  	}
 
 	fprintf(outputFile, "chi2-Mass = %f\n", chi2Mass);
+
+	chi2_phi_HX=phi_HXframe->chiSquare();
+	chi2_costh_HX=costh_HXframe->chiSquare();
+	chi2_phi_CS=phi_CSframe->chiSquare();
+	chi2_costh_CS=costh_CSframe->chiSquare();
+
+	printf("\nchi2 costh_CS = %1.2f\n", chi2_costh_CS);
+	printf("\nchi2 phi_CS = %1.2f\n", chi2_phi_CS);
+	printf("\nchi2 costh_HX = %1.2f\n", chi2_costh_HX);
+	printf("\nchi2 phi_HX = %1.2f\n", chi2_phi_HX);
+
+	fprintf(outputFile2, "\nchi2 costh_CS = %1.2f\n", chi2_costh_CS);
+	fprintf(outputFile2, "\nchi2 phi_CS = %1.2f\n", chi2_phi_CS);
+	fprintf(outputFile2, "\nchi2 costh_HX = %1.2f\n", chi2_costh_HX);
+	fprintf(outputFile2, "\nchi2 phi_HX = %1.2f\n", chi2_phi_HX);
 
 
 
