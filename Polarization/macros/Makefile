@@ -12,7 +12,7 @@ FIT=AcceptanceMaps.o LifetimeModel.o MassModel.o PolarizationModel.o \
 	$(CXX) -c $<
 
 
-all: GenpolarizationFit injectAcceptanceMaps PlotAcceptanceMaps CreateAccTxt PlotSingleParameter ChangeBin PlotToyMC GenScript SysCheck ChangeAccEff
+all: GenpolarizationFit PlotAcceptanceMaps CreateAccTxt PlotToyMC GenScript SysCheck ChangeAccEff
 
 RooPolarizationDict.cc: RooPolarizationPdf.h RooPolarizationConstraint.h LinkDef.h
 	rootcint -f $@ -c $(CXXFLAGS) -p $^
@@ -20,21 +20,12 @@ RooPolarizationDict.cc: RooPolarizationPdf.h RooPolarizationConstraint.h LinkDef
 GenpolarizationFit: GenpolarizationFit.cc $(FIT) RooPolarizationDict.cc
 	$(CXX) $^ -o $@ $(LIBS) -lRooFit -lRooFitCore -lFoam -lMinuit
 	
-injectAcceptanceMaps: injectAcceptanceMaps.cc $(FIT) RooPolarizationDict.cc
-	$(CXX) $^ -o $@ $(LIBS) -lRooFit -lRooFitCore -lFoam -lMinuit
-
 PlotAcceptanceMaps: PlotAcceptanceMaps.cc $(FIT) RooPolarizationDict.cc
 	$(CXX) $^ -o $@ $(LIBS) -lRooFit -lRooFitCore -lFoam -lMinuit
 
 CreateAccTxt: CreateAccTxt.cc $(FIT) RooPolarizationDict.cc
 	$(CXX) $^ -o $@ $(LIBS) -lRooFit -lRooFitCore -lFoam -lMinuit
 					
-PlotSingleParameter: PlotSingleParameter.cc $(FIT) RooPolarizationDict.cc
-	$(CXX) $^ -o $@ $(LIBS) -lRooFit -lRooFitCore -lFoam -lMinuit
-
-ChangeBin: ChangeBin.cc $(FIT) RooPolarizationDict.cc
-	$(CXX) $^ -o $@ $(LIBS) -lRooFit -lRooFitCore -lFoam -lMinuit
-
 PlotToyMC: PlotToyMC.cc $(FIT) RooPolarizationDict.cc
 	$(CXX) $^ -o $@ $(LIBS) -lRooFit -lRooFitCore -lFoam -lMinuit	
 	
@@ -48,4 +39,4 @@ ChangeAccEff: ChangeAccEff.cc $(FIT) RooPolarizationDict.cc
 	$(CXX) $^ -o $@ $(LIBS) -lRooFit -lRooFitCore -lFoam -lMinuit
 									
 clean: 
-	rm GenpolarizationFit injectAcceptanceMaps PlotAcceptanceMaps CreateAccTxt PlotSingleParameter ChangeBin PlotToyMC GenScript SysCheck ChangeAccEff*.o
+	rm GenpolarizationFit PlotAcceptanceMaps CreateAccTxt PlotToyMC GenScript SysCheck ChangeAccEff*.o
