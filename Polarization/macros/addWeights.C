@@ -9,32 +9,33 @@ void addWeights()
   std::string base_path("/scratch/knuenz/Polarization/RootInput/");
   std::string treename("data");
   
-  //Scale all samples to the sample with least amount of int lum (Min Bias)
+//  0.926,0.645,0.785,0.158,4.344 for  B0,B+,Bs,Lambdab,prompt
+  double lumiB0 = 0.926;
+  double lumiBs = 0.785;
+  double lumiBp = 0.645;
+  double lumiLambdaB = 0.158;
 
-  double MCfraction =  0.898735;
-  double lumi = 2*156.63;
+//  double luminorm = 100;
 
-  files.push_back(base_path+std::string("TTree_red_LambdaBerr.root"));
-  weights.push_back(float(10./(lumi*MCfraction)));
+  files.push_back(base_path+std::string("TTree_prep_B0_.root"));
+  weights.push_back(float(lumiB0));
 
-  files.push_back(base_path+std::string("TTree_red_LambdaBerr_pseudo.root"));
-  weights.push_back(float(10./(lumi*(1-MCfraction))));
-/*
-  files.push_back(base_path+std::string("Spring10/nonPromptJpsi/TTree_pol_Mu0Track0Jpsi_BpToJPsiMuMu.root"));
-  weights.push_back(float(1.0525/36.699));
+  files.push_back(base_path+std::string("TTree_prep_Bs_.root"));
+  weights.push_back(float(lumiBs));
 
-  files.push_back(base_path+std::string("Spring10/nonPromptJpsi/TTree_pol_Mu0Track0Jpsi_BsToJPsiMuMu.root"));
-  weights.push_back(float(1.0525/33.498));
+  files.push_back(base_path+std::string("TTree_prep_Bp_.root"));
+  weights.push_back(float(lumiBp));
 
-  files.push_back(base_path+std::string("Spring10/nonPromptJpsi/TTree_pol_Mu0Track0Jpsi_LambdaBToJPsiMuMu.root"));
-  weights.push_back(float(1.0525/156.638));
+  files.push_back(base_path+std::string("TTree_prep_LambdaB_.root"));
+  weights.push_back(float(lumiLambdaB));
 
-  files.push_back(base_path+std::string("Spring10/promptJpsi/TTree_pol_Mu0Track0Jpsi_MCprompt.root"));
-  weights.push_back(float(1.0525/13.708));
 
-  files.push_back(base_path+std::string("Spring10/MinBias/TTree_pol_Mu0Track0Jpsi_MCMinBias.root"));
-  weights.push_back(float(1.0));
-*/
+
+
+
+
+
+
   for(Int_t i = 0; i < files.size(); ++i)
     {
       std::cout<<"Opening: "<< files[i];
@@ -55,7 +56,6 @@ void addWeights()
 	{
 	  weight=weights[i];
 	  theTree->GetEntry(j);
-
 	  newBranch->Fill();
 	}
 

@@ -3,6 +3,7 @@
 #include "RooRealVar.h"
 #include "RooGenericPdf.h"
 #include "TDirectory.h" 
+#include "RooPolarizationPdf.h"
 
 #include <sstream>
 
@@ -31,6 +32,9 @@ namespace JPsiPolarization {
     std::stringstream theta_name,phi_name,thetaphi_name;
     std::stringstream theta_desc,phi_desc,thetaphi_desc;
     
+	  double th_ph_bound=1;
+	  double thph_bound=0.71;
+
     theta_name << compName_ << "lambda_theta_" << fName_;
     phi_name << compName_ << "lambda_phi_" << fName_;
     thetaphi_name << compName_ << "lambda_thetaphi_" << fName_;
@@ -43,19 +47,19 @@ namespace JPsiPolarization {
     if(!vars_[theta_name.str().c_str()])
       vars_[theta_name.str().c_str()] = new RooRealVar(theta_name.str().c_str(),
 						       theta_desc.str().c_str(),
-						       0,-2,2);
+						       0,-th_ph_bound,th_ph_bound);
     
     dir.GetObject(phi_name.str().c_str(),vars_[phi_name.str().c_str()]);
     if(!vars_[phi_name.str().c_str()])
       vars_[phi_name.str().c_str()] = new RooRealVar(phi_name.str().c_str(),
 						     phi_desc.str().c_str(),
-						     0,-2,2);
+						     0,-th_ph_bound,th_ph_bound);
 
     dir.GetObject(thetaphi_name.str().c_str(),vars_[thetaphi_name.str().c_str()]);
     if(!vars_[thetaphi_name.str().c_str()]) 
       vars_[thetaphi_name.str().c_str()] = new RooRealVar(thetaphi_name.str().c_str(),
 							  thetaphi_desc.str().c_str(),
-							  0,-2,2);
+							  0,-thph_bound,thph_bound);
 
     varsLoaded = true;
   }
@@ -93,6 +97,18 @@ namespace JPsiPolarization {
      }
    }
 
+  void PolarizationModel::setErr(const std::string& s, double newerr) {
+     for(std::map<std::string,RooRealVar*>::iterator i = vars_.begin();
+ 	i != vars_.end();
+ 	++i) {
+       if(!s.size() || i->first.find(s) != std::string::npos) {
+ 	std::cout << "Setting Err: ";
+ 	i->second->Print();
+ 	i->second->setError(newerr);
+       }
+     }
+   }
+
   void PolarizationModel::unfix(const std::string& s) {
     for(std::map<std::string,RooRealVar*>::iterator i = vars_.begin();
 	i != vars_.end();
@@ -106,7 +122,15 @@ namespace JPsiPolarization {
   }
 
   void PolarizationModel::initModel(RooRealVar& costh,
-				    RooRealVar& phi) {
+				    RooRealVar& phi,
+				    RooAbsReal& map_uniform,
+				    RooAbsReal& map_theta,
+				    RooAbsReal& map_phi,
+				    RooAbsReal& map_thetaphi) {
+
+	  double th_ph_bound=1;
+	  double thph_bound=0.71;
+
     std::stringstream theta_name,phi_name,thetaphi_name;
     std::stringstream theta_desc,phi_desc,thetaphi_desc;
 
@@ -130,13 +154,13 @@ namespace JPsiPolarization {
       lambda_phi = vars_[phi_name.str().c_str()];
       lambda_thetaphi = vars_[thetaphi_name.str().c_str()];
     } else {    
-      lambda_theta = new RooRealVar(theta_name.str().c_str(),theta_desc.str().c_str(),0,-2,2);
+      lambda_theta = new RooRealVar(theta_name.str().c_str(),theta_desc.str().c_str(),0,-th_ph_bound,th_ph_bound);
       vars_[theta_name.str().c_str()] = lambda_theta;
       
-      lambda_phi = new RooRealVar(phi_name.str().c_str(),phi_desc.str().c_str(),0,-2,2);
+      lambda_phi = new RooRealVar(phi_name.str().c_str(),phi_desc.str().c_str(),0,-th_ph_bound,th_ph_bound);
       vars_[phi_name.str().c_str()] = lambda_phi;
       
-      lambda_thetaphi = new RooRealVar(thetaphi_name.str().c_str(),thetaphi_desc.str().c_str(),0,-2,2);
+      lambda_thetaphi = new RooRealVar(thetaphi_name.str().c_str(),thetaphi_desc.str().c_str(),0,-thph_bound,thph_bound);
       vars_[thetaphi_name.str().c_str()] = lambda_thetaphi;
     }
 
@@ -153,10 +177,16 @@ namespace JPsiPolarization {
 	    << "*sin(2*acos(costh_" << fName_ 
 	    << "))*cos(phi_" << fName_ << "/180*pi))";
 
-    model_ = new RooGenericPdf(modelName.str().c_str(),
+/*    model_ = new RooGenericPdf(modelName.str().c_str(),
 			      modelDesc.str().c_str(),
 			      polFunc.str().c_str(),
 			      RooArgSet(*lambda_theta,*lambda_phi,*lambda_thetaphi,costh,phi)) ;
+*/
+
+
+    model_ = new RooPolarizationPdf(modelName.str().c_str(),
+    			      modelDesc.str().c_str(),costh,phi,
+    			      *lambda_theta,*lambda_phi,*lambda_thetaphi,map_uniform,map_theta,map_phi,map_thetaphi) ;
   }
 }
 

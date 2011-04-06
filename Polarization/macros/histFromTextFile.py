@@ -12,7 +12,7 @@ def main(options,args):
        
 #        ptBin10 = fs.split('.txt')[0].split('pT')[-1][1]
         yBin = fs.split('.txt')[0].split('rap')[-1][0]
-        ptBin = fs.split('.txt')[0].split('pT')[-1][0]
+        ptBin = fs.split('.txt')[0].split('pT')[-1][0] #'10'
         frame = fs.split('_')[1]
 
 

@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
 
 	int rap;
 	int pt;
+	int iter;
 
 	for( int i=0;i < argc; ++i ) {
     if(std::string(argv[i]).find("--rap1") != std::string::npos) rap=1;
@@ -33,16 +34,27 @@ int main(int argc, char** argv) {
     if(std::string(argv[i]).find("--pt11") != std::string::npos) pt=11;
     if(std::string(argv[i]).find("--pt12") != std::string::npos) pt=12;
 
+    if(std::string(argv[i]).find("--iter16") != std::string::npos) iter=16;
+    if(std::string(argv[i]).find("--iter22") != std::string::npos) iter=22;
+    if(std::string(argv[i]).find("--iter23") != std::string::npos) iter=23;
+    if(std::string(argv[i]).find("--iter24") != std::string::npos) iter=24;
+
+
     if(std::string(argv[i]).find("--CS") != std::string::npos) CS=true;
     if(std::string(argv[i]).find("--HX") != std::string::npos) HX=true;
 
   }
 
-		TFile* fInData = new TFile("/scratch/knuenz/Polarization/RootInput/geomAccHistos_WithFSR_uniform_7Jan2011_merged_phiFolded.root");
+		TFile* fInData = new TFile("/scratch/knuenz/Polarization/RootInput/trigEffHistos_NP_ATLASPT_DoubleMu0_19March2011_phiFolded_zeroBinsCorrected.root");
+//		TFile* fInData = new TFile("DataGen_eff_plus05.root");
+
 		char histname[200];
 
 //if(CS){
 		 sprintf(histname,"hAcc2D_CS_pT%d_rap%d",pt,rap);
+	//	sprintf(histname,"GenData_HX_rap1_pt6_generation6__costh_HX_phi_HX");
+
+
 //}
 //if(HX){
 //		 sprintf(histname,"hGen_HX_pT%d_rap%d",pt,rap);

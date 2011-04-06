@@ -30,6 +30,8 @@
 #include "TChain.h"
 #include "TDirectory.h"
 #include "TObject.h"
+#include "TStyle.h"
+#include "TCanvas.h"
 
 int main(int argc, char** argv) {
   using namespace JPsiPolarization;
@@ -42,6 +44,7 @@ int main(int argc, char** argv) {
 
   bool folded(true);
 
+gStyle->SetPalette(1);
 
   RooRealVar JpsiMass("JpsiMass","M [GeV]",2.7,3.5);
   RooRealVar Jpsict("Jpsict","l_{J/#psi} [mm]",-1,2.5); 
@@ -52,7 +55,7 @@ int main(int argc, char** argv) {
   RooRealVar phi_HX("phi_HX","#phi_{HX} [deg]",0,90);
 //  RooRealVar phi_HX("phi_HX","#phi_{HX} [deg]",-180,180);
 
-  TFile *output = new TFile("jPsiFit_PR_FSR_GA07RE17smsm0NEW.root","UPDATE");
+  TFile *output = new TFile("jPsiFit_gareteDM0_NP.root","UPDATE");
   TFile *promptMaps = NULL, *nonPromptMaps = NULL, *promptRecoEff = NULL;
  
   std::cout << "Loading acceptance maps from: " << argv[1] << " and " << argv[2] << std::endl;
@@ -65,7 +68,8 @@ int main(int argc, char** argv) {
   for(int yBin = 0; yBin < jpsi::kNbRapForPTBins-3; ++yBin) {
  	  for(int ptBin = 1; ptBin < jpsi::kNbPTBins[yBin+1]; ++ptBin) {
 
- 		  if(ptBin==7 && yBin==0)continue;
+ //		  if(ptBin==4 && yBin==0)continue;
+ //		  if(ptBin==7 && yBin==1)continue;
 
       std::stringstream binName,cutString;
       binName << "pt" << ptBin+1 << "_rapidity" << yBin+1;
@@ -115,12 +119,24 @@ int main(int argc, char** argv) {
       nonPromptMap_CS= (TH2F*)nonPromptMaps->Get(nameCSp.str().c_str());
       promptEff_CS = (TH2F*)promptRecoEff->Get(nameCSp.str().c_str());
 
+//      promptEff_CS->Multiply(nonPromptMap_CS);
+//      promptMap_CS->Multiply(promptEff_CS);
+
+//      promptEff_HX->Multiply(nonPromptMap_HX);
+//      promptMap_HX->Multiply(promptEff_HX);
+
+
       //      TH2F *promptCorrectionCS, *promptCorrectionHX;
 
 //      cout<<promptMap_CS->GetBinContent(10,10)<<"+-"<<promptMap_CS->GetBinError(10,10)<<endl;
 //      cout<<promptEff_CS->GetBinContent(10,10)<<"+-"<<promptEff_CS->GetBinError(10,10)<<endl;
 
 ///////////////////////// REBIN HISTORGRAMS TO MULTIPLY ACC*EFF /////////////////////////////////////////////
+
+
+     promptEff_CS->Multiply(nonPromptMap_CS);
+     promptEff_HX->Multiply(nonPromptMap_HX);
+
 
       cout<<promptEff_CS->GetNbinsX()<<" "<<promptEff_CS->GetNbinsY()<<endl;
 
@@ -148,13 +164,16 @@ int main(int argc, char** argv) {
       int binscosth;
       int binsphi;
 
-      if (promptMap_CS->GetNbinsX()!=promptEff_CS->GetNbinsX()){
+
+      bool rebin(true);
+
+      if (rebin){
       cout<<"REBINNING"<<endl;
       //////////// if there is a gemeinsamer teiler, change following 4 parameters!! //////////////////
-      binfactor_costh=5;//promptMap_CS->GetNbinsX();
-      binfactor_phi=5;//promptMap_CS->GetNbinsY();
-      binscosth=promptMap_CS->GetNbinsX()*binfactor_costh;
-      binsphi=promptMap_CS->GetNbinsY()*binfactor_phi;
+      binfactor_costh=2;//promptMap_CS->GetNbinsX();
+      binfactor_phi=2;//promptMap_CS->GetNbinsY();
+      binscosth=40;
+      binsphi=36;
       }
       else{
       cout<<"no REBINNING necessary"<<endl;
@@ -176,6 +195,8 @@ int main(int argc, char** argv) {
 
         		  promptMapRebin_CS->SetBinContent((costhbin-1)*binfactor_costh+i,(phibin-1)*binfactor_phi+j,accPrompt_CS[costhbin][phibin]);
         		  promptMapRebin_HX->SetBinContent((costhbin-1)*binfactor_costh+i,(phibin-1)*binfactor_phi+j,accPrompt_HX[costhbin][phibin]);
+        		  promptEffRebin_CS->SetBinContent((costhbin-1)*binfactor_costh+i,(phibin-1)*binfactor_phi+j,effPrompt_CS[costhbin][phibin]);
+        		  promptEffRebin_HX->SetBinContent((costhbin-1)*binfactor_costh+i,(phibin-1)*binfactor_phi+j,effPrompt_HX[costhbin][phibin]);
 
             	  }
         	  }
@@ -213,11 +234,28 @@ int main(int argc, char** argv) {
 
 
       cout<<"Multiplying"<<endl;
-      promptMapRebin_CS->Multiply(promptEff_CS);
-      promptMapRebin_HX->Multiply(promptEff_HX);
+      //promptMapRebin_CS->Multiply(promptEff_CS);
+      //promptMapRebin_HX->Multiply(promptEff_HX);
 
-      promptMap_CS->Multiply(promptEff_CS);
-      promptMap_HX->Multiply(promptEff_HX);
+
+      promptMap_CS->Multiply(promptEffRebin_CS);
+//      promptMapRebin_CS->Multiply(promptEff_CS);
+
+      promptMap_HX->Multiply(promptEffRebin_HX);
+//      promptMapRebin_HX->Multiply(promptEff_HX);
+
+ //     promptMap_HX->Print("all");
+
+
+  /*   	TCanvas* AcceptanceHistCanvas = new TCanvas("AcceptanceHistCanvas","AcceptanceHistCanvas",700, 700);
+     	AcceptanceHistCanvas->Divide(1);  AcceptanceHistCanvas->SetFillColor(kWhite);
+     	AcceptanceHistCanvas->cd(1) ; promptMap_HX->Draw("colz");
+
+
+     	   AcceptanceHistCanvas->SaveAs("Plots/AcceptanceMaps/LindTry1_pt6.png");
+     	AcceptanceHistCanvas->Close();
+*/
+
 
 
 //      cout<<promptMapRebin_CS->GetNbinsX()<<" "<<promptMapRebin_CS->GetNbinsY()<<endl;
@@ -233,8 +271,8 @@ int main(int argc, char** argv) {
       modelHX->setPromptAccHist(promptMap_HX);
       modelHX->setNonPromptAccHist(nonPromptMap_HX);
 
-      modelCS->initModel(JpsiMass,Jpsict,costh_CS,phi_CS);
-      modelHX->initModel(JpsiMass,Jpsict,costh_HX,phi_HX);
+//      modelCS->initModel(JpsiMass,Jpsict,costh_CS,phi_CS);
+//      modelHX->initModel(JpsiMass,Jpsict,costh_HX,phi_HX);
 
       modelCS->saveParameters(*current);
       modelHX->saveParameters(*current);

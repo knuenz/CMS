@@ -15,6 +15,7 @@
 #include "TH2F.h"
 #include "TH1F.h"
 #include "TDirectory.h"
+#include "RooPolarizationPdf.h"
 
 #include <cmath>
 
@@ -141,6 +142,7 @@ namespace JPsiPolarization {
 
   void CompositeModelBuilder::setVal(const std::string& pdfName,double newval) {
 	if(pdfName.find("nPrompt") != std::string::npos) vars_["nPrompt"]->setVal(newval);
+	if(pdfName.find("nNonPrompt") != std::string::npos) vars_["nNonPrompt"]->setVal(newval);
 
 
   }
@@ -165,7 +167,11 @@ namespace JPsiPolarization {
   void CompositeModelBuilder::initModel(RooRealVar& mass,
 					RooRealVar& ct,
 					RooRealVar& costh,
-					RooRealVar& phi) {
+					RooRealVar& phi,
+					RooAbsReal& map_uniform,
+					RooAbsReal& map_theta,
+					RooAbsReal& map_phi,
+					RooAbsReal& map_thetaphi) {
     if(useMass && !(mass_->prompt() || mass_->nonPrompt() || mass_->background())) {
       std::cout << "Initializing Mass Model" << std::endl;
       mass_->initModels(mass,useP,useNP,useBkg);
@@ -180,11 +186,11 @@ namespace JPsiPolarization {
     if(usePol)      {
       if(useP && !promptPol_->model()) {
 	std::cout << "Initializing Prompt Polarization Model" << std::endl;
-	promptPol_->initModel(costh,phi);
+	promptPol_->initModel(costh,phi,map_uniform,map_theta,map_phi,map_thetaphi);
       }
       if(useNP && !nonPromptPol_->model()) {
 	std::cout << "Initializing Non-Prompt Polarization Model" << std::endl;
-	nonPromptPol_->initModel(costh,phi);
+	nonPromptPol_->initModel(costh,phi,map_uniform,map_theta,map_phi,map_thetaphi);
       }
     }
     if(useAcc && !(acc_->prompt() || acc_->nonPrompt() || acc_->background())) {
@@ -201,7 +207,11 @@ namespace JPsiPolarization {
 					RooRealVar& ct,
 					RooRealVar& cterr,
 					RooRealVar& costh,
-					RooRealVar& phi) { 
+					RooRealVar& phi,
+					RooAbsReal& map_uniform,
+					RooAbsReal& map_theta,
+					RooAbsReal& map_phi,
+					RooAbsReal& map_thetaphi) {
     if(useMass && !(mass_->prompt() || mass_->nonPrompt() || mass_->background())) {
       std::cout << "Initializing Mass Model" << std::endl;
       mass_->initModels(mass,useP,useNP,useBkg);
@@ -217,11 +227,11 @@ namespace JPsiPolarization {
     if(usePol)      {
       if(useP && !promptPol_->model()) {
 	std::cout << "Initializing Prompt Polarization Model" << std::endl;
-	promptPol_->initModel(costh,phi);
+	promptPol_->initModel(costh,phi,map_uniform,map_theta,map_phi,map_thetaphi);
       }
       if(useNP && !nonPromptPol_->model()) {
 	std::cout << "Initializing Non-Prompt Polarization Model" << std::endl;
-	nonPromptPol_->initModel(costh,phi);
+	nonPromptPol_->initModel(costh,phi,map_uniform,map_theta,map_phi,map_thetaphi);
       }
     }
     if(useAcc && !(acc_->prompt() || acc_->nonPrompt() || acc_->background())) {

@@ -58,13 +58,21 @@ namespace JPsiPolarization {
     void initModel(RooRealVar& mass,
 		   RooRealVar& ct,
 		   RooRealVar& costh,
-		   RooRealVar& phi);
+		   RooRealVar& phi,
+		   RooAbsReal& map_uniform,
+		   RooAbsReal& map_theta,
+		   RooAbsReal& map_phi,
+		   RooAbsReal& map_thetaphi);
 
     void initModel(RooRealVar& mass,
 		   RooRealVar& ct,
 		   RooRealVar& cterr,
 		   RooRealVar& costh,
-		   RooRealVar& phi);
+		   RooRealVar& phi,
+		   RooAbsReal& map_uniform,
+		   RooAbsReal& map_theta,
+		   RooAbsReal& map_phi,
+		   RooAbsReal& map_thetaphi);
 
     //for special manipulation of the consituent models
     MassModel* getMassModel() { return mass_; }

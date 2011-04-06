@@ -120,7 +120,7 @@ namespace JPsiPolarization {
     promptAcc_ = new RooHistPdf(name.str().c_str(),desc.str().c_str(),
 				RooArgSet(costh,phi),
 				*dataHist_,
-				0);
+				1);
     promptAcc_->setUnitNorm(true);
 
     //promptAcc_->Print();
@@ -152,7 +152,7 @@ namespace JPsiPolarization {
     nonPromptAcc_ = new RooHistPdf(name.str().c_str(),desc.str().c_str(),
 				   RooArgSet(costh,phi),
 				   *dataHist_,
-				   0);
+				   1);
     nonPromptAcc_->setUnitNorm(true);
 
     //nonPromptAcc_->Print();

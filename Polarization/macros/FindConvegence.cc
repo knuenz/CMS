@@ -10,17 +10,20 @@
 #include "RooDataSet.h"
 #include "RooFitResult.h"
 #include "RooPlot.h"
+#include "RooMinuit.h"
+#include "RooAbsReal.h"
 
 #include "TSystem.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "TMinuitMinimizer.h"
 
 int main(int argc, char** argv) {
 //	using namespace JPsiPolarization;
 	using namespace std;
 	using namespace RooFit;
 
-	bool doFit(false);
+	bool doFit(true);
 
 	  gSystem->mkdir("Plots/ToyMC");
 	  gSystem->mkdir("Results/ToyMC");
@@ -56,8 +59,8 @@ int main(int argc, char** argv) {
 	    int convCountCheck[2][6][13]={NULL};
 
 
-	    	for(int yBinstart = 1; yBinstart < 2; yBinstart++) {
-	    		for(int ptBinstart = 2; ptBinstart < 3; ptBinstart++) {
+	    	for(int yBinstart = 1; yBinstart < 3; yBinstart++) {
+	    		for(int ptBinstart = 2; ptBinstart < 9; ptBinstart++) {
 //3,9 for mid, intermediate bins
 	    			 		  if(yBinstart==1 && ptBinstart==8) continue;
 
@@ -65,9 +68,10 @@ int main(int argc, char** argv) {
 //	  int ptBinstart=2;
 
 		char inputfilename[200];
-//		sprintf(inputfilename,"terminalToyMC_rap%d_pt%d.txt",yBinstart,ptBinstart);
-		sprintf(inputfilename,"terminalToyMC_rap1_pt2.txt");
-
+		sprintf(inputfilename,"terminalToyMC_rap%d_pt%d.txt",yBinstart,ptBinstart);
+//		sprintf(inputfilename,"CRAB/crab_0_110203_192813/res/CMSSW_1.stdout");
+	//	sprintf(inputfilename,"CRAB/multiGA/CMSSW_rap1_pt7.stdout");
+	//	if (yBinstart==2) sprintf(inputfilename,"terminalSIMPLEX_rap2_.txt");
 		FILE *inputFile = fopen(inputfilename,"r");
 
 		char outputfilename[200];
@@ -78,7 +82,7 @@ int main(int argc, char** argv) {
 
 
 		  if (inputFile == NULL)
-		  {printf("\nQuelle \"%s\" falsch - kann Datei nicht šffnen\n", inputfilename);return -1;}
+		  {printf("\nQuelle \"%s\" falsch - kann Datei nicht ?ffnen\n", inputfilename);return -1;}
 
 		  int ptBin=0;
 		  int yBin;
@@ -97,8 +101,7 @@ int main(int argc, char** argv) {
 		  int i=0;
 		  int fitresIndex=1000;
 		  int MinosresIndex=1000;
-
-		  double edmCondition=0.001;
+		  double edmCondition=0.01;
 
 		  double edm;
 		  double nPrompt[2][6][13][100];
@@ -148,6 +151,11 @@ int main(int argc, char** argv) {
 	  char* str30 = "ERROR MATRIX UNCERTAINTY 100.0 per cent";
 	  char* str31 = "FROM MINOS     STATUS=SUCCESSFUL";
 	  char* str32 = "FROM MIGRAD    STATUS=FAILED";
+	  char* str33 = "MigradTry#";
+	  char* str34 = "*MINOS";
+	  char* str35 = "FROM HESSE     STATUS=OK";
+	  char* str36 = "MIGRAD CONV_ERGED";
+	  char* str37 = "MINOS CONV_ERGED";
 
 
 	  char* result2 = strstr( str1, str2 );
@@ -181,6 +189,11 @@ int main(int argc, char** argv) {
 	  char* result30 = strstr( str1, str30 );
 	  char* result31 = strstr( str1, str31 );
 	  char* result32 = strstr( str1, str32 );
+	  char* result33 = strstr( str1, str33 );
+	  char* result34 = strstr( str1, str34 );
+	  char* result35 = strstr( str1, str35 );
+	  char* result36 = strstr( str1, str36 );
+	  char* result37 = strstr( str1, str37 );
 
 	  if(result6!=0) yBin=1;
 	  if(result7!=0) yBin=2;
@@ -215,10 +228,12 @@ int main(int argc, char** argv) {
 //	  if(result4!=0 | result5!=0 | result2!=0) {cout<<zeile<<endl;}
 	  if(result25!=0) { generation++; cout<<"Generation "<<generation<<endl; }//cout<<result25<<endl; }
 	  if(result2!=0) { cout<<"rap"<<yBin<<"_pT"<<ptBin<<endl;}// cout<<NonConvCount<<endl; }
-
+	//  if (generation>50) continue;
 	  if(result4!=0) {isCS=true;isHX=false; cout<<"CS"<<endl; }
 	  if(result5!=0) {isCS=false;isHX=true; cout<<"HX"<<endl; }
-
+	  if(result33!=0) cout<<"Migrad"<<endl;
+	  if(result34!=0) cout<<"Minos"<<endl;
+//	  if(i<1000)cout<<i<<endl;
 //	  if(result4!=0 | result5!=0) {CONV[0][yBin][ptBin][generation]=0; CONV[1][yBin][ptBin][generation]=0; }
 
 /////////////// Now you know the exact bin, and if you fit CS or HX and generation /////////////////////////
@@ -236,10 +251,10 @@ int main(int argc, char** argv) {
 		  }
 
 	  if(result30!=0){errormatrixuncertainty=true;}
-	  if(converged/* && edm<=edmCondition && !errormatrixuncertainty*/) { cout<<"converged"<<endl;if(isCS) { convCount[0][yBin][ptBin]++; CONV[0][yBin][ptBin][generation]=1;} if(isHX) {convCount[1][yBin][ptBin]++; CONV[1][yBin][ptBin][generation]=1;}}
+	  if(converged/* && edm<=edmCondition && !errormatrixuncertainty */ &&result28!=0) { cout<<"converged"<<endl;if(isCS) { convCount[0][yBin][ptBin]++; CONV[0][yBin][ptBin][generation]=1;} if(isHX) {convCount[1][yBin][ptBin]++; CONV[1][yBin][ptBin][generation]=1;}}
 	  converged=false;
-//	  if(result27!=0) {converged=true; }
-	  if(result32!=0) {converged=true; } /// FAIL...
+	  if(result27!=0 | result32!=0) {converged=true; } // original
+//	  if(result37!=0) {converged=true; }
 
 	  errormatrixuncertainty=false;
 
@@ -371,14 +386,17 @@ int main(int argc, char** argv) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////// FIT THE RESULTS WITH GAUSSIAN ////////////////////////////////////////////////
 
-	  	double cut=10;
+	  	double cut=5;
 
 	    RooRealVar *promptlambda_phi_ = new RooRealVar("promptlambda_phi_","promptlambda_phi_",-cut,cut);
 	    RooRealVar *promptlambda_theta_ = new RooRealVar("promptlambda_theta_","promptlambda_theta_",-cut,cut);
 	    RooRealVar *promptlambda_thetaphi_ = new RooRealVar("promptlambda_thetaphi_","promptlambda_thetaphi_",-cut,cut);
 
-	    RooRealVar mean("mean","mean",0,-2,2);
-	    RooRealVar sigma("sigma","sigma",1,0.01,10);
+	    double meanstart=0;
+	    double sigmastart=1;
+
+	    RooRealVar mean("mean","mean",meanstart,-6,6);
+	    RooRealVar sigma("sigma","sigma",sigmastart,0.01,10);
 	    RooGaussian gauss_phi("gauss_phi","gauss_phi",*promptlambda_phi_,mean,sigma);
 	    RooGaussian gauss_theta("gauss_theta","gauss_theta",*promptlambda_theta_,mean,sigma);
 	    RooGaussian gauss_thetaphi("gauss_thetaphi","gauss_thetaphi",*promptlambda_thetaphi_,mean,sigma);
@@ -390,10 +408,10 @@ int main(int argc, char** argv) {
 
 
 	    int PlotBins=25;
-	    double borders=cut;
+	    double borders=5;//cut
 
 	    char Filename[200];
-		sprintf(Filename,"Plots/ToyMC/ToyMCPlot_rapidity%d_pt%d.png",yBin,ptBin);
+		sprintf(Filename,"Plots/ToyMC/ToyMCPlot_rapidity%d_pt%d.png",yBinstart,ptBinstart);
 
 //	    	for(int yBin = 1; yBin < 6; yBin++) {
 //	    		for(int ptBin = 1; ptBin < 13; ptBin++) {
@@ -466,6 +484,10 @@ int main(int argc, char** argv) {
 	//    cout<<data->mean()<<endl;
 	    		    	if(doFit){
 
+	    	    			mean.setVal(meanstart);
+	    	    			sigma.setVal(sigmastart);
+
+
 	    		    		for(int i=0;i<5;i++){
 	    		    RooFitResult* phi_result = gauss_phi.fitTo(*data,Save(true),RooFit::Minimizer("Minuit","migrad"),RooFit::Minos(1),RooFit::Strategy(2));
 	    		    phi_result->Print(); cout<<"Fit number "<<i+1<<endl;
@@ -490,6 +512,9 @@ int main(int argc, char** argv) {
 	    			cout<<"heere"<<endl;
 	    		    gauss_phi.paramOn(promptlambda_phi_frame,Format("NEU",AutoPrecision(2)),Parameters(RooArgList(mean,sigma)),Layout(0.6,0.9,0.9));
 
+	    			mean.setVal(meanstart);
+	    			sigma.setVal(sigmastart);
+
 	    			for(int i=0;i<5;i++){
 	    			RooFitResult* theta_result = gauss_theta.fitTo(*data,Save(true),RooFit::Minimizer("Minuit","migrad"),RooFit::Strategy(2));
 	    			theta_result->Print(); cout<<"Fit number "<<i+1<<endl;
@@ -509,6 +534,10 @@ int main(int argc, char** argv) {
 	    			data->plotOn(promptlambda_theta_frame,DataError(RooAbsData::SumW2),MarkerSize(0.4));
 	    			gauss_theta.plotOn(promptlambda_theta_frame,LineWidth(2),Normalization(1.0));
 	    			gauss_theta.paramOn(promptlambda_theta_frame,Format("NEU",AutoPrecision(2)),Parameters(RooArgList(mean,sigma)),Layout(0.6,0.9,0.9));
+
+	    			mean.setVal(meanstart);
+	    			sigma.setVal(sigmastart);
+
 
 	    			for(int i=0;i<5;i++){
 	    			RooFitResult* thetaphi_result = gauss_thetaphi.fitTo(*data,Save(true),RooFit::Minimizer("Minuit","migrad"),RooFit::Strategy(2));
@@ -713,6 +742,7 @@ int main(int argc, char** argv) {
 			fprintf(outputFile2, "{{%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f},{%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f}},\n",overflow[0][1][2],overflow[0][1][3],overflow[0][1][4],overflow[0][1][5],overflow[0][1][6],overflow[0][1][7],overflow[0][2][2],overflow[0][2][3],overflow[0][2][4],overflow[0][2][5],overflow[0][2][6],overflow[0][2][7],overflow[0][2][8]);
 			fprintf(outputFile2, "{{%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f},{%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f}}\n",overflow[1][1][2],overflow[1][1][3],overflow[1][1][4],overflow[1][1][5],overflow[1][1][6],overflow[1][1][7],overflow[1][2][2],overflow[1][2][3],overflow[1][2][4],overflow[1][2][5],overflow[1][2][6],overflow[1][2][7],overflow[1][2][8]);
 
+			fprintf(outputFile2, " ");
 
 			fprintf(outputFile2, "{{%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f},{%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f}},\n",errmean_phi[0][1][2],errmean_phi[0][1][3],errmean_phi[0][1][4],errmean_phi[0][1][5],errmean_phi[0][1][6],errmean_phi[0][1][7],errmean_phi[0][2][2],errmean_phi[0][2][3],errmean_phi[0][2][4],errmean_phi[0][2][5],errmean_phi[0][2][6],errmean_phi[0][2][7],errmean_phi[0][2][8]);
 			fprintf(outputFile2, "{{%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f},{%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f,%1.5f}},\n",errmean_theta[0][1][2],errmean_theta[0][1][3],errmean_theta[0][1][4],errmean_theta[0][1][5],errmean_theta[0][1][6],errmean_theta[0][1][7],errmean_theta[0][2][2],errmean_theta[0][2][3],errmean_theta[0][2][4],errmean_theta[0][2][5],errmean_theta[0][2][6],errmean_theta[0][2][7],errmean_theta[0][2][8]);

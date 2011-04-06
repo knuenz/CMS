@@ -210,6 +210,8 @@ void PrepareFitTree(){
 
     if(mcpr) MC_Type = new RooRealVar("MCType","MCType",0.,3.);
 
+    HLT_Mu0_TkMu0_OST_Jpsi_ = new RooRealVar("HLT_Mu0_TkMu0_OST_Jpsi_","HLT_Mu0_TkMu0_OST_Jpsi_",0,2);
+    HLT_Mu0_TkMu0_OST_Jpsi_Tight_v2_ = new RooRealVar("HLT_Mu0_TkMu0_OST_Jpsi_Tight_v2_","HLT_Mu0_TkMu0_OST_Jpsi_Tight_v2_",0,2);
 
 
 
@@ -223,6 +225,10 @@ void PrepareFitTree(){
     varlist.add(*costh_GJ1); varlist.add(*phi_GJ1);// varlist.add(*costh_GJ1_prime); varlist.add(*phi_GJ1_prime);
     varlist.add(*costh_GJ2); varlist.add(*phi_GJ2);// varlist.add(*costh_GJ2_prime); varlist.add(*phi_GJ2_prime);
     varlist.add(*muPos_Pt); varlist.add(*muPos_Eta); varlist.add(*muPos_Phi); varlist.add(*muNeg_Pt); varlist.add(*muNeg_Eta); varlist.add(*muNeg_Phi);
+    varlist.add(*HLT_Mu0_TkMu0_OST_Jpsi_);
+    varlist.add(*HLT_Mu0_TkMu0_OST_Jpsi_Tight_v2_);
+
+
     if(mcpr) varlist.add(*MC_Type);
 
     RooDataSet* data = new RooDataSet("data","A sample",varlist);
@@ -339,6 +345,9 @@ void PrepareFitTree(){
 
            costh_GJ2->setVal(thisCosTh[jpsi::GJ2]); phi_GJ2->setVal(thisPhi[jpsi::GJ2]);
 
+           HLT_Mu0_TkMu0_OST_Jpsi_->setVal(HLT_Mu0_TkMu0_OST_Jpsi);
+           HLT_Mu0_TkMu0_OST_Jpsi_Tight_v2_->setVal(HLT_Mu0_TkMu0_OST_Jpsi_Tight_v2);
+
            data_unf->add(varlist);
 
 
@@ -372,8 +381,10 @@ void PrepareFitTree(){
 //    data->SaveAs("/scratch/knuenz/Polarization/RootInput/RooDataSet_Nov04_RunB_folded_2.root");
 //    data_unf->SaveAs("/scratch/knuenz/Polarization/RootInput/RooDataSet_Nov04_RunB_2.root");
 
-    datatree->SaveAs("/scratch/knuenz/Polarization/RootInput/TTree_final_notrigger_MCprompt_Jpsi_Fall10_folded_.root");
-    datatree_unf->SaveAs("/scratch/knuenz/Polarization/RootInput/TTree_final_notrigger_MCprompt_Jpsi_Fall10_.root");
+//    datatree->SaveAs("TTree_final_trigger_MCprompt_Jpsi_Fall10_folded_.root");
+
+    datatree->SaveAs("/scratch/knuenz/Polarization/RootInput/TTree_final_trigger_MCprompt_Jpsi_Fall10_folded_.root");
+    datatree_unf->SaveAs("/scratch/knuenz/Polarization/RootInput/TTree_final_trigger_MCprompt_Jpsi_Fall10_.root");
 
     datatree->Print();
 

@@ -26,6 +26,8 @@
 #include "RooDataSet.h"
 #include "RooFitResult.h"
 #include "RooMinimizer.h"
+#include "RooPolarizationPdf.h"
+#include "RooPolarizationConstraint.h"
 
 //ROOT includes
 #include "TH2F.h"
@@ -125,9 +127,9 @@ int main(int argc, char** argv) {
 	  cout<<"GENERATION "<<iteration<<endl;
 
 	  char output_cs_[200];
-	  sprintf(output_cs_,"jPsiFitFinal_cs_GA07RE17smsm0NEW.root");
+	  sprintf(output_cs_,"jPsiFitFinal_cs_GA07RE17smsm1NEW.root");
 	  char output_hx_[200];
-	  sprintf(output_hx_,"jPsiFitFinal_hx_GA07RE17smsm0NEW.root");
+	  sprintf(output_hx_,"jPsiFitFinal_hx_GA07RE17smsm1NEW.root");
 	  TFile *output_cs = new TFile(output_cs_,"RECREATE");
 	  TFile *output_hx = new TFile(output_hx_,"RECREATE");
 
@@ -167,7 +169,7 @@ int main(int argc, char** argv) {
 
       
   	char outputfilename[200];
-  	sprintf(outputfilename,"FitProgress_RealMC_smsm0.txt");
+  	sprintf(outputfilename,"FitProgress_RealMC_smsm.txt");
   	FILE *outputFile = fopen(outputfilename,"w");
 	fprintf(outputFile, "rapidity%d_pt%d, iteration %d\n",yBin+1,ptBin+1,iteration);
 	fclose(outputFile);
@@ -214,11 +216,11 @@ int main(int argc, char** argv) {
 
 
 	if(pereverr) {
-	  cs->initModel(JpsiMass,Jpsict,JpsictErr,costh_CS,phi_CS);
-	  hx->initModel(JpsiMass,Jpsict,JpsictErr,costh_HX,phi_HX);	
+//	  cs->initModel(JpsiMass,Jpsict,JpsictErr,costh_CS,phi_CS);
+//	  hx->initModel(JpsiMass,Jpsict,JpsictErr,costh_HX,phi_HX);
 	} else {
-	  cs->initModel(JpsiMass,Jpsict,costh_CS,phi_CS);
-	  hx->initModel(JpsiMass,Jpsict,costh_HX,phi_HX);	
+//	  cs->initModel(JpsiMass,Jpsict,costh_CS,phi_CS);
+//	  hx->initModel(JpsiMass,Jpsict,costh_HX,phi_HX);
 	}
 
 //	RooAbsData *thisBinGenCS = cs->model()->generate(RooArgSet(costh_CS,phi_CS),jpsi::numEventsBin[yBin][ptBin]);//thisBin->tree()->GetEntries());
