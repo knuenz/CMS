@@ -60,6 +60,9 @@ void Plot(RooAbsData &plotset, RooRealVar &plotvar, RooAbsPdf &plotpdf, bool pro
     if(prompt) sprintf(contributionname,"PRregion");
     if(!prompt) sprintf(contributionname,"NPregion");
 
+    gSystem->mkdir("Plots");
+    gSystem->mkdir("Plots/ClosureTest");
+
     char dirstruct[200];
     sprintf(dirstruct,"Plots/ClosureTest/%s",PlotFilenameName);
     gSystem->mkdir(dirstruct);
@@ -108,40 +111,55 @@ varlist.add(HLT_DoubleMu0);
 varlist.add(MCType);
 varlist.add(MCweight);
 
-//////////////////// INPUT FILES ///////////////////////
+////////////////////////////////////////////////////////
+//////////////////// ADJUSTMENTS ///////////////////////
+////////////////////////////////////////////////////////
 
-//gSystem->Rename("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempPRNP.root","/scratch/knuenz/Polarization/RootInput/ProjectClosure/temptempPRNP.root");
-//gSystem->Rename("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempGEN.root","/scratch/knuenz/Polarization/RootInput/ProjectClosure/temptempGEN.root");
+bool scenIn(false);
+double pTin;
+double yin;
+double scen;
+double iter;
+bool plot(false);
+bool JOBNAMEinj(false);
+char JOBNAME[200];
+
+for( int i=0;i < argc; ++i ) {
+  if(std::string(argv[i]).find("pT") != std::string::npos) {char* pTchar = argv[i]; char* pTchar2 = strtok (pTchar, "p"); pTin = atof(pTchar2); cout<<"pTin = "<<pTin<<endl;}
+  if(std::string(argv[i]).find("rap") != std::string::npos) {char* ychar = argv[i]; char* ychar2 = strtok (ychar, "r"); yin = atof(ychar2); cout<<"yin = "<<yin<<endl;}
+  if(std::string(argv[i]).find("scen") != std::string::npos) {char* scenchar = argv[i]; char* scenchar2 = strtok (scenchar, "s"); scen = atof(scenchar2); cout<<"scen = "<<scen<<endl;}
+  if(std::string(argv[i]).find("iter") != std::string::npos) {char* iterchar = argv[i]; char* iterchar2 = strtok (iterchar, "i"); iter = atof(iterchar2); cout<<"iter = "<<iter<<endl;}
+  if(std::string(argv[i]).find("--plot") != std::string::npos) plot=true;
+  if(std::string(argv[i]).find("--JOBNAME") != std::string::npos) {JOBNAMEinj=true;char* JOBchar = argv[i];char* JOBchar2 = strtok (JOBchar,"=");JOBchar2 = strtok (NULL, "=");sprintf(JOBNAME,"%s",JOBchar2);}
+
+}
+
+if (!JOBNAMEinj)sprintf(JOBNAME,"DefaultName");
+char GenID[200];
+sprintf(GenID,"GEN%1.0f_%s_scen%1.0f",iter,JOBNAME,scen);
+cout<<JOBNAME<<endl;
+int scenario = scen;
+
+//////////////////// INPUT FILES ///////////////////////
 
 //TFile *PRfile = new TFile("/scratch/knuenz/Polarization/RootInput/TTree_prep_PR_.root","UPDATE");
 //TFile *NPfile = new TFile("/scratch/knuenz/Polarization/RootInput/TTree_prep_NP_.root","UPDATE");
 
+//TFile *PRfile = new TFile("/scratch/knuenz/Polarization/RootInput/TTree_red_PR_HXth_plus1.root","UPDATE");
+//TFile *NPfile = new TFile("/scratch/knuenz/Polarization/RootInput/TTree_red_PR_HXth_plus1.root","UPDATE");
 
-TFile *PRfile = new TFile("/scratch/knuenz/Polarization/RootInput/TTree_red_PR_HXth_plus1.root","UPDATE");
-TFile *NPfile = new TFile("/scratch/knuenz/Polarization/RootInput/TTree_red_PR_HXth_plus1.root","UPDATE");
-
+char basedir[200];
+sprintf(basedir,"%s",jpsi::scratchLocation);
+cout<<basedir<<endl;
 int cutVal=70;
 
 TFile *PRgeomAccfile = new TFile("/scratch/knuenz/Polarization/RootInput/geomAccHistos_WithFSR_PTandEtaSmeared_uniform_ATLASPT_PythiaRap_18March2011_merged_phiFolded_zeroBinsCorrected.root","UPDATE");
 TFile *PRrecoEfffile = new TFile("/scratch/knuenz/Polarization/RootInput/recoEffHistos_ATLASPT_20March2011_phiFolded_zeroBinsCorrected.root","UPDATE");
-TFile *PRtrigEfffile = new 
-TFile("/scratch/knuenz/Polarization/RootInput/AccEffCutUnRe70_trigEffHistos_ATLASPT_DoubleMu0_20March2011_phiFolded_zeroBinsCorrected.root","UPDATE");
+TFile *PRtrigEfffile = new TFile("/scratch/knuenz/Polarization/RootInput/trigEffHistos_ATLASPT_DoubleMu0_20March2011_phiFolded_zeroBinsCorrected.root","UPDATE");
 
 TFile *NPgeomAccfile = new TFile("/scratch/knuenz/Polarization/RootInput/geomAccHistos_NP_WithFSR_PTandEtaSmeared_uniform_ATLASPT_PythiaRap_18March2011_merged_phiFolded_zeroBinsCorrected.root","UPDATE");
 TFile *NPrecoEfffile = new TFile("/scratch/knuenz/Polarization/RootInput/recoEffHistos_NP_ATLASPT_19March2011_phiFolded_zeroBinsCorrected.root","UPDATE");
-TFile *NPtrigEfffile = new 
-TFile("/scratch/knuenz/Polarization/RootInput/AccEffCutUnRe70_trigEffHistos_NP_ATLASPT_DoubleMu0_19March2011_phiFolded_zeroBinsCorrected.root","UPDATE");
-
-/*
-TFile *PRgeomAccfile = new TFile("2_7_PRgeomAccATLASpT24Mar.root","UPDATE");
-TFile *PRrecoEfffile = new TFile("2_7_PRrecoEffATLASpT24Mar.root","UPDATE");
-TFile *PRtrigEfffile = new TFile("2_7_PRtrigEffATLASpT24Mar.root","UPDATE");
-
-TFile *NPgeomAccfile = new TFile("2_7_NPgeomAccATLASpT24Mar.root","UPDATE");
-TFile *NPrecoEfffile = new TFile("2_7_NPrecoEffATLASpT24Mar.root","UPDATE");
-TFile *NPtrigEfffile = new TFile("2_7_NPtrigEffATLASpT24Mar.root","UPDATE");
-*/
-
+TFile *NPtrigEfffile = new TFile("/scratch/knuenz/Polarization/RootInput/trigEffHistos_NP_ATLASPT_DoubleMu0_19March2011_phiFolded_zeroBinsCorrected.root","UPDATE");
 
 /*
 TFile *PRgeomAccfile = new TFile("/scratch/knuenz/Polarization/RootInput/flatHisto.root","UPDATE");
@@ -153,34 +171,9 @@ TFile *NPrecoEfffile = new TFile("/scratch/knuenz/Polarization/RootInput/flatHis
 TFile *NPtrigEfffile = new TFile("/scratch/knuenz/Polarization/RootInput/flatHisto.root","UPDATE");
 */
 
-TFile *fileforwhateverrootorcplusplusneedsme = new TFile("/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/hollodrio.root","RECREATE");
+TFile *fileforwhateverrootorcplusplusneedsme = new TFile("tmpFile.root","RECREATE");
 
-////////////////////////////////////////////////////////
-//////////////////// ADJUSTMENTS ///////////////////////
-////////////////////////////////////////////////////////
 
-bool scenIn(false);
-double pTin;
-double yin;
-double scen;
-double iter;
-bool plot(false);
-
-for( int i=0;i < argc; ++i ) {
-  if(std::string(argv[i]).find("pT") != std::string::npos) {char* pTchar = argv[i]; char* pTchar2 = strtok (pTchar, "p"); pTin = atof(pTchar2); cout<<"pTin = "<<pTin<<endl;}
-  if(std::string(argv[i]).find("rap") != std::string::npos) {char* ychar = argv[i]; char* ychar2 = strtok (ychar, "r"); yin = atof(ychar2); cout<<"yin = "<<yin<<endl;}
-  if(std::string(argv[i]).find("scen") != std::string::npos) {char* scenchar = argv[i]; char* scenchar2 = strtok (scenchar, "s"); scen = atof(scenchar2); cout<<"scen = "<<scen<<endl;}
-  if(std::string(argv[i]).find("iter") != std::string::npos) {char* iterchar = argv[i]; char* iterchar2 = strtok (iterchar, "i"); iter = atof(iterchar2); cout<<"iter = "<<iter<<endl;}
-  if(std::string(argv[i]).find("--plot") != std::string::npos) plot=true;
-
-}
-
-char JOBNAME[200];
-sprintf(JOBNAME,"AccEffCutUnRe%d",cutVal);
-char GenID[200];
-sprintf(GenID,"GEN%1.0f_%s_scen%1.0f",iter,JOBNAME,scen);
-cout<<JOBNAME<<endl;
-int scenario = scen;
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -189,27 +182,21 @@ int scenario = scen;
 
 //////////////////// LOOP IT ///////////////////////
 
-TTree* dataTreePR = (TTree*)PRfile->Get("data");
-TTree* dataTreeNP = (TTree*)NPfile->Get("data");
+//TTree* dataTreePR;
+//TTree* dataTreeNP;
 
-RooDataSet *dataPR = new RooDataSet("dataPR","Prompt MC",varlist,Import(*dataTreePR),WeightVar(MCweight));
-RooDataSet *dataNP = new RooDataSet("dataNP","Non Prompt MC",varlist,Import(*dataTreeNP),WeightVar(MCweight));
-
-dataPR->Print();
-dataNP->Print();
-
-//dataPR->reduce("JpsiVprob > 0.01");
-//dataNP->reduce("JpsiVprob > 0.01");
+//RooDataSet *dataPR;// = new RooDataSet("dataPR","Prompt MC",varlist,Import(*dataTreePR),WeightVar(MCweight));
+//RooDataSet *dataNP;// = new RooDataSet("dataNP","Non Prompt MC",varlist,Import(*dataTreeNP),WeightVar(MCweight));
 
 //dataPR->Print();
 //dataNP->Print();
+
 
 int generations=iter;
 
 char filenamePRNP[200];
 char filenameGEN[200];
 
-//	  gSystem->Rename("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempYPT.root","/scratch/knuenz/Polarization/RootInput/ProjectClosure/temptempYPT.root");
 
 for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 	  for(int ptBin =pTin-1; ptBin < jpsi::kNbPTBins[yBin+1]+pTin-6-yin; ++ptBin) {
@@ -229,8 +216,8 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 	 char reduce[200];
 	 sprintf(reduce,"JpsiPt > %f && JpsiPt < %f && abs(JpsiRap) > %f && abs(JpsiRap) < %f",jpsi::pTRange[yBin+1][ptBin],jpsi::pTRange[yBin+1][ptBin+1],jpsi::rapForPTRange[yBin],jpsi::rapForPTRange[yBin+1]);// && JpsictErr > 0.0004 && JpsictErr < 0.999999
 
-	 RooDataSet* dataPRbin = (RooDataSet*)dataPR->reduce(reduce);
-	 RooDataSet* dataNPbin = (RooDataSet*)dataNP->reduce(reduce);
+//	 RooDataSet* dataPRbin = (RooDataSet*)dataPR->reduce(reduce);
+//	 RooDataSet* dataNPbin = (RooDataSet*)dataNP->reduce(reduce);
 
 	 char thisplotname[200];
 	 sprintf(thisplotname,"massplot");
@@ -262,38 +249,6 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 
 	 cout<<"Extracted maps from data"<<endl;
 
-/*     TH2F *Corr_CS_PR = (TH2F*) AccMap_CS_PR->Clone("Corr_CS_PR");
-     TH2F *Corr_HX_PR = (TH2F*) AccMap_HX_PR->Clone("Corr_HX_PR");
-     TH2F *Corr_CS_NP = (TH2F*) AccMap_CS_NP->Clone("Corr_CS_NP");
-     TH2F *Corr_HX_NP = (TH2F*) AccMap_HX_NP->Clone("Corr_HX_NP");
-
-    RecoEffMap_CS_PR->Multiply(TrigEffMap_CS_PR);
-    Corr_CS_PR->Multiply(RecoEffMap_CS_PR);
-    RecoEffMap_HX_PR->Multiply(TrigEffMap_HX_PR);
-    Corr_HX_PR->Multiply(RecoEffMap_HX_PR);
-    RecoEffMap_CS_NP->Multiply(TrigEffMap_CS_NP);
-    Corr_CS_NP->Multiply(RecoEffMap_CS_NP);
-    RecoEffMap_HX_NP->Multiply(TrigEffMap_HX_NP);
-    Corr_HX_NP->Multiply(RecoEffMap_HX_NP);
-*/
-
-
-//////////////////// CUT TURN-ONS //////////////////////////
-
-
-/*	  double cut=0.7;
-
-
-	  for(int costhbin=1;costhbin<TrigEffMap_CS_PR->GetNbinsX()+1;costhbin++){
-	      for(int phibin=1;phibin<TrigEffMap_CS_PR->GetNbinsY()+1;phibin++){
-	    	  if(TrigEffMap_CS_PR->GetBinContent(costhbin,phibin)<cut) TrigEffMap_CS_PR->SetBinContent(costhbin,phibin,0);
-	    	  if(TrigEffMap_CS_NP->GetBinContent(costhbin,phibin)<cut) TrigEffMap_CS_NP->SetBinContent(costhbin,phibin,0);
-	    	  if(TrigEffMap_HX_PR->GetBinContent(costhbin,phibin)<cut) TrigEffMap_HX_PR->SetBinContent(costhbin,phibin,0);
-	    	  if(TrigEffMap_HX_NP->GetBinContent(costhbin,phibin)<cut) TrigEffMap_HX_NP->SetBinContent(costhbin,phibin,0);
-	      }}
-*/
-
-
 
 
 //////////////////// BUILD TEMPLATES ///////////////////////
@@ -308,7 +263,7 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 
     int linsmooth = 0;
 
-    RooDataHist* PRmassHist = new RooDataHist("PRmassHist","PRmassHist",RooArgSet(JpsiMass),*dataPRbin);
+/*    RooDataHist* PRmassHist = new RooDataHist("PRmassHist","PRmassHist",RooArgSet(JpsiMass),*dataPRbin);
     RooDataHist* PRlifetimeHist = new RooDataHist("PRlifetimeHist","PRlifetimeHist",RooArgSet(Jpsict),*dataPRbin);
     RooDataHist* PRlifetimeErrHist = new RooDataHist("PRlifetimeErrHist","PRlifetimeErrHist",RooArgSet(JpsictErr),*dataPRbin);
 
@@ -323,6 +278,8 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
     RooHistPdf* NPmassHistPdf = new RooHistPdf("NPmassHistPdf","NPmassHistPdf",RooArgSet(JpsiMass),*NPmassHist,1);
     RooHistPdf* NPlifetimeHistPdf = new RooHistPdf("NPlifetimeHistPdf","NPlifetimeHistPdf",RooArgSet(Jpsict),*NPlifetimeHist,1);
     RooHistPdf* NPlifetimeErrHistPdf = new RooHistPdf("NPlifetimeErrHistPdf","NPlifetimeErrHistPdf",RooArgSet(JpsictErr),*NPlifetimeErrHist,1);
+*/
+
 /*
     RooDataHist* PR_CSHist = new RooDataHist("PR_CSHist","PR_CSHist",RooArgList(costh_CS,phi_CS),Corr_CS_PR);
     RooDataHist* PR_HXHist = new RooDataHist("PR_HXHist","PR_HXHist",RooArgList(costh_HX,phi_HX),Corr_HX_PR);
@@ -518,7 +475,7 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 //////////////////// DELETE POINTERS (MODEL) ///////////////////////
 
 
-	delete PRmassHist;
+/*	delete PRmassHist;
 	delete PRlifetimeHist;
 	delete PRlifetimeErrHist;
 	delete PRmassHistPdf;
@@ -530,6 +487,7 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 	delete NPmassHistPdf;
 	delete NPlifetimeHistPdf;
 	delete NPlifetimeErrHistPdf;
+*/
 /*	delete PR_CSHist;
 	delete PR_HXHist;
 	delete NP_CSHist;
@@ -690,10 +648,10 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
     list_prnp.Add(thisBinGenPRinNPtree);
     list_prnp.Add(thisBinGenNPinNPtree);
 
-    sprintf(filenamePRNP,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/%s_tempPRNP.root",JOBNAME);
+    sprintf(filenamePRNP,"%s%s_tempPRNP.root",basedir,JOBNAME);
     TFile *f = new TFile(filenamePRNP,"RECREATE");
 
-    sprintf(filenameGEN,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/%s_tempGEN.root",JOBNAME);
+    sprintf(filenameGEN,"%s%s_tempGEN.root",basedir,JOBNAME);
 
     TTree::MergeTrees(&list_prnp);
 
@@ -737,40 +695,7 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 	delete gen1;
 	}
 
-//////////////////// MERGE PT AND Y ///////////////////////
 
-/*    TFile *pty0 = new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempYPT.root","UPDATE");
-	if(pty0->Get("data")==NULL){
-	cout<<"NULL"<<endl;
-	pty0->Close();
-	delete pty0;
-    gSystem->CopyFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempPRNP.root","/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempYPT.root",true);
-	}
-	else{
-	cout<<"merge y/pt"<<endl;
-	pty0->Close();
-	delete pty0;
-    TFile *prnp = new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempPRNP.root","UPDATE");
-	TTree* tree_prnp_existing = (TTree*)prnp->Get("data");
-
-    TFile *pty1 = new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempYPT.root","UPDATE");
-    TTree* tree_pty_existing = (TTree*)pty1->Get("data");
-
-    TFile *pty = new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempYPT.root","RECREATE");
-    TList list_pty;
-	list_pty.Add(tree_pty_existing);
-	list_pty.Add(tree_prnp_existing);
-	TTree::MergeTrees(&list_pty);
-	pty->Write();
-	pty->Close();
-	delete pty;
-
-	prnp->Close();
-	delete prnp;
-	pty1->Close();
-	delete pty1;
-	}
-*/
 
 //////////////////// END ITERATION LOOP ///////////////////////
 
@@ -778,76 +703,33 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 
 
 		  char dirstruct2[200];
-		  sprintf(dirstruct2,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/scenario%d",scenario);
+		  sprintf(dirstruct2,"%sscenario%d",basedir,scenario);
 		  gSystem->mkdir(dirstruct2);
 		  char outputname[200];
-		  sprintf(outputname,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/saveTrees/TTree_%s_rap%d_pT%d.root",GenID,yBin+1,ptBin+1);
+		  sprintf(outputname,"%ssaveTrees/TTree_%s_rap%d_pT%d.root",basedir,GenID,yBin+1,ptBin+1);
+		  char outputnamerename[200];
+		  sprintf(outputnamerename,"%stemptempPRNP.root",basedir);
 
 
 		  gSystem->Rename(filenameGEN,outputname);
-		  gSystem->Rename(filenamePRNP,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/temptempPRNP.root");
+		  gSystem->Rename(filenamePRNP,outputnamerename);
 
 //////////////////// END PT LOOP ///////////////////////
 
 
 }
 
-
-//////////////////// END Y LOOP ///////////////////////
-
-//////////////////// MERGE GENERATIONS ///////////////////////
-/*
-	TFile *gen0 = new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempGEN.root","UPDATE");
-	if(gen0->Get("data")==NULL){
-	cout<<"NULL"<<endl;
-	gen0->Close();
-	delete gen0;
-	gSystem->CopyFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempYPT.root","/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempGEN.root",true);
-	}
-	else{
-	cout<<"merge Gen "<<generation<<endl;
-	gen0->Close();
-	delete gen0;
-	TFile *pty2 = new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempYPT.root","UPDATE");
-	TTree* tree_pty2_existing = (TTree*)pty2->Get("data");
-
-	TFile *gen1 = new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempGEN.root","UPDATE");
-	TTree* tree_gen_existing = (TTree*)gen1->Get("data");
-
-	TFile *gen = new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/tempGEN.root","RECREATE");
-	TList list_gen;
-	list_gen.Add(tree_gen_existing);
-	list_gen.Add(tree_pty2_existing);
-	TTree::MergeTrees(&list_gen);
-	gen->Write();
-	gen->Close();
-	delete gen;
-
-	pty2->Close();
-	delete pty2;
-	gen1->Close();
-	delete gen1;
-}
-*/
-//////////////////// CHANGE FORMAT ///////////////////////
-
-
-//////////////////// SAVE ///////////////////////
-
-
-//////////////////// MOVE ON TO AN OTHER GENERATION :) ///////////////////////
-
 }
 
 
 
 
 
-delete dataPR;
-delete dataNP;
+//delete dataPR;
+//delete dataNP;
 
-PRfile->Close();
-NPfile->Close();
+//PRfile->Close();
+//NPfile->Close();
 
 PRgeomAccfile->Close();
 PRrecoEfffile->Close();

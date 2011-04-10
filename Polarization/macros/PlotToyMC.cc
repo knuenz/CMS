@@ -34,9 +34,9 @@ int main(int argc, char** argv) {
 	using namespace std;
 	using namespace RooFit;
 
-	TFile* f= new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/scenario1/CLOSURE_scen1_rap2_pT8_gen1_CS-CS.root");
-	RooWorkspace* space=(RooWorkspace*)f->Get("CLOSURE_scen1_rap2_pT8_gen1_CS");
-	space->Print();
+//	TFile* f= new TFile("/scratch/knuenz/Polarization/RootInput/ProjectClosure/scenario1/CLOSURE_scen1_rap2_pT8_gen1_CS-CS.root");
+//	RooWorkspace* space=(RooWorkspace*)f->Get("CLOSURE_scen1_rap2_pT8_gen1_CS");
+//	space->Print();
 
 	char JobID[200];
 	sprintf(JobID,"multi_try");
@@ -123,6 +123,7 @@ for( int i=0;i < argc; ++i ) {
 	 	if(std::string(argv[i]).find("--workspace") != std::string::npos) {workspace=true;}
 	 	if(std::string(argv[i]).find("--onlyOne") != std::string::npos) {onlyOneComponent=true;}
 		if(std::string(argv[i]).find("AccEffCut") != std::string::npos) {sprintf(JOBNAME,argv[i]);JOBNAMEinj=true;}
+		if(std::string(argv[i]).find("--JOBNAME") != std::string::npos) {JOBNAMEinj=true;char* JOBchar = argv[i];char* JOBchar2 = strtok (JOBchar,"=");JOBchar2 = strtok (NULL, "=");sprintf(JOBNAME,"%s",JOBchar2);}
 
 	  }
 
@@ -156,27 +157,35 @@ for( int i=0;i < argc; ++i ) {
 
 	if(all) TwoCrit=false;
 
+	char basedir[200];
+	sprintf(basedir,"%s",jpsi::WorkspaceDir);
+	char basedirplots[200];
+	sprintf(basedirplots,"%sPlots/",basedir);
+	char basedirplotstoyMC[200];
+	sprintf(basedirplotstoyMC,"%sToyMC/",basedirplots);
+
 	char miniCritLogic[200];
 	if(logicOr) sprintf(miniCritLogic,"|");
 	if(!logicOr) sprintf(miniCritLogic,"&");
 
 	char dirStruct[200];
-	sprintf(dirStruct,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Plots/ToyMC/%s",JobID);
+	sprintf(dirStruct,"%sPlots/ToyMC/%s",basedir,JobID);
 
-	gSystem->mkdir("/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Plots/ToyMC");
+	gSystem->mkdir(basedirplots);
+	gSystem->mkdir(basedirplotstoyMC);
 	gSystem->mkdir(dirStruct);
 
-	if(TwoCrit) sprintf(dirStruct,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Plots/ToyMC/%s/%s%s%s",JobID,miniCrit,miniCritLogic,miniCrit2);
-	else sprintf(dirStruct,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Plots/ToyMC/%s/%s",JobID,miniCrit);
-	if(all) sprintf(dirStruct,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Plots/ToyMC/%s/%s_all",JobID,miniCrit);
-	if(noCut) sprintf(dirStruct,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Plots/ToyMC/%s/%s_noCut",JobID,miniCrit);
-	if(TwoCrit && noCut) sprintf(dirStruct,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Plots/ToyMC/%s/%s%s%s_noCut",JobID,miniCrit,miniCritLogic,miniCrit2);
+	if(TwoCrit) sprintf(dirStruct,"%s%s/%s%s%s",basedirplotstoyMC,JobID,miniCrit,miniCritLogic,miniCrit2);
+	else sprintf(dirStruct,"%s%s/%s",basedirplotstoyMC,JobID,miniCrit);
+	if(all) sprintf(dirStruct,"%s%s/%s_all",basedirplotstoyMC,JobID,miniCrit);
+	if(noCut) sprintf(dirStruct,"%s%s/%s_noCut",basedirplotstoyMC,JobID,miniCrit);
+	if(TwoCrit && noCut) sprintf(dirStruct,"%s%s/%s%s%s_noCut",basedirplotstoyMC,JobID,miniCrit,miniCritLogic,miniCrit2);
 
 	gSystem->mkdir(dirStruct);
 
 	cout<<dirStruct<<endl;
 
-	  gSystem->mkdir("/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Results/ToyMC");
+//	  gSystem->mkdir("/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Results/ToyMC");
 
 	  gStyle->SetTitleFillColor(kWhite);
 
@@ -269,7 +278,7 @@ for( int i=0;i < argc; ++i ) {
 
 		  int missingGenerations=0;
 
-	    	for(int yBinstart = 1; yBinstart < 2; yBinstart++) {
+	    	for(int yBinstart = 1; yBinstart < 3; yBinstart++) {
 	    		for(int ptBinstart = 6; ptBinstart < 9; ptBinstart++) {
 //3,9 for mid, intermediate bins
 
@@ -288,17 +297,16 @@ for( int i=0;i < argc; ++i ) {
 		char inputfilename[200];
 		sprintf(inputfilename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/CRAB/%s/RooFitResult_rap%d_pt%d.root",JobID,yBinstart,ptBinstart);
 		if(serial) sprintf(inputfilename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/SERIAL/%s_res/RooFitResult_rap%d_pt%d.root",JobID,yBinstart,ptBinstart);
-		//if(Closure && !workspace) sprintf(inputfilename,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/scenario%d/RooFitResult_scen%d_rap%d_pT%d.root",scenario,scenario,yBinstart,ptBinstart);
-		if(Closure && !workspace) sprintf(inputfilename,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/PlotResults/%s/RooFitResult_%s_scen%d_rap%d_pt%d.root",JOBNAME,JOBNAME,scenario,yBinstart,ptBinstart);
+		if(Closure && !workspace) sprintf(inputfilename,"%sPlotResults/%s/RooFitResult_%s_scen%d_rap%d_pt%d.root",jpsi::scratchLocation,JOBNAME,JOBNAME,scenario,yBinstart,ptBinstart);
 
 		TFile *resfile = new TFile(inputfilename,"UPDATE");
 
 
 
 
-		char outputfilename[200];
-		sprintf(outputfilename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Results/ToyMC/parametersToyMC_rap%d_pt%d.txt",yBinstart,ptBinstart);
-		FILE *outputFile = fopen(outputfilename,"w");
+//		char outputfilename[200];
+//		sprintf(outputfilename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/Results/ToyMC/parametersToyMC_rap%d_pt%d.txt",yBinstart,ptBinstart);
+//		FILE *outputFile = fopen(outputfilename,"w");
 
 		  int ptBin=0;
 		  int yBin;
@@ -422,8 +430,8 @@ if(Closure){
 					  sprintf(res2name,"hesse_pol_fitresult_rap%d_pt%d_%s_gen%d",yBinstart,ptBinstart,framechar,generation);
 
 					  char Closure_inputfilename[200];
-					  if(frameDex==0)sprintf(Closure_inputfilename,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/scenario%d/CLOSURE_scen%d_rap%d_pT%d_gen%d_CS-CS.root",scenario,scenario,yBinstart,ptBinstart,generation);
-					  if(frameDex==1)sprintf(Closure_inputfilename,"/scratch/knuenz/Polarization/RootInput/ProjectClosure/scenario%d/CLOSURE_scen%d_rap%d_pT%d_gen%d_HX-HX.root",scenario,scenario,yBinstart,ptBinstart,generation);
+					  if(frameDex==0)sprintf(Closure_inputfilename,"%sscenario%d/CLOSURE_scen%d_rap%d_pT%d_gen%d_CS-CS.root",jpsi::scratchLocation,scenario,scenario,yBinstart,ptBinstart,generation);
+					  if(frameDex==1)sprintf(Closure_inputfilename,"%sscenario%d/CLOSURE_scen%d_rap%d_pT%d_gen%d_HX-HX.root",jpsi::scratchLocation,scenario,scenario,yBinstart,ptBinstart,generation);
 
 					  TFile *Closure_resfile;
 					  RooWorkspace* wss;
@@ -839,7 +847,7 @@ if(!Closure){
 	    		    	RooDataSet* data = new RooDataSet("data","A sample",varlist);
 	    		    	RooDataSet* dataRef = new RooDataSet("dataRef","A Ref sample",varlist);
 
-	    if(CONV[frameDex][yBin][ptBin][generation]) fprintf(outputFile, "\n");
+//	    if(CONV[frameDex][yBin][ptBin][generation]) fprintf(outputFile, "\n");
 	    for(int generation = 1; generation < generations+1; generation++) {
 
 	    	bool plotpull(true);
@@ -894,21 +902,21 @@ if(!Closure){
 //	    cout<<"lambda_theta "<<generation<<" "<<promptlambda_theta[frameDex][yBin][ptBin][generation]<<" +- "<<errpromptlambda_theta[frameDex][yBin][ptBin][generation]<<endl;
 //	    cout<<promptlambda_theta[frameDex][yBin][ptBin][generation]/errpromptlambda_theta[frameDex][yBin][ptBin][generation]<<endl;
 	    data->add(varlist);
-		if(frameDex==0) fprintf(outputFile, "CS rapidity%d_pt%d generation%d promptlambda_phi %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_phi[frameDex][yBin][ptBin][generation],errpromptlambda_phi[frameDex][yBin][ptBin][generation]);
-		if(frameDex==1) fprintf(outputFile, "HX rapidity%d_pt%d generation%d promptlambda_phi %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_phi[frameDex][yBin][ptBin][generation],errpromptlambda_phi[frameDex][yBin][ptBin][generation]);
+//		if(frameDex==0) fprintf(outputFile, "CS rapidity%d_pt%d generation%d promptlambda_phi %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_phi[frameDex][yBin][ptBin][generation],errpromptlambda_phi[frameDex][yBin][ptBin][generation]);
+//		if(frameDex==1) fprintf(outputFile, "HX rapidity%d_pt%d generation%d promptlambda_phi %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_phi[frameDex][yBin][ptBin][generation],errpromptlambda_phi[frameDex][yBin][ptBin][generation]);
 	    }
 	    }
-		if(CONV[frameDex][yBin][ptBin][generation]) fprintf(outputFile, "\n");
+		if(CONV[frameDex][yBin][ptBin][generation]) //fprintf(outputFile, "\n");
 	    for(int generation = 1; generation < 100; generation++) {
 	    	if(CONV[frameDex][yBin][ptBin][generation]){
-	    if(frameDex==0) fprintf(outputFile, "CS rapidity%d_pt%d generation%d promptlambda_theta %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_theta[frameDex][yBin][ptBin][generation],errpromptlambda_theta[frameDex][yBin][ptBin][generation]);
-	    if(frameDex==1) fprintf(outputFile, "HX rapidity%d_pt%d generation%d promptlambda_theta %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_theta[frameDex][yBin][ptBin][generation],errpromptlambda_theta[frameDex][yBin][ptBin][generation]);
+//	    if(frameDex==0) fprintf(outputFile, "CS rapidity%d_pt%d generation%d promptlambda_theta %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_theta[frameDex][yBin][ptBin][generation],errpromptlambda_theta[frameDex][yBin][ptBin][generation]);
+//	    if(frameDex==1) fprintf(outputFile, "HX rapidity%d_pt%d generation%d promptlambda_theta %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_theta[frameDex][yBin][ptBin][generation],errpromptlambda_theta[frameDex][yBin][ptBin][generation]);
 	    	}}
-	    if(CONV[frameDex][yBin][ptBin][generation]) fprintf(outputFile, "\n");
+	    if(CONV[frameDex][yBin][ptBin][generation]) //fprintf(outputFile, "\n");
 	    for(int generation = 1; generation < 100; generation++) {
 	    	if(CONV[frameDex][yBin][ptBin][generation]){
-	    if(frameDex==0) fprintf(outputFile, "CS rapidity%d_pt%d generation%d promptlambda_thetaphi %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_thetaphi[frameDex][yBin][ptBin][generation],errpromptlambda_thetaphi[frameDex][yBin][ptBin][generation]);
-	    if(frameDex==1) fprintf(outputFile, "HX rapidity%d_pt%d generation%d promptlambda_thetaphi %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_thetaphi[frameDex][yBin][ptBin][generation],errpromptlambda_thetaphi[frameDex][yBin][ptBin][generation]);
+//	    if(frameDex==0) fprintf(outputFile, "CS rapidity%d_pt%d generation%d promptlambda_thetaphi %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_thetaphi[frameDex][yBin][ptBin][generation],errpromptlambda_thetaphi[frameDex][yBin][ptBin][generation]);
+//	    if(frameDex==1) fprintf(outputFile, "HX rapidity%d_pt%d generation%d promptlambda_thetaphi %1.4f +/- %1.4f\n",yBin,ptBin,generation,promptlambda_thetaphi[frameDex][yBin][ptBin][generation],errpromptlambda_thetaphi[frameDex][yBin][ptBin][generation]);
 	    	}}
 
 	    data->Print();
@@ -1161,9 +1169,9 @@ if(!Closure){
 
 
 
-	    		    fprintf(outputFile, "\n");
-	    			fprintf(outputFile, "CS convergence %d\n",convCountCheck[0][yBin][ptBin]);
-	    			fprintf(outputFile, "HX convergence %d\n",convCountCheck[1][yBin][ptBin]);
+//	    		    fprintf(outputFile, "\n");
+//	    			fprintf(outputFile, "CS convergence %d\n",convCountCheck[0][yBin][ptBin]);
+//	    			fprintf(outputFile, "HX convergence %d\n",convCountCheck[1][yBin][ptBin]);
 
 	    			fprintf(outputFile2, "\n");
 	    			fprintf(outputFile2, "Rapidity %d pT %d\n",yBin,ptBin);
@@ -1237,7 +1245,7 @@ if(!Closure){
 
 	    				    	//}
 
-	    		    fclose(outputFile);
+//	    		    fclose(outputFile);
 
 	    		    resfile->Close();
 	    		    delete resfile;

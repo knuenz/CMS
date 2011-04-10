@@ -1,25 +1,27 @@
 #!/bin/sh
 
 #settings:
-iterations=200
-JOBNAME=AccEffCutUnRe70
+iterations=2
+TREENAME=INSTRUCT
 
 make
 
-cp GenScript GenScript${JOBNAME}
+cp GenScript GenScript${TREENAME}
 
 for scenario in 4;do
 
-rap_=1
-for pT_ in 6 7;do
-./GenScript${JOBNAME} ${rap_}rap ${pT_}pT ${iterations}iter ${scenario}scen 
+for rap_ in 1;do
+for pT_ in 6;do
+
+if [ $pT_ -eq 8 ] && [ $rap_ -eq 1 ]; then
+continue
+fi
+
+./GenScript${TREENAME} ${rap_}rap ${pT_}pT ${iterations}iter ${scenario}scen --JOBNAME=${TREENAME}
+
+done
 done
 
-rap_=2
-for pT_ in 6 7 8;do
-./GenScript${JOBNAME} ${rap_}rap ${pT_}pT ${iterations}iter ${scenario}scen 
 done
 
-done
-
-rm GenScript${JOBNAME}
+rm GenScript${TREENAME}
