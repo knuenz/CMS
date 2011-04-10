@@ -32,6 +32,7 @@ fi
 
 for scenario in 3;do
 mkdir ${dirstruct}ProjectClosure/${JOBNAME}/scenario${scenario}
+mkdir ${dirstruct}ProjectClosure/PlotResults
 cp ${dirstruct}ProjectClosure/saveTrees/TTree_GEN${generations}_${TREENAME}_scen${scenario}_rap${rap_}_pT${pT_}.root ${dirstruct}ProjectClosure/${JOBNAME}/scenario${scenario}/TTree_GEN${generations}_${TREENAME}_scen${scenario}_rap${rap_}_pT${pT_}.root
 cp polarizationFit${JOBNAME}.py polarizationFit${JOBNAME}_rap${rap_}_pt${pT_}_scen${scenario}.py
 cp polarizationFitSimple${JOBNAME}.py polarizationFitSimple${JOBNAME}_${rap_}_pt${pT_}_scen${scenario}.py
