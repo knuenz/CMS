@@ -707,6 +707,10 @@ for(int yBin =yin-1; yBin < jpsi::kNbRapForPTBins+yin-5; ++yBin) {
 		  gSystem->mkdir(dirstruct2);
 		  char outputname[200];
 		  sprintf(outputname,"%ssaveTrees/TTree_%s_rap%d_pT%d.root",basedir,GenID,yBin+1,ptBin+1);
+		  char saveTreesdir[200];
+		  sprintf(saveTreesdir,"%ssaveTrees",basedir);
+		  cout<<saveTreesdir<<endl;
+		  gSystem->mkdir(saveTreesdir);
 		  char outputnamerename[200];
 		  sprintf(outputnamerename,"%stemptempPRNP.root",basedir);
 
