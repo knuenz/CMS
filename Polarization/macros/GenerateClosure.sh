@@ -1,17 +1,17 @@
 #!/bin/sh
 
 #settings:
-iterations=200
-TREENAME=INSTRUCT
+iterations=1
+TREENAME=INSTRUCT2
 
 make
 
 cp GenScript GenScript${TREENAME}
 
-for scenario in 2 3 4 5;do
+for scenario in 3;do
 
-for rap_ in 1 2;do
-for pT_ in 6 7 8;do
+for rap_ in 1;do
+for pT_ in 6;do
 
 if [ $pT_ -eq 8 ] && [ $rap_ -eq 1 ]; then
 continue

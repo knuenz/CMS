@@ -233,9 +233,9 @@ namespace jpsi{
   		 -1         0           +1         0
 */
 
-  char scratchLocation[200] = "/scratch/knuenz/Polarization/RootInput/ProjectClosure/";
-  char WorkspaceDir[200] = "/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/";
-//  char scratchLocation[200] = "/afs/hephy.at/scratch/k/knuenz/PolFrameTry/ProjectClosure/";
-//  char WorkspaceDir[200] = "/afs/hephy.at/scratch/k/knuenz/PolFrameTry/";
+//  char scratchLocation[200] = "/scratch/knuenz/Polarization/RootInput/ProjectClosure/";
+//  char WorkspaceDir[200] = "/afs/hephy.at/scratch/k/knuenz/CMSSW_3_8_1/src/JPsiPolarizationSave3/";
+  char scratchLocation[200] = "/afs/hephy.at/scratch/k/knuenz/PolFrameTry/ProjectClosure/";
+  char WorkspaceDir[200] = "/afs/hephy.at/scratch/k/knuenz/PolFrameTry/";
 
 }

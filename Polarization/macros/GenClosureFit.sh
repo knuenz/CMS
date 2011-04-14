@@ -2,9 +2,10 @@
 
 #INITIAL SETTINGS
 
-TREENAME=INSTRUCT
-JOBNAME=INSTRUCT
+TREENAME=INSTRUCT2
+JOBNAME=INSTRUCT2
 dirstruct=/scratch/knuenz/Polarization/RootInput/
+#dirstruct=/afs/hephy.at/scratch/k/knuenz/PolFrameTry/
 mkdir ${dirstruct}ProjectClosure/${JOBNAME}
 cp polarizationFit.py polarizationFit${JOBNAME}.py
 cp polarizationFitSimple.py polarizationFitSimple${JOBNAME}.py
@@ -22,15 +23,15 @@ trigEffNP=${dirstruct}trigEffHistos_NP_ATLASPT_DoubleMu0_19March2011_phiFolded_z
 
 
 #SETTINGS::BIN
-generations=2
-for rap_ in 1 2;do
-for pT_ in 6 7 8;do
+generations=1
+for rap_ in 1;do
+for pT_ in 6;do
 
 if [ $pT_ -eq 8 ] && [ $rap_ -eq 1 ]; then
 continue
 fi
 
-for scenario in 2 3 4 5;do
+for scenario in 3;do
 mkdir ${dirstruct}ProjectClosure/${JOBNAME}/scenario${scenario}
 mkdir ${dirstruct}ProjectClosure/PlotResults
 cp ${dirstruct}ProjectClosure/saveTrees/TTree_GEN${generations}_${TREENAME}_scen${scenario}_rap${rap_}_pT${pT_}.root ${dirstruct}ProjectClosure/${JOBNAME}/scenario${scenario}/TTree_GEN${generations}_${TREENAME}_scen${scenario}_rap${rap_}_pT${pT_}.root
