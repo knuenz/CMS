@@ -1,8 +1,8 @@
 #include "RooPolarizationConstraint.h"
 #include <string>
-#include <math.h>
+#include <cmath>
 
-//ClassImp(RooPolarizationConstraint)
+ClassImp(RooPolarizationConstraint)
 
 RooPolarizationConstraint::RooPolarizationConstraint() {
 }
@@ -43,12 +43,14 @@ Double_t RooPolarizationConstraint::analyticalIntegral(Int_t code,
 }
 
 Double_t RooPolarizationConstraint::evaluate() const {
-  if(fabs(lPhi) > .5*(1+lTheta)) return 1e-120;
-  if(fabs(lThetaPhi) > .5*(1-lPhi)) return 1e-120;
-  if(lTheta*lTheta + 2*lThetaPhi*lThetaPhi > 1.) return 1e-120;
-  if(lPhi < -1./3. && (1.+2*lPhi)*(1.+2*lPhi) + 2.*lThetaPhi*lThetaPhi > 1) return 1e-120;
 
-  return 1.0;
+  Double_t e1 = std::min(0.,1+lTheta-2*fabs(lPhi));
+  Double_t e2 = std::min(0.,1-lPhi-2*fabs(lThetaPhi));
+  Double_t e3 = lPhi <= -1./3. ? std::min(0.,1-((1.+2*lPhi)*(1.+2*lPhi) + 2.*lThetaPhi*lThetaPhi )) : 0;
+
+  Double_t r = std::exp(-100.*(e1*e1+e2*e2+e3*e3)); 
+
+  return r;
 }
 
 

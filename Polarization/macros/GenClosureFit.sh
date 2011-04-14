@@ -4,8 +4,8 @@
 
 TREENAME=INSTRUCT2
 JOBNAME=INSTRUCT2
-dirstruct=/scratch/knuenz/Polarization/RootInput/
-#dirstruct=/afs/hephy.at/scratch/k/knuenz/PolFrameTry/
+#dirstruct=/scratch/knuenz/Polarization/RootInput/
+dirstruct=/afs/hephy.at/scratch/k/knuenz/PolFrameTry/
 mkdir ${dirstruct}ProjectClosure/${JOBNAME}
 cp polarizationFit.py polarizationFit${JOBNAME}.py
 cp polarizationFitSimple.py polarizationFitSimple${JOBNAME}.py
