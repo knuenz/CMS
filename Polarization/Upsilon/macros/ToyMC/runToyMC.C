@@ -21,7 +21,7 @@ void runToyMC(){
 
 // Define Kinematic Bins to Test
 
-  	int rapBinMin = 2;
+  	int rapBinMin = 1;
     int rapBinMax = 2;
  	int ptBinMin = 8;
  	int ptBinMax = 8;
@@ -40,8 +40,9 @@ void runToyMC(){
   	int nSample = 12000;
 
 //////////////////////////////////////////////////////////////////////////////////////
+///CVS
 
-  	int nSkipGen=4;
+  	int nSkipGen=0;
 
   	Char_t *ToyDirectory;
   	double f_BG;
