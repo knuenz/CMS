@@ -484,6 +484,9 @@ int main(int argc, char** argv) {
 
 			  sprintf(filename,"%s/rap%d_pT%d/Generation%d/GenResults.root",dirstruct,iRap,iPt,iGen);
 			  TFile* GenResultFile = new TFile(filename);
+
+			  if(GenResultFile->Get("GenResults") == NULL) continue;
+
 			  TTree* GenResults = (TTree*) GenResultFile->Get("GenResults");
 
 
@@ -639,7 +642,11 @@ int main(int argc, char** argv) {
 
 	  sprintf(filename,"%s/rap%d_pT%d/Generation%d/results.root",dirstruct,iRap,iPt,iGen);
 	  TFile* results = new TFile(filename);
+
+	  if(results->Get("Results") == NULL) continue;
+
 	  TTree* Results = (TTree*) results->Get("Results");
+
 
   	cout<<"";
 
@@ -1205,6 +1212,10 @@ if(plotDist){
 						if(iLam==103){ KinDepRap[pt]= param_ltilde_CS_mean[rap][pt]; 		KinDepRaperr[pt]=param_ltilde_CS_sigma[rap][pt];	KinDepRap2[pt]= param_ltilde_CS_mean[rap][pt]; 			KinDepRap2err[pt]=param_ltilde_HX_sigma[rap][pt];	KinDepRap3[pt]= param_ltilde_HX_mean[rap][pt]; 			KinDepRap3err[pt]=param_ltilde_HX_sigma[rap][pt];}
 						if(iLam==104){ KinDepRap[pt]= param_lthstar_CS_mean[rap][pt]; 		KinDepRaperr[pt]=param_lthstar_CS_sigma[rap][pt];	KinDepRap2[pt]= param_lthstar_CS_mean[rap][pt]; 		KinDepRap2err[pt]=param_lthstar_HX_sigma[rap][pt];	KinDepRap3[pt]= param_lthstar_HX_mean[rap][pt]; 		KinDepRap3err[pt]=param_lthstar_HX_sigma[rap][pt];}
 						if(iLam==105){ KinDepRap[pt]= param_lphstar_CS_mean[rap][pt]; 		KinDepRaperr[pt]=param_lphstar_CS_sigma[rap][pt];	KinDepRap2[pt]= param_lphstar_CS_mean[rap][pt]; 		KinDepRap2err[pt]=param_lphstar_HX_sigma[rap][pt];	KinDepRap3[pt]= param_lphstar_HX_mean[rap][pt]; 		KinDepRap3err[pt]=param_lphstar_HX_sigma[rap][pt];}
+
+						if(KinDepRap[pt]==0)KinDepRap[pt]=999;
+						if(KinDepRap2[pt]==0)KinDepRap2[pt]=999;
+						if(KinDepRap3[pt]==0)KinDepRap3[pt]=999;
 
 						pt++;
 					}

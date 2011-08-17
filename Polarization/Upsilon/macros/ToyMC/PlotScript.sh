@@ -9,9 +9,9 @@ basedir=/Users/valentinknuenz/usr/local/workspace/Upsilon
 
 JobID=Test
 
-rapBinMin=2
+rapBinMin=1
 rapBinMax=2
-ptBinMin=8
+ptBinMin=7
 ptBinMax=8
 
 frameSig=1
@@ -20,9 +20,12 @@ polScenSig=3
 frameBkg=1
 polScenBkg=3
 
-nGenerations=5
+nGenerations=10
 
 ############################
+
+mkdir ${basedir}/macros/ToyMC/Figures
+mkdir ${basedir}/macros/ToyMC/Figures/${JobID}
 
 cd ${storagedir}/${JobID}
 
@@ -51,15 +54,15 @@ while [ $pT_ -le ${ptBinMax} ]
 do
 
 pdflatex "\newcommand\rappt{rap${rap_}pt${pT_}}\input{ToyResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations.tex}"
-mv ToyResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations.pdf ../ToyResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations_rap${rap_}pt${pT_}.pdf
+mv ToyResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations.pdf ${basedir}/macros/ToyMC/Figures/${JobID}/ToyResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations_rap${rap_}pt${pT_}.pdf
 
 pT_=$((pT_+1))
 done
 rap_=$((rap_+1))
 done
 
-mv PullSummaryResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations.pdf ../.
-mv ParameterSummaryResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations.pdf ../.
+mv PullSummaryResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations.pdf ${basedir}/macros/ToyMC/Figures/${JobID}/
+mv ParameterSummaryResults_Sig_frame${frameSig}scen${polScenSig}_Bkg_frame${frameBkg}scen${polScenBkg}_${nGenerations}Generations.pdf ${basedir}/macros/ToyMC/Figures/${JobID}/
 
 cd ..
 rm polToyMCPlot.cc
