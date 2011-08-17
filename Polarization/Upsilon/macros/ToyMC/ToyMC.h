@@ -1,6 +1,5 @@
 namespace ToyMC{
 
-char basedir [200]= "/Users/valentinknuenz/usr/local/workspace/Upsilon/macros/ToyMC";
 
 double ScenarioSig [3][9]={{-1,-0.5,0,0.5,1,0,0,0.5,1},{0,0,0,0,0,0.5,-0.5,-0.75,-1},{0,0,0,0,0,0,0,0,0}};//lamth_Signal,lamph_Signal,lamthph_Sigmal
 

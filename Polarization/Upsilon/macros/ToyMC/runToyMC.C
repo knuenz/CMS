@@ -1,6 +1,3 @@
-//#include "/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/Upsilon/interface/rootIncludes.inc"
-//#include "/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/Upsilon/interface/commonVar.h"
-//#include "/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/Upsilon/macros/ToyMC/ToyMC.h"
 #include "/Users/valentinknuenz/usr/local/workspace/Upsilon/interface/rootIncludes.inc"
 #include "/Users/valentinknuenz/usr/local/workspace/Upsilon/interface/commonVar.h"
 #include "/Users/valentinknuenz/usr/local/workspace/Upsilon/macros/ToyMC/ToyMC.h"
@@ -18,8 +15,6 @@ void runToyMC(){
 
 // Define Output Directory Structure
 
-//	char storagedir [200]= "/scratch/knuenz/Polarization/Upsilon/ToyMC"; //Storage Directory
-//	char basedir [200]= "/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/Upsilon"; //Code Directory
 	char storagedir [200]= "/Users/valentinknuenz/usr/local/workspace/Upsilon/macros/ToyMC"; //Storage Directory
 	char basedir [200]= "/Users/valentinknuenz/usr/local/workspace/Upsilon"; //Code Directory
   	Char_t *JobID = "Test";
