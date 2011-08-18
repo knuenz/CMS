@@ -3,7 +3,6 @@
 #include <sstream>
 using namespace std;
 
-
 #include "/Users/valentinknuenz/usr/local/workspace/Upsilon/interface/rootIncludes.inc"
 #include "/Users/valentinknuenz/usr/local/workspace/Upsilon/interface/commonVar.h"
 #include "/Users/valentinknuenz/usr/local/workspace/Upsilon/macros/ToyMC/ToyMC.h"
@@ -384,6 +383,8 @@ int main(int argc, char** argv) {
 	  int NrapBins = rapBinMax-rapBinMin+1;
 	  int NptBins = ptBinMax-ptBinMin+1;
 
+	  bool emptyBin[NrapBins][NptBins];
+
 	  double pull_lth_CS_mean[NrapBins][NptBins],	pull_lth_CS_meanerr[NrapBins][NptBins],	pull_lth_CS_sigma[NrapBins][NptBins],	pull_lth_CS_sigmaerr[NrapBins][NptBins];
 	  double pull_lph_CS_mean[NrapBins][NptBins],	pull_lph_CS_meanerr[NrapBins][NptBins],	pull_lph_CS_sigma[NrapBins][NptBins],	pull_lph_CS_sigmaerr[NrapBins][NptBins];
 	  double pull_ltp_CS_mean[NrapBins][NptBins],	pull_ltp_CS_meanerr[NrapBins][NptBins],	pull_ltp_CS_sigma[NrapBins][NptBins],	pull_ltp_CS_sigmaerr[NrapBins][NptBins];
@@ -753,6 +754,9 @@ int main(int argc, char** argv) {
 	  results->Close();
 
 	  }
+
+	  emptyBin[rap-1][pt-1]=false;
+	  if(param_lth_CS->GetMean()==0 || param_lth_HX->GetMean()==0 || param_lth_PX->GetMean()==0) emptyBin[rap-1][pt-1]=true;
 
 	    pull_lth_CS_mean[rap-1][pt-1]=pull_lth_CS->GetMean(); pull_lth_CS_meanerr[rap-1][pt-1]=pull_lth_CS->GetMeanError(); pull_lth_CS_sigma[rap-1][pt-1]=pull_lth_CS->GetRMS(); pull_lth_CS_sigmaerr[rap-1][pt-1]=pull_lth_CS->GetRMSError();
 	    pull_lph_CS_mean[rap-1][pt-1]=pull_lph_CS->GetMean(); pull_lph_CS_meanerr[rap-1][pt-1]=pull_lph_CS->GetMeanError(); pull_lph_CS_sigma[rap-1][pt-1]=pull_lph_CS->GetRMS(); pull_lph_CS_sigmaerr[rap-1][pt-1]=pull_lph_CS->GetRMSError();
@@ -1213,9 +1217,7 @@ if(plotDist){
 						if(iLam==104){ KinDepRap[pt]= param_lthstar_CS_mean[rap][pt]; 		KinDepRaperr[pt]=param_lthstar_CS_sigma[rap][pt];	KinDepRap2[pt]= param_lthstar_CS_mean[rap][pt]; 		KinDepRap2err[pt]=param_lthstar_HX_sigma[rap][pt];	KinDepRap3[pt]= param_lthstar_HX_mean[rap][pt]; 		KinDepRap3err[pt]=param_lthstar_HX_sigma[rap][pt];}
 						if(iLam==105){ KinDepRap[pt]= param_lphstar_CS_mean[rap][pt]; 		KinDepRaperr[pt]=param_lphstar_CS_sigma[rap][pt];	KinDepRap2[pt]= param_lphstar_CS_mean[rap][pt]; 		KinDepRap2err[pt]=param_lphstar_HX_sigma[rap][pt];	KinDepRap3[pt]= param_lphstar_HX_mean[rap][pt]; 		KinDepRap3err[pt]=param_lphstar_HX_sigma[rap][pt];}
 
-						if(KinDepRap[pt]==0)KinDepRap[pt]=999;
-						if(KinDepRap2[pt]==0)KinDepRap2[pt]=999;
-						if(KinDepRap3[pt]==0)KinDepRap3[pt]=999;
+						if(emptyBin[rap][pt]){ KinDepRap[pt]=999; KinDepRap2[pt]=999; KinDepRap3[pt]=999;}
 
 						pt++;
 					}

@@ -49,11 +49,13 @@ void extractFromProposalPDF( double& lth_candidate,     double& lph_candidate,  
                              double& lth,               double& lph,               double& ltp,
                              double& proposalWidth_lth, double& proposalWidth_lph, double& proposalWidth_ltp ) {
 
+	double burnwidth=0.1;
+
   if ( proposalWidth_lth < 0. || proposalWidth_lph < 0. || proposalWidth_ltp < 0. ) {
        do {
-           lth_candidate = gRandom->Gaus( lth, 0.10 ); // Gaussian proposal pdf with "large" sigma and positivity constraints
-           lph_candidate = gRandom->Gaus( lph, 0.10 );
-           ltp_candidate = gRandom->Gaus( ltp, 0.10 );
+           lth_candidate = gRandom->Gaus( lth, burnwidth ); // Gaussian proposal pdf with "large" sigma and positivity constraints
+           lph_candidate = gRandom->Gaus( lph, burnwidth );
+           ltp_candidate = gRandom->Gaus( ltp, burnwidth );
        }
        while ( fabs( lph_candidate ) > 0.5*( 1 + lth_candidate ) || lth_candidate*lth_candidate + 2.*ltp_candidate*ltp_candidate > 1
             || fabs( ltp_candidate ) > 0.5*( 1 - lph_candidate )
@@ -978,9 +980,11 @@ void polFit(int n_sampledPoints=1,
   lph_PX = 0.0;
   ltp_PX = 0.0;
 
-  double loglikelihood_CS = -1.e6;  // intial (arbitrary) values
-  double loglikelihood_HX = -1.e6;
-  double loglikelihood_PX = -1.e6;
+  double initiallikelihood = -1.e12;
+
+  double loglikelihood_CS = initiallikelihood;  // intial (arbitrary) values
+  double loglikelihood_HX = initiallikelihood;
+  double loglikelihood_PX = initiallikelihood;
 
   // test histograms of the distributions after the burn-in period,
   // for a subsequent adjustment of the algorithm
@@ -1027,6 +1031,9 @@ void polFit(int n_sampledPoints=1,
   double proposalWidth_lph_PX = proposalWidth_lph_PX_start;
   double proposalWidth_ltp_PX = proposalWidth_ltp_PX_start;
 
+  int rejectPointCS=0;
+  int rejectPointHX=0;
+  int rejectPointPX=0;
 
   n_step = n_sampledPoints/5;  // visualize progress of the parameter sampling
   n_step_=1;
@@ -1116,6 +1123,9 @@ void polFit(int n_sampledPoints=1,
      // "log(likelihood) difference > or < 0"
 
      double loglikelihood_CS_difference = loglikelihood_CS_candidate - loglikelihood_CS;
+
+//     cout<<i_sampledPoint<<"delta "<<loglikelihood_CS_difference<<" = "<<loglikelihood_CS_candidate<<" - "<<loglikelihood_CS<<endl;
+
      if(  loglikelihood_CS_difference > 0.  ||  log( gRandom->Uniform(1.) ) < loglikelihood_CS_difference  ) {
          lth_CS = lth_CS_candidate; lph_CS = lph_CS_candidate; ltp_CS = ltp_CS_candidate;
          loglikelihood_CS = loglikelihood_CS_candidate;
@@ -1134,6 +1144,7 @@ void polFit(int n_sampledPoints=1,
                                                    test_lph_CS->Fill( lph_CS );
                                                    test_ltp_CS->Fill( ltp_CS ); }
      }
+     else {rejectPointCS++; }
      if ( i_sampledPoint == n_burnIn +1 ) { proposalWidth_lth_CS = TMath::Max( 0.3 * test_lth_CS->GetRMS(), 0.001 );
                                             proposalWidth_lph_CS = TMath::Max( 0.3 * test_lph_CS->GetRMS(), 0.001 );
                                             proposalWidth_ltp_CS = TMath::Max( 0.3 * test_ltp_CS->GetRMS(), 0.001 ); }
@@ -1141,7 +1152,6 @@ void polFit(int n_sampledPoints=1,
      // should already have found where the bulk of the distribution is) in order to estimate
      // the sigmas of the output distributions and to adjust the sigmas of the proposal functions
      // accordingly (optimal: between 1/4 and 1/3 of the target distributions)
-
 
      double loglikelihood_HX_difference = loglikelihood_HX_candidate - loglikelihood_HX;
      if(  loglikelihood_HX_difference > 0.  ||  log( gRandom->Uniform(1.) ) < loglikelihood_HX_difference  ) {
@@ -1162,6 +1172,7 @@ void polFit(int n_sampledPoints=1,
                                                    test_lph_HX->Fill( lph_HX );
                                                    test_ltp_HX->Fill( ltp_HX ); }
      }
+     else {rejectPointHX++; }
      if ( i_sampledPoint == n_burnIn +1 ) { proposalWidth_lth_HX = TMath::Max( 0.3 * test_lth_HX->GetRMS(), 0.001 );
                                             proposalWidth_lph_HX = TMath::Max( 0.3 * test_lph_HX->GetRMS(), 0.001 );
                                             proposalWidth_ltp_HX = TMath::Max( 0.3 * test_ltp_HX->GetRMS(), 0.001 ); }
@@ -1186,6 +1197,7 @@ void polFit(int n_sampledPoints=1,
                                                    test_lph_PX->Fill( lph_PX );
                                                    test_ltp_PX->Fill( ltp_PX ); }
      }
+     else {rejectPointPX++; }
      if ( i_sampledPoint == n_burnIn +1 ) { proposalWidth_lth_PX = TMath::Max( 0.3 * test_lth_PX->GetRMS(), 0.001 );
                                             proposalWidth_lph_PX = TMath::Max( 0.3 * test_lph_PX->GetRMS(), 0.001 );
                                             proposalWidth_ltp_PX = TMath::Max( 0.3 * test_ltp_PX->GetRMS(), 0.001 ); }
@@ -1197,6 +1209,9 @@ void polFit(int n_sampledPoints=1,
 
   cout << endl << endl;
 
+  cout<<"Fraction of rejected Points CS: "<<double(rejectPointCS)/double(n_sampledPoints)<<endl;
+  cout<<"Fraction of rejected Points HX: "<<double(rejectPointHX)/double(n_sampledPoints)<<endl;
+  cout<<"Fraction of rejected Points PX: "<<double(rejectPointPX)/double(n_sampledPoints)<<endl;
 
 ///// Extract numerical values of the lambda parameters from the result TTrees /////
 
@@ -1265,7 +1280,6 @@ void polFit(int n_sampledPoints=1,
   // end of loop over entries in the ntuples
 
 //  cout << endl << endl;
-
 
 
   TTree* Results = new TTree("Results","Results");

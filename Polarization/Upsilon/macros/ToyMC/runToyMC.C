@@ -10,7 +10,8 @@
 void runToyMC(){
 
 	bool gen(true);
-	bool recfit(true);
+	bool rec(true);
+	bool fit(true);
 	bool plot(false);
 
 // Define Output Directory Structure
@@ -22,7 +23,7 @@ void runToyMC(){
 // Define Kinematic Bins to Test
 
   	int rapBinMin = 1;
-    int rapBinMax = 2;
+    int rapBinMax = 1;
  	int ptBinMin = 8;
  	int ptBinMax = 8;
 
@@ -58,10 +59,10 @@ void runToyMC(){
 
 	gSystem->cd(basestruct);
 
-	if(gen){gROOT->ProcessLine(".L polGen.C+");
-			if(recfit){	gROOT->ProcessLine(".L polRec.C+");
-						gROOT->ProcessLine(".L polFit.C+");}
-			}
+	if(gen)gROOT->ProcessLine(".L polGen.C+");
+	if(rec)gROOT->ProcessLine(".L polRec.C+");
+	if(fit)gROOT->ProcessLine(".L polFit.C+");
+
 	if(plot)gROOT->ProcessLine(".L polPlot.C+");
 
 	sprintf(substruct,"%s/Sig_frame%dscen%d_Bkg_frame%dscen%d",basestruct,frameSig,polScenSig,frameBkg,polScenBkg);gSystem->mkdir(substruct);
@@ -84,10 +85,10 @@ void runToyMC(){
 				sprintf(dirstruct,"%s/Generation%d",rapptstruct,iGen+nSkipGen);gSystem->mkdir(dirstruct);
 				ToyDirectory=dirstruct;
 
-				if(gen){polGen(iRap,iPt,n_events,f_BG,polScenSig,polScenBkg,frameSig,frameBkg,iGen+nSkipGen,ToyDirectory);
-						if(recfit){	polRec(nEff,ToyDirectory);
-									polFit(nSample,ToyDirectory);}
-						}
+				if(gen)polGen(iRap,iPt,n_events,f_BG,polScenSig,polScenBkg,frameSig,frameBkg,iGen+nSkipGen,ToyDirectory);
+				if(rec)polRec(nEff,ToyDirectory);
+				if(fit)polFit(nSample,ToyDirectory);
+
 				if(plot)polPlot(ToyDirectory);
 
 				sprintf(tmpfilename,"%s/genData.root",dirstruct);		gSystem->Unlink(tmpfilename);
@@ -96,8 +97,8 @@ void runToyMC(){
 
 				seconds = time (NULL);
 
-				if(gen) cout<<"Proccessing time for this generation: "<<seconds-time_1<<" s"<<" (Corresponding to "<<(seconds-time_1)/60<<" min)"<<endl;
-				if(gen) cout<<"Per signal event in final sample:     "<<(seconds-time_1)/ToyMC::numEvents[iRap-1][iPt-1]*1000<<" ms"<<endl;
+				if(fit) cout<<"Proccessing time for this generation: "<<seconds-time_1<<" s"<<" (Corresponding to "<<(seconds-time_1)/60<<" min)"<<endl;
+				if(fit) cout<<"Per signal event in final sample:     "<<(seconds-time_1)/ToyMC::numEvents[iRap-1][iPt-1]*1000<<" ms"<<endl;
 			}
         }
     }

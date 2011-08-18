@@ -11,7 +11,7 @@ JobID=Test
 
 rapBinMin=1
 rapBinMax=2
-ptBinMin=7
+ptBinMin=1
 ptBinMax=8
 
 frameSig=1
@@ -20,7 +20,7 @@ polScenSig=3
 frameBkg=1
 polScenBkg=3
 
-nGenerations=10
+nGenerations=50
 
 ############################
 
