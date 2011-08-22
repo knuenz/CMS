@@ -3,19 +3,26 @@ This README file intends to explain the ToyMC framework
 
 Summary:
 --------
--runToyMC.C: this macro steers all generation, reconstruction and the fits. This can be conducted in parallel for any scenario.
--PlotScript.sh: when all fits, bins, scenarios are finished, or if one wants to get a snapshot in between, run this macro. It plots the results that runToyMC.C produces
+-runToyMC.C: this macro steers all generation, reconstruction and the fits. This can be
+			 conducted in parallel for any scenario.
+-PlotScript.sh: when all fits, bins, scenarios are finished, or if one wants to get a
+			 snapshot in between, run this macro. It plots the results that runToyMC.C
+			 produces
 
 
 The base directory 'basedir' contains following substructures:
 latex: Latex files for visualization of plots and numerical results
-interface: commonVar.h and rootIncludes.inc, containing the standard configuration of the analysis (e.g. ranges of kinematic cells)
-macros/ToyMC: All relevant files for the ToyMC tests that need to be changed to customize the test are in this directory and are explained below.
+interface: commonVar.h and rootIncludes.inc, containing the standard configuration of the
+analysis (e.g. ranges of kinematic cells)
+macros/ToyMC: All relevant files for the ToyMC tests that need to be changed to customize
+the test are in this directory and are explained below.
 
 
 ToyMC.h
 -------
-This file contains all relevant information that is needed for the tests. Polarization scenario definitions, Number of events estimated from data, background fractions estimated from data, Color and Marker settings.
+This file contains all relevant information that is needed for the tests. Polarization scenario
+definitions, Number of events estimated from data, background fractions estimated from data,
+Color and Marker settings.
 
 
 polGen.C
@@ -23,7 +30,8 @@ polGen.C
 Macro needed to generate pseudo sample 
 Output:
 -genData.root, containing the sample
--GenResults.root, contaning information about the actual injected polarization in all frames, needed for plotting the results
+-GenResults.root, contaning information about the actual injected polarization in all frames,
+needed for plotting the results
 
 
 polRec.C
@@ -43,12 +51,14 @@ Input:
 -data.root
 -efficiency.root
 Output:
--results.root, containing the posterior distributions of all parameters, and a TTree containing the numerical results (mean and rms of the posterior distributions)
+-results.root, containing the posterior distributions of all parameters, and a TTree containing the
+numerical results (mean and rms of the posterior distributions)
 
 
 polPlot.C
 --------
-This macro can plot the individually generated data sets vs. the fit result. It is disabled in the standard ToyMC generation and only needed for debugging purposes
+This macro can plot the individually generated data sets vs. the fit result. It is disabled in the
+standard ToyMC generation and only needed for debugging purposes
 Input:
 -results.root
 Output:
@@ -67,13 +77,17 @@ This file steers the compilation of polToyMCPlot.cc
 
 runToyMC.C
 ----------
-This is the steering macro for generation, reconstruction and fit of the pseudo samples. It can be started by 'root runToyMC.C'. In this file the customizable settings for the ToyMC tests can be changed:
+This is the steering macro for generation, reconstruction and fit of the pseudo samples. It can be
+started by 'root runToyMC.C'. In this file the customizable settings for the ToyMC tests can be
+changed:
 gen................ boolean, if true, polGen.C is executed
 rec................ boolean, if true, polRec.C is executed
 fit................ boolean, if true, polFit.C is executed
 plot............... boolean, if true, polPlot.C is executed
-storagedir......... has to be set to the directory where all datasets results and figures will be stored
-basedir............ base directory of the code, containing the substructure 'latex', 'interface', 'macros/ToyMC'
+storagedir......... has to be set to the directory where all datasets results and figures will be
+					stored
+basedir............ base directory of the code, containing the substructure 'latex', 'interface',
+					'macros/ToyMC'
 JobID.............. Name to be specified for a certain test
 rapBinMin.......... test will be conducted from this rapidity bin...
 rapBinMax.......... ...to this rapidity bin
@@ -86,16 +100,22 @@ frameBkg........... natural polarization frame background (1...CS, 2...HX, 3...P
 nGenerations....... number of pseudo samples to be generated and fit
 nEff............... defines the efficiency to be used (see polRec.C, 1...Eff=const=1, 2...oldEff, 3...newEff)
 FidCuts............ defines, which set of cuts will be used (0...no cuts, 1... loose cuts, 2... tight cuts)
-nSample............ numer of iterations in the algorithm (see polFit.C, 2000 burn-in iterations included in this number)
+nSample............ numer of iterations in the algorithm (see polFit.C, 2000 burn-in iterations included in
+					this number)
 ConstEvents........ see below
-ConstEvents_....... boolean, if true it generates ConstEvents events, if false, it uses the number of events stored in ToyMC.h
-nSkipGen........... if the fit on several machines, this variable has to be used, in order not to overwrite existing results 
+ConstEvents_....... boolean, if true it generates ConstEvents events, if false, it uses the number of events
+					stored in ToyMC.h
+nSkipGen........... if the fit on several machines, this variable has to be used, in order not to overwrite
+					existing results 
 
 
 PlotScript.h
 ------------
-This is the script that steers the plotting of the ToyMC results (providing the executable polToyMCPlot the correct inputs, executing latex to produce summary pdf files and pdf files containing tables of numerical results)
-The output is saved in the directory 'basedir/Figures/JobID/....pdf'. This script can be executed by 'sh PlotScript.sh'. Following settings need to be costomized:
+This is the script that steers the plotting of the ToyMC results (providing the executable polToyMCPlot
+the correct inputs, executing latex to produce summary pdf files and pdf files containing tables of numerical
+results)
+The output is saved in the directory 'basedir/Figures/JobID/....pdf'. This script can be executed by
+'sh PlotScript.sh'. Following settings need to be costomized:
 storagedir......... same as above
 basedir............ same as above
 JobID.............. same as above
