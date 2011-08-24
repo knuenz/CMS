@@ -461,6 +461,7 @@ int main(int argc, char** argv) {
 	  double lambda_phistar_injected_PX[NrapBins][NptBins];
 	  double lambda_tilde_injected_PX[NrapBins][NptBins];
 
+	  int nGen_[NrapBins][NptBins];
 
 	  double l_min;
 	  double l_max;
@@ -661,6 +662,8 @@ int main(int argc, char** argv) {
 	  TH1D* pull_lthstar_PX = new TH1D( "pull_lthstar_PX", "", int((l_max_pull-l_min_pull)/l_step_1D_pull), l_min_pull, l_max_pull );
 
 
+	  nGen_[rap-1][pt-1]=0;
+
 	  for(int iGen=1;iGen<nGenerations+1;iGen++){
 
 	  sprintf(filename,"%s/rap%d_pT%d/Generation%d/results.root",dirstruct,iRap,iPt,iGen);
@@ -670,6 +673,7 @@ int main(int argc, char** argv) {
 
 	  TTree* Results = (TTree*) results->Get("Results");
 
+	  nGen_[rap-1][pt-1]++;
 
   	cout<<"";
 
@@ -777,8 +781,10 @@ int main(int argc, char** argv) {
 
 	  }
 
+	  cout<<nGen_[rap-1][pt-1]<<endl;
+
 	  emptyBin[rap-1][pt-1]=false;
-	  if(param_lth_CS->GetMean()==0 || param_lth_HX->GetMean()==0 || param_lth_PX->GetMean()==0) emptyBin[rap-1][pt-1]=true;
+	  if(nGen_[rap-1][pt-1]==0) {emptyBin[rap-1][pt-1]=true; cout<<"empty bin"<<endl;}
 
 	    pull_lth_CS_mean[rap-1][pt-1]=pull_lth_CS->GetMean(); pull_lth_CS_meanerr[rap-1][pt-1]=pull_lth_CS->GetMeanError(); pull_lth_CS_sigma[rap-1][pt-1]=pull_lth_CS->GetRMS(); pull_lth_CS_sigmaerr[rap-1][pt-1]=pull_lth_CS->GetRMSError();
 	    pull_lph_CS_mean[rap-1][pt-1]=pull_lph_CS->GetMean(); pull_lph_CS_meanerr[rap-1][pt-1]=pull_lph_CS->GetMeanError(); pull_lph_CS_sigma[rap-1][pt-1]=pull_lph_CS->GetRMS(); pull_lph_CS_sigmaerr[rap-1][pt-1]=pull_lph_CS->GetRMSError();
@@ -1259,6 +1265,8 @@ if(plotDist){
 ///////////////// TABLE PRODUCTION /////////////////////////////////////////////////////////////////////////
 
 
+	    char framerap[200];
+		int nTables=3;
 
 		char NumFileName[200];
 		sprintf(NumFileName,"ToyNumericalResults_%s.tex",dirstruct);
@@ -1267,9 +1275,138 @@ if(plotDist){
 		fprintf(NumFile, "\n");
 		fprintf(NumFile,"\\documentclass{article}\n\\usepackage[applemac]{inputenc}\n\\usepackage{amsmath}\n\\usepackage{textcomp}\n\\pagestyle{plain}\n\\usepackage{graphicx}\n\\usepackage{multicol}\n\\usepackage{geometry}\n\\geometry{a4paper,left=20mm,right=20mm, top=1.5cm, bottom=1.5cm}\n\\usepackage{subfigure}\n\\usepackage{booktabs}\n\\usepackage{setspace}\n\n\n\n\\begin{document}\n");
 
+		fprintf(NumFile, "\n\n\n\n");
+
+
+		double meandeviation[3][3][6]={NULL};//index 1...table,2...frame,3...parameter
+		int n_=0;
+		rap=0;
+	    for(int rapBin = rapBinMin; rapBin < rapBinMax+1; rapBin++) {
+				int pt=0;
+					for(int ptBin = ptBinMin; ptBin < ptBinMax+1; ptBin++) {
+
+						if (!emptyBin[rap][pt]) {
+							meandeviation[0][0][0]=meandeviation[0][0][0]+TMath::Abs((param_lth_CS_mean[rap][pt]-lambda_theta_injected_CS[rap][pt]))/param_lth_CS_sigma[rap][pt];
+							meandeviation[0][0][1]=meandeviation[0][0][1]+TMath::Abs((param_lph_CS_mean[rap][pt]-lambda_phi_injected_CS[rap][pt]))/param_lph_CS_sigma[rap][pt];
+							meandeviation[0][0][2]=meandeviation[0][0][2]+TMath::Abs((param_ltp_CS_mean[rap][pt]-lambda_thetaphi_injected_CS[rap][pt]))/param_ltp_CS_sigma[rap][pt];
+							meandeviation[0][0][3]=meandeviation[0][0][3]+TMath::Abs((param_ltilde_CS_mean[rap][pt]-lambda_tilde_injected_CS[rap][pt]))/param_ltilde_CS_sigma[rap][pt];
+							meandeviation[0][0][4]=meandeviation[0][0][4]+TMath::Abs((param_lthstar_CS_mean[rap][pt]-lambda_thetastar_injected_CS[rap][pt]))/param_lthstar_CS_sigma[rap][pt];
+							meandeviation[0][0][5]=meandeviation[0][0][5]+TMath::Abs((param_lphstar_CS_mean[rap][pt]-lambda_phistar_injected_CS[rap][pt]))/param_lphstar_CS_sigma[rap][pt];
+
+							meandeviation[0][1][0]=meandeviation[0][1][0]+TMath::Abs((param_lth_HX_mean[rap][pt]-lambda_theta_injected_HX[rap][pt]))/param_lth_HX_sigma[rap][pt];
+							meandeviation[0][1][1]=meandeviation[0][1][1]+TMath::Abs((param_lph_HX_mean[rap][pt]-lambda_phi_injected_HX[rap][pt]))/param_lph_HX_sigma[rap][pt];
+							meandeviation[0][1][2]=meandeviation[0][1][2]+TMath::Abs((param_ltp_HX_mean[rap][pt]-lambda_thetaphi_injected_HX[rap][pt]))/param_ltp_HX_sigma[rap][pt];
+							meandeviation[0][1][3]=meandeviation[0][1][3]+TMath::Abs((param_ltilde_HX_mean[rap][pt]-lambda_tilde_injected_HX[rap][pt]))/param_ltilde_HX_sigma[rap][pt];
+							meandeviation[0][1][4]=meandeviation[0][1][4]+TMath::Abs((param_lthstar_HX_mean[rap][pt]-lambda_thetastar_injected_HX[rap][pt]))/param_lthstar_HX_sigma[rap][pt];
+							meandeviation[0][1][5]=meandeviation[0][1][5]+TMath::Abs((param_lphstar_HX_mean[rap][pt]-lambda_phistar_injected_HX[rap][pt]))/param_lphstar_HX_sigma[rap][pt];
+
+							meandeviation[0][2][0]=meandeviation[0][2][0]+TMath::Abs((param_lth_PX_mean[rap][pt]-lambda_theta_injected_PX[rap][pt]))/param_lth_PX_sigma[rap][pt];
+							meandeviation[0][2][1]=meandeviation[0][2][1]+TMath::Abs((param_lph_PX_mean[rap][pt]-lambda_phi_injected_PX[rap][pt]))/param_lph_PX_sigma[rap][pt];
+							meandeviation[0][2][2]=meandeviation[0][2][2]+TMath::Abs((param_ltp_PX_mean[rap][pt]-lambda_thetaphi_injected_PX[rap][pt]))/param_ltp_PX_sigma[rap][pt];
+							meandeviation[0][2][3]=meandeviation[0][2][3]+TMath::Abs((param_ltilde_PX_mean[rap][pt]-lambda_tilde_injected_PX[rap][pt]))/param_ltilde_PX_sigma[rap][pt];
+							meandeviation[0][2][4]=meandeviation[0][2][4]+TMath::Abs((param_lthstar_PX_mean[rap][pt]-lambda_thetastar_injected_PX[rap][pt]))/param_lthstar_PX_sigma[rap][pt];
+							meandeviation[0][2][5]=meandeviation[0][2][5]+TMath::Abs((param_lphstar_PX_mean[rap][pt]-lambda_phistar_injected_PX[rap][pt]))/param_lphstar_PX_sigma[rap][pt];
+
+
+							meandeviation[1][0][0]=meandeviation[1][0][0]+TMath::Abs(pull_lth_CS_mean[rap][pt])/pull_lth_CS_meanerr[rap][pt];
+							meandeviation[1][0][1]=meandeviation[1][0][1]+TMath::Abs(pull_lph_CS_mean[rap][pt])/pull_lph_CS_meanerr[rap][pt];
+							meandeviation[1][0][2]=meandeviation[1][0][2]+TMath::Abs(pull_ltp_CS_mean[rap][pt])/pull_ltp_CS_meanerr[rap][pt];
+							meandeviation[1][0][3]=meandeviation[1][0][3]+TMath::Abs(pull_ltilde_CS_mean[rap][pt])/pull_ltilde_CS_meanerr[rap][pt];
+							meandeviation[1][0][4]=meandeviation[1][0][4]+TMath::Abs(pull_lthstar_CS_mean[rap][pt])/pull_lthstar_CS_meanerr[rap][pt];
+							meandeviation[1][0][5]=meandeviation[1][0][5]+TMath::Abs(pull_lphstar_CS_mean[rap][pt])/pull_lphstar_CS_meanerr[rap][pt];
+
+							meandeviation[1][1][0]=meandeviation[1][1][0]+TMath::Abs(pull_lth_HX_mean[rap][pt])/pull_lth_HX_meanerr[rap][pt];
+							meandeviation[1][1][1]=meandeviation[1][1][1]+TMath::Abs(pull_lph_HX_mean[rap][pt])/pull_lph_HX_meanerr[rap][pt];
+							meandeviation[1][1][2]=meandeviation[1][1][2]+TMath::Abs(pull_ltp_HX_mean[rap][pt])/pull_ltp_HX_meanerr[rap][pt];
+							meandeviation[1][1][3]=meandeviation[1][1][3]+TMath::Abs(pull_ltilde_HX_mean[rap][pt])/pull_ltilde_HX_meanerr[rap][pt];
+							meandeviation[1][1][4]=meandeviation[1][1][4]+TMath::Abs(pull_lthstar_HX_mean[rap][pt])/pull_lthstar_HX_meanerr[rap][pt];
+							meandeviation[1][1][5]=meandeviation[1][1][5]+TMath::Abs(pull_lphstar_HX_mean[rap][pt])/pull_lphstar_HX_meanerr[rap][pt];
+
+							meandeviation[1][2][0]=meandeviation[1][2][0]+TMath::Abs(pull_lth_PX_mean[rap][pt])/pull_lth_PX_meanerr[rap][pt];
+							meandeviation[1][2][1]=meandeviation[1][2][1]+TMath::Abs(pull_lph_PX_mean[rap][pt])/pull_lph_PX_meanerr[rap][pt];
+							meandeviation[1][2][2]=meandeviation[1][2][2]+TMath::Abs(pull_ltp_PX_mean[rap][pt])/pull_ltp_PX_meanerr[rap][pt];
+							meandeviation[1][2][3]=meandeviation[1][2][3]+TMath::Abs(pull_ltilde_PX_mean[rap][pt])/pull_ltilde_PX_meanerr[rap][pt];
+							meandeviation[1][2][4]=meandeviation[1][2][4]+TMath::Abs(pull_lthstar_PX_mean[rap][pt])/pull_lthstar_PX_meanerr[rap][pt];
+							meandeviation[1][2][5]=meandeviation[1][2][5]+TMath::Abs(pull_lphstar_PX_mean[rap][pt])/pull_lphstar_PX_meanerr[rap][pt];
+
+
+							meandeviation[2][0][0]=meandeviation[2][0][0]+TMath::Abs(pull_lth_CS_sigma[rap][pt]-1)/pull_lth_CS_sigmaerr[rap][pt];
+							meandeviation[2][0][1]=meandeviation[2][0][1]+TMath::Abs(pull_lph_CS_sigma[rap][pt]-1)/pull_lph_CS_sigmaerr[rap][pt];
+							meandeviation[2][0][2]=meandeviation[2][0][2]+TMath::Abs(pull_ltp_CS_sigma[rap][pt]-1)/pull_ltp_CS_sigmaerr[rap][pt];
+							meandeviation[2][0][3]=meandeviation[2][0][3]+TMath::Abs(pull_ltilde_CS_sigma[rap][pt]-1)/pull_ltilde_CS_sigmaerr[rap][pt];
+							meandeviation[2][0][4]=meandeviation[2][0][4]+TMath::Abs(pull_lthstar_CS_sigma[rap][pt]-1)/pull_lthstar_CS_sigmaerr[rap][pt];
+							meandeviation[2][0][5]=meandeviation[2][0][5]+TMath::Abs(pull_lphstar_CS_sigma[rap][pt]-1)/pull_lphstar_CS_sigmaerr[rap][pt];
+
+							meandeviation[2][1][0]=meandeviation[2][1][0]+TMath::Abs(pull_lth_HX_sigma[rap][pt]-1)/pull_lth_HX_sigmaerr[rap][pt];
+							meandeviation[2][1][1]=meandeviation[2][1][1]+TMath::Abs(pull_lph_HX_sigma[rap][pt]-1)/pull_lph_HX_sigmaerr[rap][pt];
+							meandeviation[2][1][2]=meandeviation[2][1][2]+TMath::Abs(pull_ltp_HX_sigma[rap][pt]-1)/pull_ltp_HX_sigmaerr[rap][pt];
+							meandeviation[2][1][3]=meandeviation[2][1][3]+TMath::Abs(pull_ltilde_HX_sigma[rap][pt]-1)/pull_ltilde_HX_sigmaerr[rap][pt];
+							meandeviation[2][1][4]=meandeviation[2][1][4]+TMath::Abs(pull_lthstar_HX_sigma[rap][pt]-1)/pull_lthstar_HX_sigmaerr[rap][pt];
+							meandeviation[2][1][5]=meandeviation[2][1][5]+TMath::Abs(pull_lphstar_HX_sigma[rap][pt]-1)/pull_lphstar_HX_sigmaerr[rap][pt];
+
+							meandeviation[2][2][0]=meandeviation[2][2][0]+TMath::Abs(pull_lth_PX_sigma[rap][pt]-1)/pull_lth_PX_sigmaerr[rap][pt];
+							meandeviation[2][2][1]=meandeviation[2][2][1]+TMath::Abs(pull_lph_PX_sigma[rap][pt]-1)/pull_lph_PX_sigmaerr[rap][pt];
+							meandeviation[2][2][2]=meandeviation[2][2][2]+TMath::Abs(pull_ltp_PX_sigma[rap][pt]-1)/pull_ltp_PX_sigmaerr[rap][pt];
+							meandeviation[2][2][3]=meandeviation[2][2][3]+TMath::Abs(pull_ltilde_PX_sigma[rap][pt]-1)/pull_ltilde_PX_sigmaerr[rap][pt];
+							meandeviation[2][2][4]=meandeviation[2][2][4]+TMath::Abs(pull_lthstar_PX_sigma[rap][pt]-1)/pull_lthstar_PX_sigmaerr[rap][pt];
+							meandeviation[2][2][5]=meandeviation[2][2][5]+TMath::Abs(pull_lphstar_PX_sigma[rap][pt]-1)/pull_lphstar_PX_sigmaerr[rap][pt];
+
+//							cout<<meandeviation[0][0][5]<<endl;
+
+							n_++;
+						}
+						else cout<<"empty bin"<<endl;
+						pt++;
+					}
+					rap++;
+	    }
+	    cout<<n_<<endl;
+	    for(int i=0;i<3;i++){
+		    for(int j=0;j<3;j++){
+			    for(int k=0;k<6;k++){
+					meandeviation[i][j][k]=meandeviation[i][j][k]/n_;
+				}
+		    }
+	    }
+
+	    for(int iTab=1; iTab<nTables+1;iTab++){
+
+			if(iTab==1){
+				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{Mean Deviation of the mean of the distribution of the parameter estimates $\\lambda_{i}$ from the injected parameter: $n\\sigma(\\delta_{\\lambda_{i}})=\\sum_{j=1}^{N}\\frac{1}{N}\\frac{|\\mu^j_{\\lambda_{i}}-\\lambda^{Truth}_{i}|}{\\sigma^j_{\\lambda_{i}}}$. Averaged over all N kinematic bins j, in units of $\\sigma_{\\lambda_{i}}$.}\n\\begin{tabular}{|cccccc|}\n\\hline\n");
+				fprintf(NumFile, "$n\\sigma(\\delta_{\\lambda_{\\vartheta}})$ & $n\\sigma(\\delta_{\\lambda_{\\varphi}})$ &  $n\\sigma(\\delta_{\\lambda_{\\vartheta \\varphi}})$ & $n\\sigma(\\delta_{\\tilde{\\lambda}})$ & $n\\sigma(\\delta_{\\lambda^*_{\\vartheta}})$ & $n\\sigma(\\delta_{\\lambda^*_{\\varphi}})$ \\\\\n");
+			}
+
+			if(iTab==2){
+				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{Mean Deviation of the mean of the distribution of the standard score $z(\\lambda_{i})$ from 0: $n\\sigma(\\mu_{z(\\lambda_{i})})=\\sum_{j=1}^{N}\\frac{1}{N}\\frac{|\\mu_{z(\\lambda_{i})}|}{\\sigma^j_{\\mu_{z(\\lambda_{i})}}}$. Averaged over all N kinematic bins j, in units of $\\sigma_{\\mu_{z(\\lambda_{i})}}$.}\n\\begin{tabular}{|cccccc|}\n\\hline\n");
+				fprintf(NumFile, "$n\\sigma(\\mu_{z(\\lambda_{\\vartheta})})$ & $n\\sigma(\\mu_{z(\\lambda_{\\varphi})})$ &  $n\\sigma(\\mu_{z(\\lambda_{\\vartheta \\varphi})})$ & $n\\sigma(\\mu_{z(\\tilde{\\lambda})})$ & $n\\sigma(\\mu_{z(\\lambda^*_{\\vartheta})})$ & $n\\sigma(\\mu_{z(\\lambda^*_{\\varphi})})$ \\\\\n");
+}
+
+			if(iTab==3){
+				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{Mean Deviation of the r.m.s. of the distribution of the standard score $z(\\lambda_{i})$ from 1: $n\\sigma(\\sigma_{z(\\lambda_{i})})=\\sum_{j=1}^{N}\\frac{1}{N}\\frac{|\\sigma_{z(\\lambda_{i})}-1|}{\\sigma^j_{\\sigma_{z(\\lambda_{i})}}}$. Averaged over all N kinematic bins j, in units of $\\sigma_{\\sigma_{z(\\lambda_{i})}}$.}\n\\begin{tabular}{|cccccc|}\n\\hline\n");
+				fprintf(NumFile, "$n\\sigma(\\sigma_{z(\\lambda_{\\vartheta})})$ & $n\\sigma(\\sigma_{z(\\lambda_{\\varphi})})$ &  $n\\sigma(\\sigma_{z(\\lambda_{\\vartheta \\varphi})})$ & $n\\sigma(\\sigma_{z(\\tilde{\\lambda})})$ & $n\\sigma(\\sigma_{z(\\lambda^*_{\\vartheta})})$ & $n\\sigma(\\sigma_{z(\\lambda^*_{\\varphi})})$ \\\\\n");
+			}
+
+			for(int iFrame=1; iFrame<4; iFrame++){
+
+
+		if(iFrame==1) sprintf(framerap,"\\hline \\multicolumn{6}{|c|}{CS frame}\\\\ \\hline \\rule{0pt}{4mm}\n");
+		if(iFrame==2) sprintf(framerap,"\\hline \\multicolumn{6}{|c|}{HX frame}\\\\ \\hline \\rule{0pt}{4mm}\n");
+		if(iFrame==3) sprintf(framerap,"\\hline \\multicolumn{6}{|c|}{PX frame}\\\\ \\hline \\rule{0pt}{4mm}\n");
+
+		fprintf(NumFile,framerap);
+		fprintf(NumFile, "$%1.1f$ & $%1.1f$ & $%1.1f$ & $%1.1f$ & $%1.1f$ & $%1.1f$ \\\\\n",meandeviation[iTab-1][iFrame-1][0], meandeviation[iTab-1][iFrame-1][1], meandeviation[iTab-1][iFrame-1][2], meandeviation[iTab-1][iFrame-1][3], meandeviation[iTab-1][iFrame-1][4], meandeviation[iTab-1][iFrame-1][5]);
 
 
 
+			}
+
+			fprintf(NumFile, "\\hline\n");
+			fprintf(NumFile, "\\end{tabular}\n");
+			fprintf(NumFile, "\\label{tab:syst_acceptance}\n");
+			fprintf(NumFile, "\\end{table}\n");
+			fprintf(NumFile, "\n");
+
+	    }
 
 	    double lth_tab;
 	    double ltherr_tab;
@@ -1284,25 +1421,23 @@ if(plotDist){
 	    double lphstar_tab;
 	    double lphstarerr_tab;
 
-	    char framerap[200];
 
-		int nTables=3;
 
 	    for(int iTab=1; iTab<nTables+1;iTab++){
 
 			fprintf(NumFile, "\n\n\n\n");
 
 			if(iTab==1){
-				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{Mean of the distribution of the standard score $z(\\lambda_{i})$: $\\mu_{z(\\lambda_{i})} \\pm \\sigma_{\\mu_{z(\\lambda_{i})}}$}\n\\begin{tabular}{|c|cccccc|}\n\\hline\n");
-				fprintf(NumFile, "$p_{T}$ [GeV] & $\\mu[z(\\lambda_{\\vartheta})]$ & $\\mu[z(\\lambda_{\\varphi})]$ &  $\\mu[z(\\lambda_{\\vartheta \\varphi})]$ & $\\mu[z(\\tilde{\\lambda})]$ & $\\mu[z(\\lambda^*_{\\vartheta})]$ & $\\mu[z(\\lambda^*_{\\varphi})]$ \\\\\n");
+				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{Mean Deviation of the distribution of the parameter estimates $\\lambda_{i}$: $\\delta_{\\lambda_{i}}=(\\mu_{\\lambda_{i}}-\\lambda^{Truth}_{i}) \\pm  \\sigma_{\\lambda_{i}}$}\n\\begin{tabular}{|c|cccccc|}\n\\hline\n");
+				fprintf(NumFile, "$p_{T}$ [GeV] & $\\delta_{\\lambda_{\\vartheta}}$ & $\\delta_{\\lambda_{\\varphi}}$ &  $\\delta_{\\lambda_{\\vartheta \\varphi}}$ & $\\delta_{\\tilde{\\lambda}}$ & $\\delta_{\\lambda^*_{\\vartheta}}$ & $\\delta_{\\lambda^*_{\\varphi}}$ \\\\\n");
 			}
 			if(iTab==2){
-				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{R.m.s. of the distribution of the standard score $z(\\lambda_{i})$: $\\sigma_{z(\\lambda_{i})} \\pm \\sigma_{\\sigma_{z(\\lambda_{i})}}$}\n\\begin{tabular}{|c|cccccc|}\n\\hline\n");
-				fprintf(NumFile, "$p_{T}$ [GeV] & $\\mu[z(\\lambda_{\\vartheta})]$ & $\\mu[z(\\lambda_{\\varphi})]$ &  $\\mu[z(\\lambda_{\\vartheta \\varphi})]$ & $\\mu[z(\\tilde{\\lambda})]$ & $\\mu[z(\\lambda^*_{\\vartheta})]$ & $\\mu[z(\\lambda^*_{\\varphi})]$ \\\\\n");
+				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{Mean of the distribution of the standard score $z(\\lambda_{i})$: $\\mu_{z(\\lambda_{i})} \\pm \\sigma_{\\mu_{z(\\lambda_{i})}}$}\n\\begin{tabular}{|c|cccccc|}\n\\hline\n");
+				fprintf(NumFile, "$p_{T}$ [GeV] & $\\mu_{z(\\lambda_{\\vartheta})}$ & $\\mu_{z(\\lambda_{\\varphi})}$ &  $\\mu_{z(\\lambda_{\\vartheta \\varphi})}$ & $\\mu_{z(\\tilde{\\lambda})}$ & $\\mu_{z(\\lambda^*_{\\vartheta})}$ & $\\mu_{z(\\lambda^*_{\\varphi})}$ \\\\\n");
 			}
 			if(iTab==3){
-				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{Mean Deviation of the distribution of the parameter estimates $\\lambda_{i}$: $\\delta_{\\lambda_{i}}=(\\mu_{\\lambda_{i}}-\\lambda^{Truth}_{i}) \\pm  \\sigma_{\\lambda_{i}}$}\n\\begin{tabular}{|c|cccccc|}\n\\hline\n");
-				fprintf(NumFile, "$p_{T}$ [GeV] & $\\mu[z(\\lambda_{\\vartheta})]$ & $\\mu[z(\\lambda_{\\varphi})]$ &  $\\mu[z(\\lambda_{\\vartheta \\varphi})]$ & $\\mu[z(\\tilde{\\lambda})]$ & $\\mu[z(\\lambda^*_{\\vartheta})]$ & $\\mu[z(\\lambda^*_{\\varphi})]$ \\\\\n");
+				fprintf(NumFile, "\\begin{table}[!h]\n\\centering \\caption{R.m.s. of the distribution of the standard score $z(\\lambda_{i})$: $\\sigma_{z(\\lambda_{i})} \\pm \\sigma_{\\sigma_{z(\\lambda_{i})}}$}\n\\begin{tabular}{|c|cccccc|}\n\\hline\n");
+				fprintf(NumFile, "$p_{T}$ [GeV] & $\\sigma_{z(\\lambda_{\\vartheta})}$ & $\\sigma_{z(\\lambda_{\\varphi})}$ &  $\\sigma_{z(\\lambda_{\\vartheta \\varphi})}$ & $\\sigma_{z(\\tilde{\\lambda})}$ & $\\sigma_{z(\\lambda^*_{\\vartheta})}$ & $\\sigma_{z(\\lambda^*_{\\varphi})}$ \\\\\n");
 			}
 
 	    for(int iFrame=1; iFrame<4; iFrame++){
@@ -1320,6 +1455,33 @@ if(plotDist){
 
 
 						if(iTab==1){
+							if(iFrame==1){
+								lth_tab=param_lth_CS_mean[rap][pt]			-lambda_theta_injected_CS[rap][pt];  	ltherr_tab=param_lth_CS_sigma[rap][pt];
+								lph_tab=param_lph_CS_mean[rap][pt]			-lambda_phi_injected_CS[rap][pt]; 		lpherr_tab=param_lph_CS_sigma[rap][pt];
+								ltp_tab=param_ltp_CS_mean[rap][pt]			-lambda_thetaphi_injected_CS[rap][pt]; 	ltperr_tab=param_ltp_CS_sigma[rap][pt];
+								ltilde_tab=param_ltilde_CS_mean[rap][pt]	-lambda_tilde_injected_CS[rap][pt]; 	ltildeerr_tab=param_ltilde_CS_sigma[rap][pt];
+								lthstar_tab=param_lthstar_CS_mean[rap][pt]	-lambda_thetastar_injected_CS[rap][pt];	lthstarerr_tab=param_lthstar_CS_sigma[rap][pt];
+								lphstar_tab=param_lphstar_CS_mean[rap][pt]	-lambda_phistar_injected_CS[rap][pt];	lphstarerr_tab=param_lphstar_CS_sigma[rap][pt];
+							}
+							if(iFrame==2){
+								lth_tab=param_lth_HX_mean[rap][pt]			-lambda_theta_injected_HX[rap][pt];  	ltherr_tab=param_lth_HX_sigma[rap][pt];
+								lph_tab=param_lph_HX_mean[rap][pt]			-lambda_phi_injected_HX[rap][pt]; 		lpherr_tab=param_lph_HX_sigma[rap][pt];
+								ltp_tab=param_ltp_HX_mean[rap][pt]			-lambda_thetaphi_injected_HX[rap][pt]; 	ltperr_tab=param_ltp_HX_sigma[rap][pt];
+								ltilde_tab=param_ltilde_HX_mean[rap][pt]	-lambda_tilde_injected_HX[rap][pt]; 	ltildeerr_tab=param_ltilde_HX_sigma[rap][pt];
+								lthstar_tab=param_lthstar_HX_mean[rap][pt]	-lambda_thetastar_injected_HX[rap][pt];	lthstarerr_tab=param_lthstar_HX_sigma[rap][pt];
+								lphstar_tab=param_lphstar_HX_mean[rap][pt]	-lambda_phistar_injected_HX[rap][pt];	lphstarerr_tab=param_lphstar_HX_sigma[rap][pt];
+							}
+							if(iFrame==3){
+								lth_tab=param_lth_PX_mean[rap][pt]			-lambda_theta_injected_PX[rap][pt];  	ltherr_tab=param_lth_PX_sigma[rap][pt];
+								lph_tab=param_lph_PX_mean[rap][pt]			-lambda_phi_injected_PX[rap][pt]; 		lpherr_tab=param_lph_PX_sigma[rap][pt];
+								ltp_tab=param_ltp_PX_mean[rap][pt]			-lambda_thetaphi_injected_PX[rap][pt]; 	ltperr_tab=param_ltp_PX_sigma[rap][pt];
+								ltilde_tab=param_ltilde_PX_mean[rap][pt]	-lambda_tilde_injected_PX[rap][pt]; 	ltildeerr_tab=param_ltilde_PX_sigma[rap][pt];
+								lthstar_tab=param_lthstar_PX_mean[rap][pt]	-lambda_thetastar_injected_PX[rap][pt];	lthstarerr_tab=param_lthstar_PX_sigma[rap][pt];
+								lphstar_tab=param_lphstar_PX_mean[rap][pt]	-lambda_phistar_injected_PX[rap][pt];	lphstarerr_tab=param_lphstar_PX_sigma[rap][pt];
+							}
+						}
+
+						if(iTab==2){
 							if(iFrame==1){
 								lth_tab=pull_lth_CS_mean[rap][pt]; ltherr_tab=pull_lth_CS_meanerr[rap][pt];
 								lph_tab=pull_lph_CS_mean[rap][pt]; lpherr_tab=pull_lph_CS_meanerr[rap][pt];
@@ -1346,7 +1508,7 @@ if(plotDist){
 							}
 						}
 
-						if(iTab==2){
+						if(iTab==3){
 							if(iFrame==1){
 								lth_tab=pull_lth_CS_sigma[rap][pt]; ltherr_tab=pull_lth_CS_sigmaerr[rap][pt];
 								lph_tab=pull_lph_CS_sigma[rap][pt]; lpherr_tab=pull_lph_CS_sigmaerr[rap][pt];
@@ -1373,32 +1535,6 @@ if(plotDist){
 							}
 						}
 
-						if(iTab==3){
-							if(iFrame==1){
-								lth_tab=param_lth_CS_mean[rap][pt]			-lambda_theta_injected_CS[rap][pt];  	ltherr_tab=param_lth_CS_sigma[rap][pt];
-								lph_tab=param_lph_CS_mean[rap][pt]			-lambda_phi_injected_CS[rap][pt]; 		lpherr_tab=param_lph_CS_sigma[rap][pt];
-								ltp_tab=param_ltp_CS_mean[rap][pt]			-lambda_thetaphi_injected_CS[rap][pt]; 	ltperr_tab=param_ltp_CS_sigma[rap][pt];
-								ltilde_tab=param_ltilde_CS_mean[rap][pt]	-lambda_tilde_injected_CS[rap][pt]; 	ltildeerr_tab=param_ltilde_CS_sigma[rap][pt];
-								lthstar_tab=param_lthstar_CS_mean[rap][pt]	-lambda_thetastar_injected_CS[rap][pt];	lthstarerr_tab=param_lthstar_CS_sigma[rap][pt];
-								lphstar_tab=param_lphstar_CS_mean[rap][pt]	-lambda_phistar_injected_CS[rap][pt];	lphstarerr_tab=param_lphstar_CS_sigma[rap][pt];
-							}
-							if(iFrame==2){
-								lth_tab=param_lth_HX_mean[rap][pt]			-lambda_theta_injected_HX[rap][pt];  	ltherr_tab=param_lth_HX_sigma[rap][pt];
-								lph_tab=param_lph_HX_mean[rap][pt]			-lambda_phi_injected_HX[rap][pt]; 		lpherr_tab=param_lph_HX_sigma[rap][pt];
-								ltp_tab=param_ltp_HX_mean[rap][pt]			-lambda_thetaphi_injected_HX[rap][pt]; 	ltperr_tab=param_ltp_HX_sigma[rap][pt];
-								ltilde_tab=param_ltilde_HX_mean[rap][pt]	-lambda_tilde_injected_HX[rap][pt]; 	ltildeerr_tab=param_ltilde_HX_sigma[rap][pt];
-								lthstar_tab=param_lthstar_HX_mean[rap][pt]	-lambda_thetastar_injected_HX[rap][pt];	lthstarerr_tab=param_lthstar_HX_sigma[rap][pt];
-								lphstar_tab=param_lphstar_HX_mean[rap][pt]	-lambda_phistar_injected_HX[rap][pt];	lphstarerr_tab=param_lphstar_HX_sigma[rap][pt];
-							}
-							if(iFrame==3){
-								lth_tab=param_lth_PX_mean[rap][pt]			-lambda_theta_injected_PX[rap][pt];  	ltherr_tab=param_lth_PX_sigma[rap][pt];
-								lph_tab=param_lph_PX_mean[rap][pt]			-lambda_phi_injected_PX[rap][pt]; 		lpherr_tab=param_lph_PX_sigma[rap][pt];
-								ltp_tab=param_ltp_PX_mean[rap][pt]			-lambda_thetaphi_injected_PX[rap][pt]; 	ltperr_tab=param_ltp_PX_sigma[rap][pt];
-								ltilde_tab=param_ltilde_PX_mean[rap][pt]	-lambda_tilde_injected_PX[rap][pt]; 	ltildeerr_tab=param_ltilde_PX_sigma[rap][pt];
-								lthstar_tab=param_lthstar_PX_mean[rap][pt]	-lambda_thetastar_injected_PX[rap][pt];	lthstarerr_tab=param_lthstar_PX_sigma[rap][pt];
-								lphstar_tab=param_lphstar_PX_mean[rap][pt]	-lambda_phistar_injected_PX[rap][pt];	lphstarerr_tab=param_lphstar_PX_sigma[rap][pt];
-							}
-						}
 
 
 						if(emptyBin[rap][pt])fprintf(NumFile, "%1.0f--%1.0f   &  $nan$  & $nan$  &  $nan$ &  $nan$  & $nan$  &  $nan$ \\\\\n",onia::pTRange[rapBin][ptBin-1],onia::pTRange[rapBin][ptBin]);
