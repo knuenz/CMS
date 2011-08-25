@@ -1,21 +1,9 @@
 This README file intends to explain the ToyMC framework
 -------------------------------------------------------
 
-Summary:
---------
--runToyMC.sh:
-This script steers all generation, reconstruction fitting and the storage of the result
-files. This script can be run in parallel for any scenario, bins, efficiencies, fiducial
-cuts... Before strating toy-tests in parallel, wait at least 5 seconds for the previous
-test to complete the compilation.
-
--PlotScript.sh:
-When all fits, bins, scenarios are finished, or if one wants to get a snapshot of the
-results in between, run this script. It plots the results that runToyMC.C produces (3
-summary pdfs and one pdf for each bin showing all parameter and pull distributions).
-
-
-The base directory 'basedir' contains following substructures:
+1) Summary:
+-----------
+-The base directory 'basedir' contains following substructures:
 latex: Latex files for visualization of plots and numerical results
 interface: commonVar.h and rootIncludes.inc, containing the standard configuration of the
 analysis (e.g. ranges of kinematic cells)
@@ -23,6 +11,34 @@ macros/ToyMC: All relevant files for the ToyMC tests that need to be changed to 
 the test are in this directory and are explained below.
 
 
+-In the storage directory 'storagedir', all files necessary for the plotting of the toy
+results are stored. It can be the same as 'basedir', if there is enough disc space available.
+The final summary plots are safed in 'basedir/Figures/...'.
+
+
+-runToyMC.sh:
+This script steers all generation, reconstruction fitting and the storage of the result
+files. This script can be run in parallel for any scenario, bins, efficiencies, fiducial
+cuts... Before strating toy-tests in parallel, wait at least 5 seconds for the previous
+test to complete the compilation.
+
+
+-PlotScript.sh:
+When all fits, bins, scenarios are finished, or if one wants to get a snapshot of the
+results in between, run this script. It plots the results that runToyMC.C produces. It
+further produces two summary pdfs, one pdf for each bin showing all parameter and pull
+distributions and one pdf containing numerical results (tables).
+
+
+-The framework runs with any root, although some problems (seem memory related) have been
+encountered with root 5.27 from CMSSW_4_2_4_patch2. As root 5.29 runs 10% faster, it is
+advisable to source /afs/hephy.at/scratch/k/knuenz/standaloneroot/root/bin/thisroot.csh
+(if at HEPHY) 
+
+
+
+2) Details:
+-----------
 ToyMC.h
 -------
 This file contains all relevant information that is needed for the tests. Polarization scenario

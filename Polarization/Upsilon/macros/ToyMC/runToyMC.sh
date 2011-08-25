@@ -7,30 +7,30 @@ basedir=/Users/valentinknuenz/usr/local/workspace/Upsilon
 
 JobID=ToyTest
 
-nGenerations=50;
+nGenerations=50
 
-rapBinMin=1;
-rapBinMax=2;
-ptBinMin=1;
-ptBinMax=8;
+rapBinMin=1
+rapBinMax=2
+ptBinMin=1
+ptBinMax=8
 
-polScenSig=3;
-polScenBkg=3;
-frameSig=1;
-frameBkg=1;
+polScenSig=3
+polScenBkg=3
+frameSig=1
+frameBkg=1
 
-nEff=3;
-FidCuts=0;
+nEff=3
+FidCuts=0
 
-nSample=6000;
-ConstEvents=15000;
-nSkipGen=0;
+nSample=6000
+ConstEvents=15000
+nSkipGen=0
 
-UseConstEv=true;
+UseConstEv=true
 
-gen=true;
-rec=true;
-fit=true;
+gen=true
+rec=true
+fit=true
 
 ########################################
 

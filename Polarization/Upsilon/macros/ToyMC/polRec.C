@@ -22,11 +22,11 @@ enum { loose, tight };
 
 bool isMuonInAcceptance(int iCut, double pT, double eta){
 
-//  double etaBorderHLT[2][4] = {{0., 1.1, 1.4, 2.4}, {0., 1.2, 1.3, 2.2}}; //LOOSE, TIGHT cuts
-//  double pTBorderHLT[2][4] = {{4.6, 4.0, 2.75, 2.0}, {5.2, 4.7, 3.3, 3.0}};
-
   double etaBorderHLT[2][4] = {{0., 1.1, 1.4, 2.4}, {0., 1.2, 1.3, 2.2}}; //LOOSE, TIGHT cuts
-  double pTBorderHLT[2][4] = {{0,0,0,0}, {5.2, 4.7, 3.3, 3.0}};
+  double pTBorderHLT[2][4] = {{4.6, 4.0, 2.75, 2.0}, {5.2, 4.7, 3.3, 3.0}};
+
+//  double etaBorderHLT[2][4] = {{0., 1.1, 1.4, 2.4}, {0., 1.2, 1.3, 2.2}}; //LOOSE, TIGHT cuts
+//  double pTBorderHLT[2][4] = {{0,0,0,0}, {5.2, 4.7, 3.3, 3.0}};
 
   double minPT_HLT;
   bool decision = kFALSE;
@@ -67,8 +67,8 @@ double singleLeptonEfficiency1( double& pT, double& eta, int FidCuts ) {
 
 	double eff=1;
 
-//	  if(FidCuts==1 && !isMuonInAcceptance( loose, pT, eta) ) eff = 0.;
-//	  if(FidCuts==2 && !isMuonInAcceptance( tight, pT, eta) ) eff = 0.;
+	  if(FidCuts==1 && !isMuonInAcceptance( loose, pT, eta) ) eff = 0.;
+	  if(FidCuts==2 && !isMuonInAcceptance( tight, pT, eta) ) eff = 0.;
 
   return eff;
 }
@@ -81,8 +81,8 @@ double singleLeptonEfficiency2( double& pT, double& eta ,int FidCuts) {
   double eff = 1. / ( 1. + exp(-smoothcutpar*(pT - mu_pT_min)) );
   if ( TMath::Abs(eta) > 2.4 ) eff = 0.;
 
-//  if(FidCuts==1 && !isMuonInAcceptance( loose, pT, eta) ) eff = 0.;
-//  if(FidCuts==2 && !isMuonInAcceptance( tight, pT, eta) ) eff = 0.;
+  if(FidCuts==1 && !isMuonInAcceptance( loose, pT, eta) ) eff = 0.;
+  if(FidCuts==2 && !isMuonInAcceptance( tight, pT, eta) ) eff = 0.;
 
   return eff;
 
@@ -122,8 +122,8 @@ double singleLeptonEfficiency3( double& pT, double& eta ,int FidCuts) {
 
   double eff = 0.5*c0 * (1. + TMath::Erf( (pT - c1) / ( sqrt(2.) * c2) ) );
 
-//  if(FidCuts==1 && !isMuonInAcceptance( loose, pT, eta) ) eff = 0.;
-//  if(FidCuts==2 && !isMuonInAcceptance( tight, pT, eta) ) eff = 0.;
+  if(FidCuts==1 && !isMuonInAcceptance( loose, pT, eta) ) eff = 0.;
+  if(FidCuts==2 && !isMuonInAcceptance( tight, pT, eta) ) eff = 0.;
 
   return eff;
 }
@@ -257,12 +257,6 @@ void polRec(int nEff=1,
     lepton_pT_vs_eta_gen->Fill( TMath::Abs(lepP_eta), lepP_pT );
     lepton_pT_vs_eta_gen->Fill( TMath::Abs(lepN_eta), lepN_pT );
 
-    bool isMuPinAcc = isMuonInAcceptance( FidCuts-1 , lepP_pT, lepP_eta) ;
-    bool isMuNinAcc = isMuonInAcceptance( FidCuts-1 , lepN_pT, lepN_eta) ;
-
-    bool FidCutRejection(false);
-    if(FidCuts>0) if(!isMuPinAcc || !isMuNinAcc) FidCutRejection=true;
-
     double effP;
     double effN;
     if(nEff==1) {effP=singleLeptonEfficiency1( lepP_pT, lepP_eta, FidCuts ); effN=singleLeptonEfficiency1( lepN_pT, lepN_eta, FidCuts );}
@@ -272,14 +266,13 @@ void polRec(int nEff=1,
     double rndmeffP = gRandom->Uniform(1.);
     double rndmeffN = gRandom->Uniform(1.);
 
-    if(FidCuts>0) if(!isMuPinAcc || !isMuNinAcc) {effP=0;effN=0;}
 
     if ( rndmeffP < effP ) lepton_pT_vs_eta_rec->Fill( TMath::Abs(lepP_eta), lepP_pT );
     if ( rndmeffN < effN ) lepton_pT_vs_eta_rec->Fill( TMath::Abs(lepN_eta), lepN_pT );
 
 
 
-    if ( rndmeffP > effP || rndmeffN > effN || FidCutRejection) {rejected++; continue; }
+    if ( rndmeffP > effP || rndmeffN > effN) {rejected++; continue; }
 
     total_PX->Fill( costh_PX, phi_PX );
 

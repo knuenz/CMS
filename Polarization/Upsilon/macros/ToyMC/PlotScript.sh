@@ -5,7 +5,7 @@
 storagedir=/Users/valentinknuenz/usr/local/workspace/Upsilon/macros/ToyMC
 basedir=/Users/valentinknuenz/usr/local/workspace/Upsilon
 
-JobID=ToyTest
+for JobID in ToyTest;do
 
 ptBinMin=1
 ptBinMax=8
@@ -81,5 +81,5 @@ rm *.tex
 cd ..
 rm polToyMCPlot
 
-
+done
 done

@@ -1568,21 +1568,5 @@ if(plotDist){
 			fclose(NumFile);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 				return 0;
 }

@@ -1218,8 +1218,8 @@ void polFit(int n_sampledPoints=1,
 ///// Extract numerical values of the lambda parameters from the result TTrees /////
 
   // extremes and binning of lambda plots
-  const double l_min = -1.4;
-  const double l_max =  1.4;
+  const double l_min = -3;
+  const double l_max =  3;
   const double l_step_1D = 0.02;
 
 
