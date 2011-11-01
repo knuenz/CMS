@@ -17,7 +17,9 @@
 //#include "effsAndCuts.h"
 
 bool isMuonInAcceptance(int iCut, double pT, double eta);
-double singleLeptonEfficiency( double& pT, double& eta, int nEff);
+double singleLeptonEfficiency( double& pT, double& eta, int nEff, TH1* hEff);
+void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff);
+double DiLeptonEfficiency( double& Dilepton_pT, double& Dilepton_rap, int nDileptonEff, TH1* hDileptonEff);
 
 void polRec(double rapdilepton_min = 1,
 		double rapdilepton_max = 1,
@@ -27,11 +29,33 @@ void polRec(double rapdilepton_min = 1,
 		double mass_signal_sigma =  1,
 		double n_sigmas_signal = 1,
 		int nEff=1,
+		int nDileptonEff=1,
 		int FidCuts=0,
 		Char_t *dirstruct = "ToyDirectory_Default",
-		bool applyFidCuts=false){
+		bool applyFidCuts=false,
+		Char_t *effDir = "effDir_Default"){
 
   gROOT->Reset();
+
+
+  //Get single Lepton Efficiency File name
+    char EffFile[200];
+    char EffFileName[200];
+    EvaluateEffFileName(nEff,EffFileName,true);
+    sprintf(EffFile,"%s/%s",effDir,EffFileName);
+
+    TFile *fInEff = new TFile(EffFile);
+    TH1* hEff=(TH1*) fInEff->Get("hEff_DATA_central");
+
+  //Get DiLepton Efficiency File name
+
+    EvaluateEffFileName(nDileptonEff,EffFileName,false);
+    sprintf(EffFile,"%s/%s",effDir,EffFileName);
+
+    TFile *fInDileptonEff = new TFile(EffFile);
+    TH1* hDileptonEff=(TH1*) fInDileptonEff->Get("hEff_DATA_central");
+
+
 
 	double mass_min = mass_signal_peak - n_sigmas_signal*mass_signal_sigma;
 	double mass_max = mass_signal_peak + n_sigmas_signal*mass_signal_sigma;
@@ -127,6 +151,9 @@ void polRec(double rapdilepton_min = 1,
 
     genData->GetEvent( evtNumber );
 
+
+
+
     // select data in acceptance and apply efficiency
 
     double lepP_pT  = lepP_gen->Pt();
@@ -139,13 +166,15 @@ void polRec(double rapdilepton_min = 1,
 
     if ( !isEventAccepted ) {rejected++; continue;}
 
-    double effP = singleLeptonEfficiency( lepP_pT, lepP_eta, nEff);
-    double effN = singleLeptonEfficiency( lepN_pT, lepN_eta, nEff);
+    double effP = singleLeptonEfficiency( lepP_pT, lepP_eta, nEff, hEff );
+    double effN = singleLeptonEfficiency( lepN_pT, lepN_eta, nEff, hEff );
+    double DileptonEff = DiLeptonEfficiency( pT, rap, nDileptonEff, hDileptonEff );
 
     double rndmeffP = gRandom->Uniform(1.);
     double rndmeffN = gRandom->Uniform(1.);
+    double rndmDileptoneff = gRandom->Uniform(1.);
 
-    if ( rndmeffP > effP || rndmeffN > effN ) {rejected++; continue;}
+    if ( rndmeffP > effP || rndmeffN > effN || rndmDileptoneff > DileptonEff ) {rejected++; continue;}
 
     // fill background histograms and output ntuple
 
@@ -183,7 +212,6 @@ void polRec(double rapdilepton_min = 1,
   // end
 
   genFile->Close();
-
   dataFile->Write();
  dataFile->Close();
 

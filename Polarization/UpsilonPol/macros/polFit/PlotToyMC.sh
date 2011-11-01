@@ -1,5 +1,11 @@
 #!/bin/sh
 
+cd ..
+cd ..
+basedir=`pwd`
+cd macros/polFit
+storagedir=`pwd` #please define differently, if you have storage issues
+
 ########## INPUTS ##########
 
 for JobID in ToyDefaultID;do
@@ -19,12 +25,8 @@ additionalName=
 
 ############################
 
-cd ..
-cd ..
-basedir=`pwd`
-cd macros/polFit
-storagedir=`pwd` #please define differently, if you have storage issues
 
+cd ${basedir}/macros/polFit
 
 rapBinMin=1 #don't change
 rapBinMax=2 #don't change

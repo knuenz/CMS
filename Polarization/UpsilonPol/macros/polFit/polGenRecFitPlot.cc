@@ -12,6 +12,7 @@
 
 #include <time.h>
 
+
 //====================================
 
 int main(int argc, char** argv) {
@@ -27,6 +28,9 @@ int main(int argc, char** argv) {
 	int ptBinMin=999;
 	int ptBinMax=999;
 	int nEff=999;
+	int nDileptonEff=999;
+	int nRecEff=999;
+	int nRecDileptonEff=999;
 	int FidCuts=999;
 	int nSample=999;
 	int ConstEvents=999;
@@ -39,6 +43,7 @@ int main(int argc, char** argv) {
 	bool fit(false);
 	bool plot(false);
 	bool RealData(false);
+	bool UseDifferingEff(false);
 
 	Char_t *storagedir = "Default"; //Storage Directory
 	Char_t *basedir = "Default"; //Code Directory
@@ -57,6 +62,7 @@ int main(int argc, char** argv) {
 	    if(std::string(argv[i]).find("frameBkg") != std::string::npos) {char* framecharBkg = argv[i]; char* framecharBkg2 = strtok (framecharBkg, "p"); frameBkg = atof(framecharBkg2); cout<<"frameBkg = "<<frameBkg<<endl;}
 	    if(std::string(argv[i]).find("polScenBkg") != std::string::npos) {char* polScencharBkg = argv[i]; char* polScencharBkg2 = strtok (polScencharBkg, "p"); polScenBkg = atof(polScencharBkg2); cout<<"polScenBkg = "<<polScenBkg<<endl;}
 	    if(std::string(argv[i]).find("nEff") != std::string::npos) {char* nEffchar = argv[i]; char* nEffchar2 = strtok (nEffchar, "p"); nEff = atof(nEffchar2); cout<<"nEff = "<<nEff<<endl;}
+	    if(std::string(argv[i]).find("nDiEff") != std::string::npos) {char* nDileptonEffchar = argv[i]; char* nDileptonEffchar2 = strtok (nDileptonEffchar, "p"); nDileptonEff = atof(nDileptonEffchar2); cout<<"nDileptonEff = "<<nDileptonEff<<endl;}
 	    if(std::string(argv[i]).find("FidCuts") != std::string::npos) {char* FidCutschar = argv[i]; char* FidCutschar2 = strtok (FidCutschar, "p"); FidCuts = atof(FidCutschar2); cout<<"FidCuts = "<<FidCuts<<endl;}
 	    if(std::string(argv[i]).find("nSample") != std::string::npos) {char* nSamplechar = argv[i]; char* nSamplechar2 = strtok (nSamplechar, "p"); nSample = atof(nSamplechar2); cout<<"nSample = "<<nSample<<endl;}
 	    if(std::string(argv[i]).find("ConstEvents") != std::string::npos) {char* ConstEventschar = argv[i]; char* ConstEventschar2 = strtok (ConstEventschar, "p"); ConstEvents = atof(ConstEventschar2); cout<<"ConstEvents = "<<ConstEvents<<endl;}
@@ -68,6 +74,9 @@ int main(int argc, char** argv) {
 	    if(std::string(argv[i]).find("rec=true") != std::string::npos) {rec=true; cout<<"run polRec.C"<<endl;}
 	    if(std::string(argv[i]).find("fit=true") != std::string::npos) {fit=true; cout<<"run polFit.C"<<endl;}
 	    if(std::string(argv[i]).find("plot=true") != std::string::npos) {plot=true; cout<<"run polPlot.C"<<endl;}
+	    if(std::string(argv[i]).find("UseDifferingEff=true") != std::string::npos) {UseDifferingEff=true; cout<<"Using differing efficiency definitions for generation and fitting"<<endl;}
+	    if(std::string(argv[i]).find("nRecEff") != std::string::npos) {char* nRecEffchar = argv[i]; char* nRecEffchar2 = strtok (nRecEffchar, "p"); nRecEff = atof(nRecEffchar2); cout<<"nRecEff = "<<nRecEff<<endl;}
+	    if(std::string(argv[i]).find("nRecDiEff") != std::string::npos) {char* nRecDileptonEffchar = argv[i]; char* nRecDileptonEffchar2 = strtok (nRecDileptonEffchar, "p"); nRecDileptonEff = atof(nRecDileptonEffchar2); cout<<"nRecDileptonEff = "<<nRecDileptonEff<<endl;}
 
 	    if(std::string(argv[i]).find("JobID") != std::string::npos) {char* JobIDchar = argv[i]; char* JobIDchar2 = strtok (JobIDchar, "="); JobID = JobIDchar2; cout<<"JobID = "<<JobID<<endl;}
 	    if(std::string(argv[i]).find("basedir") != std::string::npos) {char* basedirchar = argv[i]; char* basedirchar2 = strtok (basedirchar, "="); basedir = basedirchar2; cout<<"basedir = "<<basedir<<endl;}
@@ -90,15 +99,17 @@ int main(int argc, char** argv) {
 		double mass_signal_sigma =  0.1;
 		double n_sigmas_signal = 3.;
 
+		if(!UseDifferingEff) {nRecEff=nEff; nRecDileptonEff=nDileptonEff; }
 
   	  	Char_t *OutputDirectory;
   	  	Char_t *TreeBinID;
   	  	double f_BG;
   	 	int n_events;
-  		char basestruct[200],substruct[200], dirstruct[200], rapptstruct[200], filenameFrom[200], filenameTo[200] , tmpfilename[200], TreeBinID_[200];
+  		char basestruct[200],substruct[200], dirstruct[200], rapptstruct[200], filenameFrom[200], filenameTo[200] , tmpfilename[200], TreeBinID_[200], effDir[200];
 
   		sprintf(basestruct,"%s/%s",storagedir,JobID);gSystem->mkdir(basestruct);
   		sprintf(substruct,"%s/Sig_frame%dscen%d_Bkg_frame%dscen%d",basestruct,frameSig,polScenSig,frameBkg,polScenBkg); if(!RealData) gSystem->mkdir(substruct);
+  		sprintf(effDir,"%s/macros/polFit/EffFiles",basedir);
 
   		time_t seconds; seconds = time (NULL); double time_0=seconds; double time_1;
 
@@ -144,7 +155,7 @@ int main(int argc, char** argv) {
 			if(dataFile->Get("isBGdistribution")==NULL){
 				OutputDirectory=rapptstruct;
 				polGen(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,numEvCheck,f_BG,lambda_theta_sig_,lambda_phi_sig_,lambda_thetaphi_sig_,lambda_theta_bkg_,lambda_phi_bkg_,lambda_thetaphi_bkg_,frameSig,frameBkg,-999,OutputDirectory);
-				if(rec)polRec(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,nEff,FidCuts,OutputDirectory, true);
+				if(rec)polRec(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,nRecEff,nRecDileptonEff,FidCuts,OutputDirectory, true, effDir);
 				sprintf(tmpfilename,"%s/genData.root",rapptstruct);			gSystem->Unlink(tmpfilename);
 				sprintf(tmpfilename,"%s/GenResults.root",rapptstruct);		gSystem->Unlink(tmpfilename);
 			}
@@ -176,8 +187,8 @@ int main(int argc, char** argv) {
   		if(RealData) OutputDirectory=basestruct;
 
 		if(gen)polGen(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,n_events,f_BG,lambda_theta_sig_,lambda_phi_sig_,lambda_thetaphi_sig_,lambda_theta_bkg_,lambda_phi_bkg_,lambda_thetaphi_bkg_,frameSig,frameBkg,iGen,OutputDirectory);
-		if(rec)polRec(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,nEff,FidCuts,OutputDirectory, false);
-  		if(fit)polFit(nSample,FidCuts, nEff, OutputDirectory, realdatadir, TreeBinID, RealData);
+		if(rec)polRec(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,nRecEff,nRecDileptonEff,FidCuts,OutputDirectory, false, effDir);
+  		if(fit)polFit(nSample,FidCuts, nEff, nDileptonEff, OutputDirectory, realdatadir, TreeBinID, RealData, effDir);
   		if(plot)polPlot(OutputDirectory, TreeBinID, RealData);
 
 	 	sprintf(tmpfilename,"%s/genData.root",dirstruct);			gSystem->Unlink(tmpfilename);

@@ -162,10 +162,15 @@ This script steers the polarization fits to real data, as prepared by the previo
 \newline *) nState (which state to fit, all three can be fit in a loop)
 \newline *) JobID (The results and plots are saved in macros/polFit/\{JobID\}, Please define nSigma and fracL yourself in the JobID, if needed)
 \newline *) rapBinMin, rapBinMax, ptBinMin, ptBinMax (which bins to fit)
-\newline *) nEff (which efficiency definion to use, see macros/polFit/effsAndCuts.h for the definitions. Our TnP efficiencies have to be implemented in this file, I suggest as nEff=4, see effsAndCuts.h)
+\newline *) nEff (which efficiency definion to use for the single lepton efficiencies, see macros/polFit/effsAndCuts.h for the definitions. If binned efficiencies are used, the corresponding root files must be copied to macros/polFit/EffFiles/, the file names have to be updated in macros/polFit/effsAndCuts.h. nEff $>$ 100 corresponds to binned efficiency definitions (These considerations are valid for all variables of kind \emph{nEff}, also in the ToyMC script.)
+\newline *) nDileptonEff (which efficiency definion to use, for efficiencies depending on dimuon variables $p_T$ and y. See macros/polFit/effsAndCuts.h for the definitions. nEff $>$ 200 corresponds to binned efficiency definitions)
 \newline *) FidCuts (needed to find the correct data set and used to define the cuts applied in polFit.C)
 \newline *) nSample (defines the number of iterations in polFit.C. Testing: 6000 is enough, for the final results, 100000 should be used)
 \newline *) datadir can be defined different optionally. As it is now, it finds the correct dataset via the previously mentioned values.
+\newline *) nFits defines the number of fits (as background subtraction is based on random process, the fit should be repeated nFits times). The result root files of the individual fits are merged, the merged file is used to extract the mean and error from the parameter probability distributions.
+\newline *) nSkipGen can be used, if after nFits fits additional fits are to be made. Then nSkipGen can be set to nFits (from before). This can not be done in parallel!
+\newline *) storagedir, should be set to a directory, where no issues concerning storage is expected. N fits of each bin can result in a large amount of data.
+
 
 \subsection{The PlotDataFits.sh Script}
 
@@ -173,7 +178,7 @@ This script plots the results of a certain fit of state \{nState\} with JobID \{
 \newline *) JobID (which JobID's to plot, can be several in a loop)
 \newline *) nState (which state to plot, all three can be plotted in a loop)
 \newline *) ptBinMin, ptBinMax (which bins to plot)
-
+\newline *) storagedir, has to be set to the storagedir defined in runDataFits.sh
 
 \section{ToyMC Fits}
 
@@ -191,19 +196,30 @@ Following variables need to be defined:
 \newline rapBinMin.......... test will be conducted from this rapidity bin...
 \newline rapBinMax.......... ...to this rapidity bin
 \newline ptBinMin........... test will be conducted from this pT bin...
-\newline ptBinMax........... ...to this pT bin
+\newline ptBinMax..............to this $p_T$ bin
 \newline polScenSig......... polarization scenario Signal (see ToyMC.h)
 \newline polScenBkg......... polarization scenario Background (see ToyMC.h)
 \newline frameSig........... natural polarization frame signal (1...CS, 2...HX, 3...PX)
 \newline frameBkg........... natural polarization frame background (1...CS, 2...HX, 3...PX)
 \newline nGenerations....... number of pseudo samples to be generated and fit
-\newline nEff............... defines the efficiency to be used (see macros/polFit/effsAndCuts.h)
-\newline FidCuts............ defines, which set of cuts will be used (see macros/polFit/effsAndCuts.h)
+\newline nEff............... defines the efficiency to be used for the
+fitting (see macros/polFit/effsAndCuts.h)
+\newline nDileptonEff............... defines the additional dimuon efficiency to be used for the
+fitting (see macros/polFit/effsAndCuts.h)
+\newline FidCuts............ defines,
+which set of cuts will be used (see macros/polFit/effsAndCuts.h)
 \newline nSample............ numer of iterations in the algorithm (see polFit.C, 2000 burn-in iterations are included in this number)
 \newline ConstEvents........ integer, see below
 \newline UseConstEv......... boolean, if true it generates ConstEvents events, if false, it uses the number of events
 stored in ToyMC.h
-\newline storagedir......... can to be set optionally (if there is not enough storage space in the code directory) to the directory where all datasets results and figures will be stored
+\newline storagedir......... can be set optionally (if there is not enough storage space in the code directory) to the directory where all datasets, results and figures will be stored
+\newline nEffRec............ defines the efficiency to be used for the
+generation of the pseudo set (see macros/polFit/effsAndCuts.h), which is irrelevant if UseDifferingEff is set false
+\newline nDileptonEffRec............ defines the dimuon efficiency to be used for the
+generation of the pseudo set (see macros/polFit/effsAndCuts.h), which is irrelevant if UseDifferingEff is set false
+\newline UseDifferingEff.... boolean, if true it generates the pseudo sample
+according to the efficiency definition nEffRec, if false, it uses the same
+efficiency for the generation as well as for the fitting macro, both with nEff.
 
 
 

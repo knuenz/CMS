@@ -17,7 +17,8 @@ polScenBkg=3
 frameSig=1
 frameBkg=1
 
-nEff=3
+nEff=6	 				#nEff > 100 corresponds to binned efficiencies (specify file name in effsAndCuts.h and copy files to basedir/macros/polFit/EffFiles)
+nDileptonEff=1			#nDileptonEff > 200 corresponds to binned efficiencies (specify file name in effsAndCuts.h and copy files to basedir/macros/polFit/EffFiles)
 FidCuts=1
 
 nSample=6000
@@ -25,6 +26,10 @@ ConstEvents=15000
 nSkipGen=0
 
 UseConstEv=false
+
+UseDifferingEff=false
+nEffRec=6				#irrelevant if UseDifferingEff=false
+nDileptonEffRec=1		#irrelevant if UseDifferingEff=false
 
 gen=true
 rec=true
@@ -56,6 +61,7 @@ cp ${basedir}/macros/polFit/polFit.C ${storagedir}/${JobID}/${ScenDir}/polFit.C
 cp ${basedir}/macros/polFit/polPlot.C ${storagedir}/${JobID}/${ScenDir}/polPlot.C
 
 cd ${storagedir}/${JobID}/${ScenDir}
+cp ${basedir}/macros/polFit/runToyMC.sh .
 
 rap_=${rapBinMin}
 while [ $rap_ -le ${rapBinMax} ]
@@ -73,7 +79,7 @@ do
 cp ${storagedir}/${JobID}/${ScenDir}/polGenRecFitPlot ${storagedir}/${JobID}/${ScenDir}/polGenRecFitPlot_rap${rap_}_pt${pT_}_Gen${nGen_}
 
 
-./polGenRecFitPlot_rap${rap_}_pt${pT_}_Gen${nGen_} ${nGen_}ThisGen ${JobID}=JobID ${storagedir}=storagedir ${basedir}=basedir ${nGenerations}nGenerations ${polScenSig}polScenSig ${frameSig}frameSig ${polScenBkg}polScenBkg ${frameBkg}frameBkg ${rap_}rapBinMin ${rap_}rapBinMax ${pT_}ptBinMin ${pT_}ptBinMax ${nEff}nEff ${FidCuts}FidCuts ${nSample}nSample ${ConstEvents}ConstEvents ${nSkipGen}nSkipGen UseConstEv=${UseConstEv} gen=${gen} rec=${rec} fit=${fit} plot=${plot}
+./polGenRecFitPlot_rap${rap_}_pt${pT_}_Gen${nGen_} ${nGen_}ThisGen ${JobID}=JobID ${storagedir}=storagedir ${basedir}=basedir ${nGenerations}nGenerations ${polScenSig}polScenSig ${frameSig}frameSig ${polScenBkg}polScenBkg ${frameBkg}frameBkg ${rap_}rapBinMin ${rap_}rapBinMax ${pT_}ptBinMin ${pT_}ptBinMax ${nEff}nEff ${nDileptonEff}nDiEff ${nEffRec}nRecEff ${nDileptonEffRec}nRecDiEff ${FidCuts}FidCuts ${nSample}nSample ${ConstEvents}ConstEvents ${nSkipGen}nSkipGen UseConstEv=${UseConstEv} gen=${gen} rec=${rec} fit=${fit} plot=${plot} UseDifferingEff=${UseDifferingEff} 
 
 rm polGenRecFitPlot_rap${rap_}_pt${pT_}_Gen${nGen_}
 
@@ -89,4 +95,3 @@ done
 #rm polFit.C 
 #rm polPlot.C 
 
-cp ${basedir}/macros/polFit/runToyMC.sh .

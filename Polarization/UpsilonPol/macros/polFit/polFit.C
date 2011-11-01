@@ -56,7 +56,9 @@ const bool PX_is_natural_ACC = false;
 const double min_dileptonEff = 0.01;
 
 bool isMuonInAcceptance(int iCut, double pT, double eta);
-double singleLeptonEfficiency( double& pT, double& eta, int nEff);
+double singleLeptonEfficiency( double& pT, double& eta, int nEff, TH1* hEff);
+void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff);
+double DiLeptonEfficiency( double& Dilepton_pT, double& Dilepton_rap, int nDileptonEff, TH1* hDileptonEff);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function randomly sampling the lambda values of the "next iteration"
@@ -127,15 +129,38 @@ void calcLambdastar( double& lthstar, double& lphstar,
 void polFit(int n_sampledPoints=1,
 		int FidCuts=0,
 		int nEff=1,
+		int nDileptonEff=1,
 		Char_t *dirstruct = "OutputDirectory_Default",
 		Char_t *realdatadir = "RealDataDirectory_Default",
 		Char_t *TreeBinID = "TreeBinID_Default",
-		bool RealData=false){
+		bool RealData=false,
+		Char_t *effDir = "effDir_Default"){
 
   gROOT->Reset();
 
   delete gRandom;
   gRandom = new TRandom3(0);  // better random generator
+
+
+
+//Get single Lepton Efficiency File name
+  char EffFile[200];
+  char EffFileName[200];
+  EvaluateEffFileName(nEff,EffFileName,true);
+  sprintf(EffFile,"%s/%s",effDir,EffFileName);
+
+  TFile *fInEff = new TFile(EffFile);
+  TH1* hEff=(TH1*) fInEff->Get("hEff_DATA_central");
+
+//Get DiLepton Efficiency File name
+
+  EvaluateEffFileName(nDileptonEff,EffFileName,false);
+  sprintf(EffFile,"%s/%s",effDir,EffFileName);
+
+  TFile *fInDileptonEff = new TFile(EffFile);
+  TH1* hDileptonEff=(TH1*) fInDileptonEff->Get("hEff_DATA_central");
+
+
 
   // input file with the background histograms
   // and the ntuple of dilepton events
@@ -172,6 +197,7 @@ void polFit(int n_sampledPoints=1,
 
 
   double  f_background = background_fraction->GetBinContent( 1 );
+
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -577,8 +603,12 @@ void polFit(int n_sampledPoints=1,
 
     // efficiency:
 
-    double epsilon = singleLeptonEfficiency( lepP_pT, lepP_eta, nEff)
-                   * singleLeptonEfficiency( lepN_pT, lepN_eta, nEff);
+    double epsilon = singleLeptonEfficiency( lepP_pT, lepP_eta, nEff, hEff)
+                   * singleLeptonEfficiency( lepN_pT, lepN_eta, nEff, hEff);
+
+    double DileptonEff = DiLeptonEfficiency( pT, rap, nDileptonEff, hDileptonEff );
+
+	epsilon = epsilon*DileptonEff;
 
     // acceptance:
 
@@ -882,8 +912,12 @@ void polFit(int n_sampledPoints=1,
 
     // efficiency:
 
-    epsilon = singleLeptonEfficiency( lepP_pT, lepP_eta, nEff)
-            * singleLeptonEfficiency( lepN_pT, lepN_eta, nEff);
+    epsilon = singleLeptonEfficiency( lepP_pT, lepP_eta, nEff, hEff)
+            * singleLeptonEfficiency( lepN_pT, lepN_eta, nEff, hEff);
+
+    double DileptonEff = DiLeptonEfficiency( pT, rap, nDileptonEff, hDileptonEff );
+
+	epsilon = epsilon*DileptonEff;
 
     // acceptance:
 
@@ -1236,8 +1270,12 @@ void polFit(int n_sampledPoints=1,
     bool isEventAccepted = isMuonInAcceptance( FidCuts-1, lepP_pT, lepP_eta )
                          * isMuonInAcceptance( FidCuts-1, lepN_pT, lepN_eta );
 
-    double epsilon = singleLeptonEfficiency( lepP_pT, lepP_eta, nEff)
-                   * singleLeptonEfficiency( lepN_pT, lepN_eta, nEff);
+    double epsilon = singleLeptonEfficiency( lepP_pT, lepP_eta, nEff, hEff)
+                   * singleLeptonEfficiency( lepN_pT, lepN_eta, nEff, hEff);
+
+    double DileptonEff = DiLeptonEfficiency( pT, rap, nDileptonEff, hDileptonEff );
+
+	epsilon = epsilon*DileptonEff;
 
 
     if ( epsilon > min_dileptonEff && isEventAccepted ) {

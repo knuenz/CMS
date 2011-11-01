@@ -11,7 +11,7 @@ storagedir=`pwd` #please define differently, if you have storage issues
 
 for JobID in DefaultID;do
 
-for nState in 1 2 3;do
+for nState in 1;do
 
 
 ptBinMin=1
@@ -58,10 +58,10 @@ cd ${Jobdir}/Figures/${TreeID}
 
 cp ${basedir}/latex/DataResults_vs_RapPt.tex .
 cp ${basedir}/latex/IndividualFitResults.tex ../../.
-cp ${Jobdir}/ToyNumericalResults.tex .
+mv ${Jobdir}/ToyNumericalResults.tex .
 
 pdflatex ToyNumericalResults.tex
-mv ToyNumericalResults.pdf ${basedir}/macros/polFit/FiguresData/${JobID}/${TreeID}/ToyNumericalResults_${additionalName}.pdf
+mv ToyNumericalResults.pdf ${basedir}/macros/polFit/FiguresData/${JobID}/${TreeID}/DataNumericalResults_${additionalName}.pdf
 rm *.aux
 rm *.log
 
@@ -96,9 +96,6 @@ done
 rap_=$((rap_+1))
 done
 
-rm *.aux
-rm *.log
-rm *.tex
 
 done
 
@@ -106,5 +103,8 @@ done
 cd ${Jobdir}
 
 rm polRapPtPlot
+rm IndividualFitResults.tex
+rm *.aux
+rm *.log
 
 done
