@@ -41,17 +41,20 @@ def main(options,args):
 #    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chib_2011A_gtV21A_2082pb.root', 'file:/scratch/knuenz/Polarization/RootInput/Chib/chib_2011B_gtV21A_2613pb.root' ]
 #    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chicstep5_chibV1_A.root', 'file:/scratch/knuenz/Polarization/RootInput/Chib/chicstep5_chibV1_B.root' ]
 #    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_v13d_A_17Jan.root', 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_v13d_B_17Jan.root' ]
-#    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_chibV1_A_20Jan.root', 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_chibV1_B_20Jan.root' ]
+    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_chibV1_A_20Jan.root', 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_chibV1_B_20Jan.root' ]
 #    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_pi0Rej_false_A_27jan.root', 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_pi0Rej_false_B_27jan.root' ]
-    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_pi0Rej_false_A_27jan.root' ]
+#    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_pi0Rej_false_A_27jan.root' ]
+#    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_pi0Rej_false_A_30jan.root', 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_pi0Rej_false_B_30jan.root' ]
+#    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_pi0Rej_false_B_30jan.root' ]
+#    inputfiles = [ 'file:/scratch/knuenz/Polarization/RootInput/Chib/chibstep5_chibV1_A_20Jan.root' ]
 
 #    gROOT.ProcessLine('.L /afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/CommonTools/Statistics/src/ChiSquaredProbability.cc+')
 #    gROOT.ProcessLine('.L /afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/CommonTools/Statistics/src/IncompleteGammaComplement.cc+')
 #    from ROOT import ChiSquaredProbability
 #    from ROOT import IncompleteGammaComplement
-    Y1Smass0=9.46
-    Y2Smass0=10.023
-    Y3Smass0=10.355
+    Y1Smass0=9.46030
+    Y2Smass0=10.02326
+    Y3Smass0=10.3552
     Ymass_a=0.058
     Ymass_b=0.047
     Ymass_c=0.22
@@ -64,7 +67,7 @@ def main(options,args):
     chicCand_l = ( "chib","chicCompCand","chibs5" )
     
     #candidate J/Psi
-    jpsiCand_h  = Handle ("vector<pat::CompositeCandidate>")
+    jpsiCand_h  = Handle ("vector<reco::CompositeCandidate>")
     jpsiCand_l = ( "chib","jpsiCompCand" ,"chibs5")
     
     jpsiCandPAT_h  = Handle ("vector<pat::CompositeCandidate>")
@@ -112,6 +115,7 @@ def main(options,args):
     gammapy   = RooRealVar("gammapy", "gammapy",-100,100)
     gammapz   = RooRealVar("gammapz", "gammapz",-100,100)
     vertexChi2ProbGamma   = RooRealVar("vertexChi2ProbGamma", "vertexChi2ProbGamma",0,1)
+    Q   = RooRealVar("Q", "Q",0,100)
     
     argSet = RooArgSet()
     argSet.add(invm1S)
@@ -142,6 +146,7 @@ def main(options,args):
     argSet.add(gammapy)
     argSet.add(gammapz)
     argSet.add(vertexChi2ProbGamma)
+    argSet.add(Q)
 
 
     rds    = RooDataSet("d","d",argSet,"weight")
@@ -168,13 +173,16 @@ def main(options,args):
     nevents=0
     ncoll=0
     nSel=0
+    countExceptions=0
+    
     for event in events:
         nevents+=1
-        print 'nevents', nevents
+        #print 'nevents', nevents
         #print dir(event._event.getTFile().GetName())
         #print dir(event._event.time())
         
-        #print "run %d \t lumi %d \t orbit %d \t file %s" % (event._event.getRun().run(),event._event.luminosityBlock(), event._event.orbitNumber(),event._event.getTFile().GetName())
+        #if nevents>200:
+            #print "run %d \t lumi %d \t orbit %d \t file %s" % (event._event.getRun().run(),event._event.luminosityBlock(), event._event.orbitNumber(),event._event.getTFile().GetName())
         #break
     
         
@@ -183,38 +191,47 @@ def main(options,args):
         #print event
         #if not event.getByLabel (chicCand_l,chicCand_h) : continue
     
-    
-        event.getByLabel (chicCand_l,chicCand_h)
-        event.getByLabel (jpsiCand_l,jpsiCand_h)
-        event.getByLabel (jpsiCandPAT_l,jpsiCandPAT_h)
-        event.getByLabel (gammaCand_l,gammaCand_h)
-        event.getByLabel (convCand_l,convCand_h)
-        
-        if not chicCand_h.isValid() : continue
-        
-        chicColl    =  chicCand_h.product()
-        jpsiColl    =  jpsiCand_h.product()
-        jpsiCollPAT =  jpsiCandPAT_h.product()
-        gammaColl   =  gammaCand_h.product()
-        convColl    =  convCand_h.product()
+
+
+
+#        if nevents>0:
+        try:
+            event.getByLabel (chicCand_l,chicCand_h)
+            event.getByLabel (jpsiCand_l,jpsiCand_h)
+            event.getByLabel (jpsiCandPAT_l,jpsiCandPAT_h)
+            event.getByLabel (gammaCand_l,gammaCand_h)
+            event.getByLabel (convCand_l,convCand_h)
+            
+            if not chicCand_h.isValid() : continue
+            
+            chicColl    =  chicCand_h.product()
+            jpsiColl    =  jpsiCand_h.product()
+            jpsiCollPAT =  jpsiCandPAT_h.product()
+            gammaColl   =  gammaCand_h.product()
+            convColl    =  convCand_h.product()
+
+        except:
+	        countExceptions = countExceptions+1
+	        print "exception", countExceptions
+	        continue
         
         #loop over candidates
         for i in range(chicColl.size()):
             ncands+=1
-            print 'ncands', ncands
+            #print 'ncands', ncands
     
             chicCand    = chicColl[i]
             jpsiCand    = jpsiColl[i]
             jpsiCandPAT = jpsiCollPAT[0]
             gammaCand   = gammaColl[i]
-            convCand    = convColl[0]
+            #convCand    = convColl[0]
     
             #match gamma candidate and conversion candidate crudely
             dptmin = 9999
             for c in convColl:
                 ncoll+=1
-                print 'ncoll', ncoll
-                diff = sqrt(convCand.pairMomentum().perp2()) - gammaCand.pt()
+#                print 'ncoll', ncoll
+                diff = abs(c.pairMomentum().rho() - gammaCand.pt())
                 if diff < dptmin:
                     dptmin = diff
                     convCand = c
@@ -308,18 +325,19 @@ def main(options,args):
             gammapx.setVal(gammaCand.px())
             gammapy.setVal(gammaCand.py())
             gammapz.setVal(gammaCand.pz())
+            Q.setVal(Qval)
  
             weight.setVal(1)
  
             rds.add(argSet)
             
-            print TMath.Prob(convCand.conversionVertex().chi2(),int(convCand.conversionVertex().ndof())), "from ", int(convCand.conversionVertex().ndof()), " and " ,convCand.conversionVertex().ndof(), " and ", convCand.conversionVertex().chi2()
+#            print TMath.Prob(convCand.conversionVertex().chi2(),int(convCand.conversionVertex().ndof())), "from ", int(convCand.conversionVertex().ndof()), " and " ,convCand.conversionVertex().ndof(), " and ", convCand.conversionVertex().chi2()
     
         if ncands%1000==0:
             print ncands
             #break
     
-    
+    print "countExceptions:                    ", countExceptions
     print "Number of chib candidates:          ", ncands 
     print "Number of selected chib candidates: ", nSel
     
