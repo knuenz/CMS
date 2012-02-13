@@ -12,18 +12,24 @@ namespace onia{
   const TLorentzVector beam2_LAB( 0., 0., -pbeam, Ebeam );
   const double muMass = 0.105658;
   Int_t const kNbRapForPTBins = 2;
-  Double_t rapForPTRange[kNbRapForPTBins+1] = {0., 0.6, 1.2}; //2 September 2011 
+  Double_t rapForPTRange[kNbRapForPTBins+1] = {0., 0.6, 1.2}; //2 September 2011
+//  Double_t rapForPTRange[kNbRapForPTBins+1] = {0., 0.3, 0.6}; //2 September 2011
   //study the negative and positive rapidity sides separately
   Int_t const kNbRapBins = kNbRapForPTBins;
   Double_t rapRange[2*kNbRapBins+1] = {-1.2, -0.6, -0., 0.6, 1.2};
+//  Double_t rapRange[2*kNbRapBins+1] = {-0.6, -0.3, -0., 0.3, 0.6};
 
   Int_t const kNbPTMaxBins = 14;
   Int_t const kNbPTBins[kNbRapForPTBins+1] = {kNbPTMaxBins, 12, 12};//all y, y1
   Double_t pTRange[kNbRapForPTBins+1][kNbPTMaxBins+1] = {
     {5., 6., 7., 8., 9., 10., 11., 12., 14., 16., 20., 25., 30., 50., 100.},//all rapidities
-    {5., 6., 7., 8., 9., 10., 11., 12., 14., 16., 20., 30., 100.},//mid-rap
-    {5., 6., 7., 8., 9., 10., 11., 12., 14., 16., 20., 30., 100.}};//most forward
-  //number of reference frames
+    {5., 6., 7., 8., 9., 10., 11., 12., 14., 16., 20., 30., 50.},//mid-rap
+    {5., 6., 7., 8., 9., 10., 11., 12., 14., 16., 20., 30., 50.}};//most forward
+/*  Double_t pTRange[kNbRapForPTBins+1][kNbPTMaxBins+1] = {
+    {5., 6., 7., 8., 9., 10., 11., 12., 14., 16., 20., 25., 30., 50., 100.},//all rapidities
+    {10.,11.,12.,13., 14.,15.,16.,17.,18., 20.,24., 30., 50.},//mid-rap
+    {10.,11.,12.,13., 14.,15.,16.,17.,18., 20.,24., 30., 50.}};//most forward
+*/  //number of reference frames
   Int_t const kNbFrames = 6;
   Char_t *frameLabel[kNbFrames] = {"CS", "HX", "PHX", "sGJ", "GJ1", "GJ2"};
   enum {CS, HX, PHX, sGJ, GJ1, GJ2};
