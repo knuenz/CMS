@@ -6,13 +6,13 @@ for cutVar in Reference;do
 
 FitID=${cutVar}
 
-Additionals=Feb11_DEFAULT
+Additionals=tmp_Chib_Foldername_
 fileName=vtxFixYMCQ
 nToy=200000
 SaveAll=false
 
 useSBforBKGmodel=false
-useLeftSB=true
+useLeftSB=false
 useRightSB=true
 
 alteredToy=false

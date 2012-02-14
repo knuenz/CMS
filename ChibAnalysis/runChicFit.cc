@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
     double Ymass1S;
     double Ymass2S;
-    Ymass1S=9.4603;
+    Ymass1S=3.096916;
     Ymass2S=10.02326;
 
     double invm_min1S;
@@ -141,11 +141,11 @@ int main(int argc, char** argv) {
     double invm_min3S;
     double invm_max3S;
 
-    invm_min1S=9.5; invm_max1S=11.1;
-    invm_min2S=10; invm_max2S=11.1;
-    invm_min3S=10.3; invm_max3S=11.1;
+    invm_min1S=3.1; invm_max1S=4;
+    invm_min2S=3.1; invm_max2S=4;
+    invm_min3S=3.1; invm_max3S=4;
 
-    sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(1S)^{PDG}} [GeV]");
+    sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{J/#psi^{PDG}} [GeV]");
     RooRealVar invm1S("invm1S",invmName,invm_min1S,invm_max1S);
     sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(2S)^{PDG}} [GeV]");
     RooRealVar invm2S("invm2S",invmName,invm_min2S,invm_max2S);
@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
     invm3S.setRange("TotalRange3S",invm_min3S,invm_max3S);
 
     RooRealVar jpsipt   = RooRealVar("jpsipt", "jpsipt",0,100);
-    RooRealVar jpsimass   = RooRealVar("jpsimass", "jpsimass",8,12);
+    RooRealVar jpsimass   = RooRealVar("jpsimass", "jpsimass",1,5);
     RooRealVar gammapt   = RooRealVar("gammapt", "gammapt",0,100);
     RooRealVar deltaRChiJpsi  = RooRealVar("deltaRChiJpsi","deltaRChiJpsi",0,1);
     RooRealVar deltaRJpsig    = RooRealVar("deltaRJpsig","deltaRJpsig",0,1);
@@ -171,9 +171,9 @@ int main(int argc, char** argv) {
     RooRealVar weight   = RooRealVar("weight", "weight",0,1);
     RooRealVar Rconv    = RooRealVar("Rconv","Rconv",0,100);
     RooRealVar jpsiVprob    = RooRealVar("jpsiVprob","jpsiVprob",0,1.5);
-    RooRealVar Y1Smass_nSigma    = RooRealVar("Y1Smass_nSigma","Y1Smass_nSigma",-100,100);
-    RooRealVar Y2Smass_nSigma    = RooRealVar("Y2Smass_nSigma","Y2Smass_nSigma",-100,100);
-    RooRealVar Y3Smass_nSigma    = RooRealVar("Y3Smass_nSigma","Y3Smass_nSigma",-100,100);
+    RooRealVar Y1Smass_nSigma    = RooRealVar("Y1Smass_nSigma","Y1Smass_nSigma",-1000,1000);
+    RooRealVar Y2Smass_nSigma    = RooRealVar("Y2Smass_nSigma","Y2Smass_nSigma",-1000,1000);
+    RooRealVar Y3Smass_nSigma    = RooRealVar("Y3Smass_nSigma","Y3Smass_nSigma",-1000,1000);
     RooRealVar vertexChi2ProbGamma    = RooRealVar("vertexChi2ProbGamma","vertexChi2ProbGamma",0,100);
 
     RooRealVar jpsipx   = RooRealVar("jpsipx", "jpsipx",-100,100);
@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
 
     double cut_RconvMin = 2.5;
     double cut_RconvMax = 200;
-    double cut_vtxChi2ProbGamma = 0.;//0.0005;//1e-5;//000005;
+    double cut_vtxChi2ProbGamma = 0.;//1e-5;//000005;
     double cut_vtxChi2ProbGammaLog = -1000.;//1e-5;//000005;
 
 // Y - Gamma cuts
@@ -375,6 +375,7 @@ int main(int argc, char** argv) {
     RooDataSet* data_____=(RooDataSet*)data____->reduce(Cut(DScutChar));
     data_____->Print();
 
+//    sprintf(DScutChar,"log10(vertexChi2ProbGamma) > %f",cut_vtxChi2ProbGamma);
     sprintf(DScutChar,"vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f",cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog);
     cout<<DScutChar<<endl;
     RooDataSet* data______vtx=(RooDataSet*)data_____->reduce(Cut(DScutChar));
@@ -398,10 +399,10 @@ int main(int argc, char** argv) {
         double UpperSBmax2S;
 
         if(useLeftSB&&useRightSB){
-        	LowerSBmin=8.7;
+        	LowerSBmin=2.8;
         	nSigSBlow=-3.5;
         	nSigSBhigh=3.5;
-        	UpperSBmax=10.85;
+        	UpperSBmax=4;
 
         	LowerSBmin2S=8.7;
         	nSigSBlow2S=-3.5;
@@ -410,7 +411,7 @@ int main(int argc, char** argv) {
         }
 
         if(useLeftSB&&!useRightSB){
-        	LowerSBmin=8.7;
+        	LowerSBmin=2.8;
         	nSigSBlow=-3.5;
         	nSigSBhigh=1000;
         	UpperSBmax=0;
@@ -433,6 +434,9 @@ int main(int argc, char** argv) {
         	UpperSBmax2S=10.85;
         }
 
+        double MassSignalMin=3;
+        double MassSignalMax=3.2;
+
     sprintf(DScutChar,"jpsimass > %f && Y1Smass_nSigma < %f || jpsimass < %f && Y2Smass_nSigma > %f",LowerSBmin,nSigSBlow,UpperSBmax,nSigSBhigh);
     cout<<DScutChar<<endl;
     RooDataSet* dataSB1S=(RooDataSet*)data______->reduce(Cut(DScutChar));
@@ -445,20 +449,18 @@ int main(int argc, char** argv) {
 
 
 /////// Producing Signal dataset
-    sprintf(DScutChar,"Y1Smass_nSigma > %f && Y1Smass_nSigma < %f && Y2Smass_nSigma < %f && gammapt>%f",-nYsig,nYsig,-nYsig,cut_gammapt1S);
+    sprintf(DScutChar,"jpsimass > %f && jpsimass < %f",MassSignalMin,MassSignalMax);
     cout<<DScutChar<<endl;
     RooDataSet* data1S=(RooDataSet*)data______->reduce(Cut(DScutChar));
     data1S->Print();
 
-    sprintf(DScutChar,"Y2Smass_nSigma > %f && Y2Smass_nSigma < %f ",-nYsig,nYsig);
-    cout<<DScutChar<<endl;
     RooDataSet* data2S=(RooDataSet*)data______->reduce(Cut(DScutChar));
     data2S->Print();
 
     sprintf(DScutChar,"Y3Smass_nSigma > %f && Y3Smass_nSigma < %f && Y2Smass_nSigma > %f",-nYsig,nYsig,nYsig);
     cout<<DScutChar<<endl;
     RooDataSet* data3S=(RooDataSet*)data______->reduce(Cut(DScutChar));
-    data3S->Print();
+//    data3S->Print();
 
 
     if(SetSignalToZero&&useSBforBKGmodel){
@@ -489,7 +491,7 @@ int main(int argc, char** argv) {
 
     if(SaveAll){
     char saveMass[200];
-    TH1F  *MassHisto = new TH1F("MassHisto","",100,8.6,11.4);
+    TH1F  *MassHisto = new TH1F("MassHisto","",100,2,5);
     treeAllCuts->Draw("jpsimass>>MassHisto");
     TCanvas* MassCanvas = new TCanvas("MassCanvas","MassCanvas",1600, 800);
     MassCanvas->SetFillColor(kWhite);
@@ -526,24 +528,24 @@ int main(int argc, char** argv) {
 
     // Ernest's ToyMC for background estimation:
 
-    double bb_thresh=10.56;
-    double chib1Pmin=9.85;
+    double bb_thresh=3.585;
+    double chib1Pmin=3.325;
     double chib1Pmax=9.95;
     double chib2Pmin=10.15;
     double chib2Pmax=10.325;
+    double chic1min=3.25;
 
-
-        int nHistBins=100;
+        int nHistBins=1000;
         float m_gamma = 0.;
         char DrawChar[500];
 
-        sprintf(DrawChar,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax);
+        sprintf(DrawChar,"invm1S>0");//chic1min
         if(useSBforBKGmodel) sprintf(DrawChar,"invm1S<10000");
 
-        TH1F  *hYmass1S = new TH1F("hYmass1S","",nHistBins,8.7,11.4);
-        TH1F  *hYmass_check1S = new TH1F("hYmass_check1S","",nHistBins,8.7,11.4);
-        TH1F  *hYmass2S = new TH1F("hYmass2S","",nHistBins,8.7,11.4);
-        TH1F  *hYmass_check2S = new TH1F("hYmass_check2S","",nHistBins,8.7,11.4);
+        TH1F  *hYmass1S = new TH1F("hYmass1S","",nHistBins,2,5);
+        TH1F  *hYmass_check1S = new TH1F("hYmass_check1S","",nHistBins,2,5);
+        TH1F  *hYmass2S = new TH1F("hYmass2S","",nHistBins,2,5);
+        TH1F  *hYmass_check2S = new TH1F("hYmass_check2S","",nHistBins,2,5);
 
        tree1S->Draw("jpsimass>>hYmass1S",DrawChar);
        tree2S->Draw("jpsimass>>hYmass2S");
@@ -599,19 +601,19 @@ int main(int argc, char** argv) {
         hGammaP1S->Write();
         hUpsP1S->Write();
         hCosAlphaP1S->Write();
-        hYmass2S->Write();
-        hGammaP2S->Write();
-        hUpsP2S->Write();
-        hCosAlphaP2S->Write();
 
 
         float Q1S,Q2S;
         float M1S,M2S;
 
+//        tQ->Branch("Q1S",&Q1S,"Q1S/F");
         tQ->Branch("invm1S",&M1S,"invm1S/F");
-        tQ->Branch("invm2S",&M2S,"invm2S/F");
+//        tQ->Branch("Q2S",&Q2S,"Q2S/F");
+        tQ->Branch("invm2S",&M1S,"invm2S/F");
 
         TRandom3 *randOM = new TRandom3();
+
+        TF1 *f1 = new TF1("f1","exp(x)",-1,1);
 
         for(int i=0;i<nToy;i++){
 
@@ -623,11 +625,12 @@ int main(int argc, char** argv) {
 
 //          float cosAlpha1S = 2*randOM->Uniform()-1;
           float cosAlpha1S = hCosAlphaP1S->GetRandom();
+//          cosAlpha1S = cosAlpha1S*randOM->Uniform(0.988,1);
           float e_gamma1S = sqrt(m_gamma*m_gamma+p_gamma1S*p_gamma1S);
           float e_Ups1S = sqrt(Ymass_1S*Ymass_1S+p_Ups1S*p_Ups1S);
 
-//          if(!alteredToy) Ymass_1S=Ymass1S;
 
+//          Q1S = sqrt(m_gamma*m_gamma + Ymass_1S*Ymass_1S + 2*e_gamma1S*e_Ups1S - 2*p_gamma1S*p_Ups1S*cosAlpha1S) - m_gamma - Ymass_1S;
           M1S = sqrt(m_gamma*m_gamma + Ymass_1S*Ymass_1S + 2*e_gamma1S*e_Ups1S - 2*p_gamma1S*p_Ups1S*cosAlpha1S)-Ymass_1S+Ymass1S;
 
        	  hUpsP_check1S->Fill(p_Ups1S);
@@ -635,25 +638,8 @@ int main(int argc, char** argv) {
           hYmass_check1S->Fill(Ymass_1S);
           hCosAlphaP_check1S->Fill(cosAlpha1S);
 
-          float Ymass_2S = hYmass2S->GetRandom();
-          float p_gamma2S = hGammaP2S->GetRandom();
-          float p_Ups2S = hUpsP2S->GetRandom();
 
-          if(!alteredToy) Ymass_2S=Ymass2S;
-
-//          float cosAlpha2S = 2*randOM->Uniform()-1;
-          float cosAlpha2S = hCosAlphaP2S->GetRandom();
-          float e_gamma2S = sqrt(m_gamma*m_gamma+p_gamma2S*p_gamma2S);
-          float e_Ups2S = sqrt(Ymass_2S*Ymass_2S+p_Ups2S*p_Ups2S);
-
-          M2S = sqrt(m_gamma*m_gamma + Ymass_2S*Ymass_2S + 2*e_gamma2S*e_Ups2S - 2*p_gamma2S*p_Ups2S*cosAlpha2S)-Ymass_2S+Ymass2S;
-
-       	  hUpsP_check2S->Fill(p_Ups2S);
-          hGammaP_check2S->Fill(p_gamma2S);
-          hYmass_check2S->Fill(Ymass_2S);
-          hCosAlphaP_check2S->Fill(cosAlpha2S);
-
-          if (M1S<11.4 && M2S<11.4) {
+          if (M1S<4.2) {
         	  tQ->Fill();
           }
 
@@ -756,9 +742,9 @@ int main(int argc, char** argv) {
 
 
 
-        TH1F  *BkgToyHist1S = new TH1F("BkgToyHist1S","",100,9.5,12);
+        TH1F  *BkgToyHist1S = new TH1F("BkgToyHist1S","",100,3,4.5);
         tQ->Draw("invm1S>>BkgToyHist1S");
-        TH1F  *BkgToyHist2S = new TH1F("BkgToyHist2S","",100,9.5,12);
+        TH1F  *BkgToyHist2S = new TH1F("BkgToyHist2S","",100,3,4.5);
         tQ->Draw("invm2S>>BkgToyHist2S");
 
 
@@ -780,6 +766,7 @@ int main(int argc, char** argv) {
         fQ->Close();
 
 
+//        gSystem->Unlink(bkgToyname);
 
 
         delete hYmass1S;
@@ -818,8 +805,8 @@ int main(int argc, char** argv) {
     double m_chib3P_START=10.45;
     double m_chib3P_1S_START=10.45;
 
-    RooRealVar m_chib3P= RooRealVar("M_{#chi_{b}(3P)}","Mean #chi_{b}(3P)",m_chib3P_START,10.325,10.56);
-    RooRealVar m_chib3P_1S= RooRealVar("M_{#chi_{b}(3P),1S}","Mean #chi_{b}(3P) in 1S sample",m_chib3P_1S_START,10.325,10.56);
+    RooRealVar m_chib3P= RooRealVar("Mean #chi_{b}(3P)","Mean #chi_{b}(3P)",m_chib3P_START,10.325,10.56);
+    RooRealVar m_chib3P_1S= RooRealVar("Mean #chi_{b}(3P) in 1S sample","Mean #chi_{b}(3P) in 1S sample",m_chib3P_1S_START,10.325,10.56);
 
     m_chib3P.setVal(m_chib3P_START);
     m_chib3P_1S.setVal(m_chib3P_1S_START);
@@ -849,22 +836,32 @@ int main(int argc, char** argv) {
     double sigmaInd3P_1S_START=0.010;
     double alpha_3J_START=0.74;
     double n_3J_START=3.;
-    double PhotonMassScale_START=9.8485e-01;
+    double PhotonMassScale_START=1.;
     double PhotonMassScale2P_START=1.;
-    double PhotonSigmaScale_START=1.6970e-02;
+    double PhotonSigmaScale_START=0.017;
 
-    RooRealVar sigmaInd  = RooRealVar("sigmaInd","sigmaInd",sigmaInd_START,0.003,0.015);
+    RooRealVar sigmaIndJ  = RooRealVar("#sigma_{J}","#sigma_{J}",sigmaInd_START,0.003,0.015);
+    RooRealVar sigmaIndJ1  = RooRealVar("#sigma_{J1}","#sigma_{J}",sigmaInd_START,0.003,0.015);
+    RooRealVar sigmaIndJ2  = RooRealVar("#sigma_{J2}","#sigma_{J}",sigmaInd_START,0.003,0.015);
+
+    RooRealVar alpha_3J_J  = RooRealVar("#alpha","CB_{#alpha}",alpha_3J_START,0.,2.);
+    RooRealVar alpha_3J_J1  = RooRealVar("#alpha_{J1}","CB_{#alpha}",alpha_3J_START,0.,2.);
+    RooRealVar alpha_3J_J2  = RooRealVar("#alpha_{J2}","CB_{#alpha}",alpha_3J_START,0.,2.);
+    RooRealVar n_3J_J      = RooRealVar("n","CB_{n}",n_3J_START,.5,15.);
+    RooRealVar n_3J_J1      = RooRealVar("n_{J1}","CB_{n}",n_3J_START,.5,15.);
+    RooRealVar n_3J_J2      = RooRealVar("n_{J1}","CB_{n}",n_3J_START,.5,15.);
+    RooRealVar PhotonMassScale= RooRealVar("PES","PES",PhotonMassScale_START,0.95,1.05);
+    RooRealVar PhotonMassScale2P= RooRealVar("PES_{J2}","PhotonMassScale2P",PhotonMassScale2P_START,0.95,1.05);
+    RooRealVar PhotonSigmaScale= RooRealVar("#sigma_{Q}/Q","PhotonSigmaScale",PhotonSigmaScale_START,0.01,0.025);
+    RooRealVar PhotonSigmaScaleJ2= RooRealVar("#sigma_{Q}/Q, J2","PhotonSigmaScale",PhotonSigmaScale_START,0.01,0.025);
+
+    RooRealVar n_3J      = RooRealVar("CB_{n}","CB_{n}",n_3J_START,.5,15.);
+    RooRealVar alpha_3J  = RooRealVar("CB_{#alpha}","CB_{#alpha}",alpha_3J_START,0.,2.);
+    RooRealVar sigmaInd  = RooRealVar("#sigma_{J}","#sigma_{J}",sigmaInd_START,0.003,0.015);
     RooRealVar sigmaInd2P  = RooRealVar("sigmaInd2P","sigmaInd2P",sigmaInd2P_START,0.003,0.025);
     RooRealVar sigmaInd2P_2S  = RooRealVar("sigmaInd2P_2S","sigmaInd2P_2S",sigmaInd2P_2S_START,0.003,0.025);
     RooRealVar sigmaInd3P  = RooRealVar("sigmaInd3P","sigmaInd3P",sigmaInd3P_START,0.003,0.025);
     RooRealVar sigmaInd3P_1S  = RooRealVar("sigmaInd3P_1S","sigmaInd3P_1S",sigmaInd3P_1S_START,0.003,0.04);
-    RooRealVar alpha_3J  = RooRealVar("#alpha","#alpha_3J",alpha_3J_START,0.,2.);
-    RooRealVar alpha_3J_2P  = RooRealVar("#alpha_{2P}","#alpha_3J",alpha_3J_START,0.,2.);
-    RooRealVar n_3J      = RooRealVar("n","n_3J",n_3J_START,.5,15.);
-    RooRealVar PhotonMassScale= RooRealVar("PES","PhotonMassScale",PhotonMassScale_START,0.95,1.05);
-    RooRealVar PhotonMassScale2P= RooRealVar("PES_{2P}","PhotonMassScale2P",PhotonMassScale2P_START,0.95,1.05);
-    RooRealVar PhotonSigmaScale= RooRealVar("#sigma_{Q}/Q","PhotonSigmaScale",PhotonSigmaScale_START,0.01,0.025);
-    RooRealVar PhotonSigmaScale2P= RooRealVar("#sigma_{Q}/Q, 2P","PhotonSigmaScale",PhotonSigmaScale_START,0.01,0.025);
 
     sigmaInd.setVal(sigmaInd_START);
     sigmaInd2P.setVal(sigmaInd2P_START);
@@ -877,41 +874,62 @@ int main(int argc, char** argv) {
     PhotonMassScale2P.setVal(PhotonMassScale2P_START);
     PhotonSigmaScale.setVal(PhotonSigmaScale_START);
 
-//    PhotonMassScale.setConstant();
-//    PhotonSigmaScale.setConstant();
-    n_3J.setConstant();
+//    n_3J.setConstant();
 //    alpha_3J.setConstant();
 
     double ratio_J2overJ1_START=.5;
-    RooRealVar ratio_J2overJ1= RooRealVar("N_{#chi_{b2}}/N_{#chi_{b1}}","ratio_J2overJ1",ratio_J2overJ1_START);//,0.,5.);
+    RooRealVar ratio_J2overJ1= RooRealVar("ratio_J2overJ1","ratio_J2overJ1",ratio_J2overJ1_START);//,0.,5.);
     ratio_J2overJ1.setVal(ratio_J2overJ1_START);
 	RooFormulaVar fracJ1("fracJ1", "1./(1.+@0)", RooArgList(ratio_J2overJ1));
 
 
-    RooRealVar m_chib1P1fix= RooRealVar("m_chib1P1fix","m_chib1P1fix",9.89278);
-    RooRealVar m_chib1P2fix= RooRealVar("m_chib1P2fix","m_chib1P2fix",9.91221);
+
+
+
+
+
+    RooRealVar fractionJ0= RooRealVar("N_{#chi_{c0}}/N_{#chi_{cJ}}","#chi_{c0}/#Sigma_{J}(#chi_{cJ})",0.05,0.,0.1);
+    RooRealVar fractionJ1= RooRealVar("N_{#chi_{c1}}/N_{#chi_{cJ}}","#chi_{c1}/#Sigma_{J}(#chi_{cJ})",0.4,0.,.8);
+
+    RooRealVar m_chib1P0fix= RooRealVar("m_chib1P0fix","m_chib1P0fix",3.41475);
+    RooRealVar m_chib1P1fix= RooRealVar("m_chib1P1fix","m_chib1P1fix",3.51066);
+    RooRealVar m_chib1P2fix= RooRealVar("m_chib1P2fix","m_chib1P2fix",3.55620);
 
     sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass1S,Ymass1S);
+
     sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass1S);
 
+    RooFormulaVar m_chib1P0float("m_chib1P0float", MassScaleFormula, RooArgList(m_chib1P0fix, PhotonMassScale));
     RooFormulaVar m_chib1P1float("m_chib1P1float", MassScaleFormula, RooArgList(m_chib1P1fix, PhotonMassScale));
 	RooFormulaVar m_chib1P2float("m_chib1P2float", MassScaleFormula, RooArgList(m_chib1P2fix, PhotonMassScale));
 
+    RooFormulaVar w_chib1P0float("w_chib1P0float", SigmaScaleFormula, RooArgList(m_chib1P0float, PhotonSigmaScale));
     RooFormulaVar w_chib1P1float("w_chib1P1float", SigmaScaleFormula, RooArgList(m_chib1P1float, PhotonSigmaScale));
     RooFormulaVar w_chib1P2float("w_chib1P2float", SigmaScaleFormula, RooArgList(m_chib1P2float, PhotonSigmaScale));
 
-//	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,sigmaInd,alpha_3J,n_3J);
-//    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,sigmaInd,alpha_3J,n_3J);
-	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,w_chib1P1float,alpha_3J,n_3J);
-    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,w_chib1P2float,alpha_3J,n_3J);
+	RooCBShape chib1P0      = RooCBShape ("chib1P0","chib1P0",invm1S,m_chib1P0float,w_chib1P0float,alpha_3J_J1,n_3J_J1);
+	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,w_chib1P1float,alpha_3J_J1,n_3J_J1);
+    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,w_chib1P2float,alpha_3J_J2,n_3J_J1);
 
-    double n1PnJ_START=200;
-    RooRealVar n1PnJ= RooRealVar("N_{#chi_{b}(1P)}","n1PJ",n1PnJ_START,0,450);
+    double n1PnJ_START=12000;
+    RooRealVar n1PnJ= RooRealVar("N_{#chi_{cJ}}","#Sigma_{J}(#chi_{cJ})",n1PnJ_START,1000,20000);
     n1PnJ.setVal(n1PnJ_START);
-    RooAddPdf chib1P_sigInd= RooAddPdf("chib1P_sigInd","chib1P_sigInd",RooArgList(chib1P1,chib1P2),RooArgList(fracJ1));
 
-    RooFormulaVar chib1P_nevt("chib1P_nevt", "@1*@0+(1-@1)*@0", RooArgList(n1PnJ,fracJ1));
+    RooAddPdf chib1P_sigInd= RooAddPdf("chib1P_sigInd","chib1P_sigInd",RooArgList(chib1P0,chib1P1,chib1P2),RooArgList(fractionJ0,fractionJ1));
+
+    RooFormulaVar chib1P_nevt("chib1P_nevt", "@1*@0+@2*@0+(1-@1-@2)*@0", RooArgList(n1PnJ,fractionJ0,fractionJ1));
     RooAddPdf chib1P_sig= RooAddPdf("chib1P_sig","chib1P_sig",RooArgList(chib1P_sigInd),RooArgList(chib1P_nevt));
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -921,16 +939,11 @@ int main(int argc, char** argv) {
 	RooFormulaVar m_chib2P1float("m_chib2P1float", MassScaleFormula, RooArgList(m_chib2P1fix, PhotonMassScale));
 	RooFormulaVar m_chib2P2float("m_chib2P2float", MassScaleFormula, RooArgList(m_chib2P2fix, PhotonMassScale));
 
-    RooFormulaVar w_chib2P1float("w_chib2P1float", SigmaScaleFormula, RooArgList(m_chib2P1float, PhotonSigmaScale));
-    RooFormulaVar w_chib2P2float("w_chib2P2float", SigmaScaleFormula, RooArgList(m_chib2P2float, PhotonSigmaScale));
-
-//    RooCBShape chib2P1      = RooCBShape ("chib2P1","chib2P1",invm1S,m_chib2P1float,sigmaInd2P,alpha_3J,n_3J);
-//    RooCBShape chib2P2      = RooCBShape ("chib2P2","chib2P2",invm1S,m_chib2P2float,sigmaInd2P,alpha_3J,n_3J);
-    RooCBShape chib2P1      = RooCBShape ("chib2P1","chib2P1",invm1S,m_chib2P1float,w_chib2P1float,alpha_3J,n_3J);
-    RooCBShape chib2P2      = RooCBShape ("chib2P2","chib2P2",invm1S,m_chib2P2float,w_chib2P2float,alpha_3J,n_3J);
+    RooCBShape chib2P1      = RooCBShape ("chib2P1","chib2P1",invm1S,m_chib2P1float,sigmaInd2P,alpha_3J,n_3J);
+    RooCBShape chib2P2      = RooCBShape ("chib2P2","chib2P2",invm1S,m_chib2P2float,sigmaInd2P,alpha_3J,n_3J);
 
     double n2PnJ_START=160;
-    RooRealVar n2PnJ= RooRealVar("N_{#chi_{b}(2P),1S}","n2PJ",n2PnJ_START,0,450);
+    RooRealVar n2PnJ= RooRealVar("n2PJ","n2PJ",n2PnJ_START,0,450);
     n2PnJ.setVal(n2PnJ_START);
     RooAddPdf chib2P_sigInd= RooAddPdf("chib2P_sigInd","chib2P_sigInd",RooArgList(chib2P1,chib2P2),RooArgList(fracJ1));
 
@@ -939,21 +952,16 @@ int main(int argc, char** argv) {
 
 
     sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass2S,Ymass2S);
-    sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass2S);
 
 	RooFormulaVar m_chib2P1float_2S("m_chib2P1float_2S", MassScaleFormula, RooArgList(m_chib2P1fix, PhotonMassScale));
 	RooFormulaVar m_chib2P2float_2S("m_chib2P2float_2S", MassScaleFormula, RooArgList(m_chib2P2fix, PhotonMassScale));
 
-    RooFormulaVar w_chib2P1float_2S("w_chib2P1float_2S", SigmaScaleFormula, RooArgList(m_chib2P1float_2S, PhotonSigmaScale));
-    RooFormulaVar w_chib2P2float_2S("w_chib2P2float_2S", SigmaScaleFormula, RooArgList(m_chib2P2float_2S, PhotonSigmaScale));
 
-//	RooCBShape chib2P1_2S      = RooCBShape ("chib2P1_2S","chib2P1_2S",invm2S,m_chib2P1float_2S,sigmaInd2P_2S,alpha_3J,n_3J);
-//    RooCBShape chib2P2_2S      = RooCBShape ("chib2P2_2S","chib2P2_2S",invm2S,m_chib2P2float_2S,sigmaInd2P_2S,alpha_3J,n_3J);
-	RooCBShape chib2P1_2S      = RooCBShape ("chib2P1_2S","chib2P1_2S",invm2S,m_chib2P1float_2S,w_chib2P1float_2S,alpha_3J,n_3J);
-    RooCBShape chib2P2_2S      = RooCBShape ("chib2P2_2S","chib2P2_2S",invm2S,m_chib2P2float_2S,w_chib2P2float_2S,alpha_3J,n_3J);
+	RooCBShape chib2P1_2S      = RooCBShape ("chib2P1_2S","chib2P1_2S",invm2S,m_chib2P1float_2S,sigmaInd2P_2S,alpha_3J,n_3J);
+    RooCBShape chib2P2_2S      = RooCBShape ("chib2P2_2S","chib2P2_2S",invm2S,m_chib2P2float_2S,sigmaInd2P_2S,alpha_3J,n_3J);
 
     double n2PnJ_2S_START=8;
-    RooRealVar n2PnJ_2S= RooRealVar("N_{#chi_{b}(2P),2S}","n2PnJ_2S",n2PnJ_2S_START,0,200);
+    RooRealVar n2PnJ_2S= RooRealVar("n2PnJ_2S","n2PnJ_2S",n2PnJ_2S_START,0,200);
     n2PnJ_2S.setVal(n2PnJ_2S_START);
     RooAddPdf chib2P_sigInd_2S= RooAddPdf("chib2P_sigInd_2S","chib2P_sigInd_2S",RooArgList(chib2P1_2S,chib2P2_2S),RooArgList(fracJ1));
 
@@ -966,16 +974,11 @@ int main(int argc, char** argv) {
     sprintf(MassScaleFormula,"(@0-%f+0.012*@2)*@1+%f",Ymass2S,Ymass2S);
 	RooFormulaVar m_chib3P2float("m_chib3P2float", MassScaleFormula, RooArgList(m_chib3P, PhotonMassScale, fracJ1));
 
-    RooFormulaVar w_chib3P1float("w_chib3P1float", SigmaScaleFormula, RooArgList(m_chib3P1float, PhotonSigmaScale));
-    RooFormulaVar w_chib3P2float("w_chib3P2float", SigmaScaleFormula, RooArgList(m_chib3P2float, PhotonSigmaScale));
-
-//    RooCBShape chib3P1      = RooCBShape ("chib3P1","chib3P1",invm2S,m_chib3P1float,sigmaInd3P,alpha_3J,n_3J);
-//    RooCBShape chib3P2      = RooCBShape ("chib3P2","chib3P2",invm2S,m_chib3P2float,sigmaInd3P,alpha_3J,n_3J);
-    RooCBShape chib3P1      = RooCBShape ("chib3P1","chib3P1",invm2S,m_chib3P1float,w_chib3P1float,alpha_3J,n_3J);
-    RooCBShape chib3P2      = RooCBShape ("chib3P2","chib3P2",invm2S,m_chib3P2float,w_chib3P1float,alpha_3J,n_3J);
+    RooCBShape chib3P1      = RooCBShape ("chib3P1","chib3P1",invm2S,m_chib3P1float,sigmaInd3P,alpha_3J,n_3J);
+    RooCBShape chib3P2      = RooCBShape ("chib3P2","chib3P2",invm2S,m_chib3P2float,sigmaInd3P,alpha_3J,n_3J);
 
     double n3PnJ_START=8;
-    RooRealVar n3PnJ= RooRealVar("N_{#chi_{b}(3P)},2S","n3PnJ",n3PnJ_START,0,100);
+    RooRealVar n3PnJ= RooRealVar("n3PnJ","n3PnJ",n3PnJ_START,0,100);
     n3PnJ.setVal(n3PnJ_START);
     RooAddPdf chib3P_sigInd= RooAddPdf("chib3P_sigInd","chib3P_sigInd",RooArgList(chib3P1,chib3P2),RooArgList(fracJ1));
 
@@ -991,17 +994,11 @@ int main(int argc, char** argv) {
     sprintf(MassScaleFormula,"(@0-%f+0.012*@2)*@1+%f",Ymass1S,Ymass1S);
 	RooFormulaVar m_chib3P2float_1S("m_chib3P2float_1S", MassScaleFormula, RooArgList(m_chib3P, PhotonMassScale, fracJ1));
 
-    sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass1S);
-    RooFormulaVar w_chib3P1float_1S("w_chib3P1float_1S", SigmaScaleFormula, RooArgList(m_chib3P1float_1S, PhotonSigmaScale));
-    RooFormulaVar w_chib3P2float_1S("w_chib3P2float_1S", SigmaScaleFormula, RooArgList(m_chib3P2float_1S, PhotonSigmaScale));
-
-//    RooCBShape chib3P1_1S      = RooCBShape ("chib3P1_1S","chib3P1_1S",invm1S,m_chib3P1float_1S,sigmaInd3P_1S,alpha_3J,n_3J);
-//    RooCBShape chib3P2_1S     = RooCBShape ("chib3P2_1S","chib3P2_1S",invm1S,m_chib3P2float_1S,sigmaInd3P_1S,alpha_3J,n_3J);
-    RooCBShape chib3P1_1S      = RooCBShape ("chib3P1_1S","chib3P1_1S",invm1S,m_chib3P1float_1S,w_chib3P1float_1S,alpha_3J,n_3J);
-    RooCBShape chib3P2_1S     = RooCBShape ("chib3P2_1S","chib3P2_1S",invm1S,m_chib3P2float_1S,w_chib3P2float_1S,alpha_3J,n_3J);
+    RooCBShape chib3P1_1S      = RooCBShape ("chib3P1_1S","chib3P1_1S",invm1S,m_chib3P1float_1S,sigmaInd3P_1S,alpha_3J,n_3J);
+    RooCBShape chib3P2_1S     = RooCBShape ("chib3P2_1S","chib3P2_1S",invm1S,m_chib3P2float_1S,sigmaInd3P_1S,alpha_3J,n_3J);
 
     double n3PnJ_1S_START=8;
-    RooRealVar n3PnJ_1S= RooRealVar("N_{#chi_{b}(3P),1S}","n3PnJ_1S",n3PnJ_1S_START,0,250);
+    RooRealVar n3PnJ_1S= RooRealVar("n3PnJ_1S","n3PnJ_1S",n3PnJ_1S_START,0,250);
     n3PnJ_1S.setVal(n3PnJ_1S_START);
     RooAddPdf chib3P_sigInd_1S= RooAddPdf("chib3P_sigInd_1S","chib3P_sigInd_1S",RooArgList(chib3P1_1S,chib3P2_1S),RooArgList(fracJ1));
 
@@ -1011,7 +1008,7 @@ int main(int argc, char** argv) {
 ////////////////////////////////////////////////////////
 
 
-    RooRealVar background_nevt1S = RooRealVar("N_{bkg}1S","N_{bkg}1S",1500,0,10000);
+    RooRealVar background_nevt1S = RooRealVar("N_{bkg}1S","N_{bkg}1S",1500,0,20000);
     RooRealVar background_nevtSB1S = RooRealVar("background_nevtSB1S","background_nevtSB1S",1500,0,10000);
     RooAddPdf backgroundSB1S= RooAddPdf("backgroundSB1S","backgroundSB1S",RooArgList(background1S),RooArgList(background_nevtSB1S));
     RooAddPdf backgroundE1S= RooAddPdf("backgroundE1S","backgroundE1S",RooArgList(background1S),RooArgList(background_nevt1S));
@@ -1028,7 +1025,8 @@ int main(int argc, char** argv) {
 
 
 
-    RooAddPdf modelPdf1S= RooAddPdf("modelPdf1S","modelPdf1S",RooArgList(chib1P_sig,chib2P_sig,chib3P_sig_1S,background1S),RooArgList(chib1P_nevt,chib2P_nevt,chib3P_nevt_1S,background_nevt1S));
+    RooAddPdf modelPdf1S= RooAddPdf("modelPdf1S","modelPdf1S",RooArgList(chib1P_sig,background1S),RooArgList(chib1P_nevt,background_nevt1S));
+    RooAddPdf modelPdf1S_= RooAddPdf("modelPdf1S_","modelPdf1S_",RooArgList(chib1P_sig,background1S),RooArgList(chib1P_nevt,background_nevt1S));
 
     RooAddPdf modelPdf2S= RooAddPdf("modelPdf2S","modelPdf2S",RooArgList(chib3P_sig,chib2P_sig_2S,background2S),RooArgList(chib3P_nevt,chib2P_nevt_2S,background_nevt2S));
 
@@ -1042,7 +1040,7 @@ int main(int argc, char** argv) {
     invm1S.setRange("SBregion2",chib1Pmax,chib2Pmin);
     invm1S.setRange("SBregion31S",bb_thresh,invm_max1S);
 
-    invm1S.setRange("Chib1Pregion",invm_min1S,chib1Pmax);
+    invm1S.setRange("Chib1Pregion",invm_min1S,bb_thresh);
     invm1S.setRange("Chib2Pregion",chib2Pmin,chib2Pmax);
     invm1S.setRange("Chib3Pregion",chib2Pmax,bb_thresh);
 
@@ -1056,9 +1054,9 @@ int main(int argc, char** argv) {
     invm2S.setRange("Chib3Pregion2S",invm_min2S,bb_thresh);
 
     char SBregion2Char[200];
-    sprintf(SBregion2Char,"invm1S > %f && invm1S < %f",chib1Pmax,chib2Pmin);
+    sprintf(SBregion2Char,"invm1S > %f && invm1S < %f",bb_thresh,invm_max1S);
     char SBregion31SChar[200];
-    sprintf(SBregion31SChar,"invm1S > %f && invm1S < %f",bb_thresh,invm_max1S);
+    sprintf(SBregion31SChar,"invm1S > %f && invm1S < %f",invm_min1S,chic1min);
     char SBregion32SChar[200];
     sprintf(SBregion32SChar,"invm2S > %f && invm2S < %f",bb_thresh,invm_max2S);
 
@@ -1071,9 +1069,11 @@ int main(int argc, char** argv) {
 
 
     double BkgSBInt1S;
-    BkgSBInt1S = NormalizedIntegral(&backgroundSB1S, invm1S, bb_thresh, invm_max1S);
+    BkgSBInt1S = NormalizedIntegral(&backgroundSB1S, invm1S, bb_thresh,invm_max1S);
     cout<<BkgSBInt1S<<endl;
-    background_nevt1S.setVal((Nbkg_1S_SB2)/BkgSBInt1S);
+    BkgSBInt1S = BkgSBInt1S+ NormalizedIntegral(&backgroundSB1S, invm1S, invm_min1S,chic1min);
+    cout<<BkgSBInt1S<<endl;
+    background_nevt1S.setVal((Nbkg_1S_SB1+Nbkg_1S_SB2)/BkgSBInt1S);
     background_nevt1S.setConstant();
     cout<<"background normalization 1S = " << background_nevt1S.getVal()<<endl;
 
@@ -1098,7 +1098,7 @@ int main(int argc, char** argv) {
     sigmaInd3P_1S.setConstant();
 
     char SignormRegion[200];
-    sprintf(SignormRegion,"Chib1P2Pregion");
+    sprintf(SignormRegion,"Chib1Pregion");
     char OnePTwoPDatacut[200];
     sprintf(OnePTwoPDatacut,"invm1S<%f",chib2Pmax);
 
@@ -1106,7 +1106,7 @@ int main(int argc, char** argv) {
 
     RooDataSet* data1S_=(RooDataSet*)data1S->reduce(Cut(OnePTwoPDatacut));
 
-        RooFitResult* Fit1P2P = modelPdf1S_1P2P.fitTo(*data1S,Save(1),Range(SignormRegion));
+        RooFitResult* Fit1P2P = modelPdf1S_.fitTo(*data1S,Save(1),Range(SignormRegion));
         Fit1P2P->Print();
         covQual_1P2P1S = Fit1P2P->covQual();
 
@@ -1119,16 +1119,15 @@ int main(int argc, char** argv) {
         alpha.setConstant();
         n.setConstant();
 
-        sigmaInd.setConstant();
+//        sigmaInd.setConstant();
         sigmaInd2P.setConstant();
-        alpha_3J.setConstant();
-        n_3J.setConstant();
-        PhotonMassScale2P.setConstant();
+//        alpha_3J.setConstant();
+//        n_3J.setConstant();
+//        PhotonMassScale2P.setConstant();
         ratio_J2overJ1.setConstant();
-        PhotonSigmaScale.setConstant();
 
 //        PhotonMassScale.setVal(PhotonMassScale.getVal()-PhotonMassScale.getError());
-        PhotonMassScale.setConstant();
+//        PhotonMassScale.setConstant();
 
 
         background_nevt1S.setConstant();
@@ -1148,14 +1147,6 @@ int main(int argc, char** argv) {
         sigmaInd3P_1S.setVal(k*1050.+d);
         sigmaInd3P_1S.setConstant();
 
-/*        cout<<"1P width = "<<sigmaInd.getVal()<<endl;
-        cout<<"2P width = "<<sigmaInd2P.getVal()<<endl;
-        cout<<"k = "<<k<<endl;
-        cout<<"d = "<<d<<endl;
-        cout<<"3P width (1S) = "<<sigmaInd3P_1S.getVal()<<endl;
-        cout<<"2P width (2S) = "<<sigmaInd2P_2S.getVal()<<endl;
-        cout<<"3P width (2S) = "<<sigmaInd3P.getVal()<<endl;
-*/
         cout<<"1P width = "<<sigmaInd.getVal()<<endl;
         cout<<"2P width = "<<sigmaInd2P.getVal()<<endl;
         cout<<"k = "<<k<<endl;
@@ -1164,6 +1155,7 @@ int main(int argc, char** argv) {
         cout<<"2P width (2S) = "<<sigmaInd2P_2S.getVal()<<endl;
         cout<<"3P width (2S) = "<<sigmaInd3P.getVal()<<endl;
 
+
 cout<<"deltaM 1P, J2: "<<m_chib1P2float.getVal()-m_chib1P2fix.getVal()<<endl;
 cout<<"deltaM 1P, J1: "<<m_chib1P1float.getVal()-m_chib1P1fix.getVal()<<endl;
 cout<<"deltaM 2P, J2: "<<m_chib2P2float.getVal()-m_chib2P2fix.getVal()<<endl;
@@ -1171,180 +1163,16 @@ cout<<"deltaM 2P, J1: "<<m_chib2P1float.getVal()-m_chib2P1fix.getVal()<<endl;
 cout<<"deltaM 2P, 2S sample, J2: "<<m_chib2P2float_2S.getVal()-m_chib2P2fix.getVal()<<endl;
 cout<<"deltaM 2P, 2S sample, J1: "<<m_chib2P1float_2S.getVal()-m_chib2P1fix.getVal()<<endl;
 
+double deltaMJ0=(m_chib1P0float.getVal()-m_chib1P0fix.getVal())*1000;
+double deltaMJ1=(m_chib1P1float.getVal()-m_chib1P1fix.getVal())*1000;
+double deltaMJ2=(m_chib1P2float.getVal()-m_chib1P2fix.getVal())*1000;
+
 m_chib1P.setVal(m_chib1P1float.getVal()*fracJ1.getVal()+m_chib1P2float.getVal()*(1-fracJ1.getVal()));
 m_chib2P.setVal(m_chib2P1float.getVal()*fracJ1.getVal()+m_chib2P2float.getVal()*(1-fracJ1.getVal()));
 cout<<"m_chib1P: "<<m_chib1P.getVal()<<endl;
 cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
 
-
-
-		 RooAbsReal* nll1S=modelPdf1S_3P.createNLL(*data1S,Range(chib2Pmax,bb_thresh));
-		 RooAbsReal* nll2S=modelPdf2S_red.createNLL(*data2S,Range(invm_min2S,bb_thresh));
-
-
-         RooAddition simNLL = RooAddition("add","add",RooArgSet(*nll1S,*nll2S));
-         double Nllbefore3P=simNLL.getVal();
-
-		 RooMinuit* minuit = new RooMinuit(simNLL);
-
-		 minuit->setStrategy(2);
-		 minuit->setPrintEvalErrors(-1);
-		 minuit->setPrintLevel(3);
-
-		 char resultname[200];
-
-		 cout<<"InitialHesse_"<<endl;
-		 minuit->hesse();
-		 sprintf(resultname,"initialhesse");
-		 RooFitResult* initialhesseresult=minuit->save(resultname,resultname);
-		 cout<<"INITIAL HESSE RESULT:"<<endl;
-		 cout<<initialhesseresult->edm()<<endl;
-		 cout<<initialhesseresult->status()<<endl;
-		 cout<<"InitialHesse-covQual"<<endl;
-		 cout<<initialhesseresult->covQual()<<endl;
-		 initialhesseresult->Print();
-	        delete initialhesseresult;
-
-		 cout<<"Migrad_"<<endl;
-		 minuit->migrad();
-		 sprintf(resultname,"migrad");
-		 RooFitResult* migradresult=minuit->save(resultname,resultname);
-		 cout<<"MIGRAD RESULT:"<<endl;
-		 cout<<migradresult->edm()<<endl;
-		 cout<<migradresult->status()<<endl;
-		 cout<<"Migrad-covQual"<<endl;
-		 cout<<migradresult->covQual()<<endl;
-		 migradresult->Print();
-	        delete migradresult;
-
-
-		 cout<<"Hesse_"<<endl;
-		 minuit->hesse();
-		 sprintf(resultname,"hesse");
-		 RooFitResult* hesseresult=minuit->save(resultname,resultname);
-		 cout<<"HESSE RESULT:"<<endl;
-		 cout<<hesseresult->edm()<<endl;
-		 cout<<hesseresult->status()<<endl;
-		 cout<<"Hesse-covQual"<<endl;
-		 cout<<hesseresult->covQual()<<endl;
-		 hesseresult->Print();
-	        delete hesseresult;
-
-
-			 cout<<"Minos_"<<endl;
-			 minuit->minos(RooArgSet(m_chib3P));
-			 sprintf(resultname,"minos");
-			 RooFitResult* minosresult=minuit->save(resultname,resultname);
-			 cout<<"MINOS RESULT:"<<endl;
-			 cout<<minosresult->edm()<<endl;
-			 cout<<minosresult->status()<<endl;
-			 cout<<"Minos-covQual"<<endl;
-			 cout<<minosresult->covQual()<<endl;
-			 minosresult->Print();
-		        delete minosresult;
-
-		        m_chib3P.setError((m_chib3P.getAsymErrorHi()-m_chib3P.getAsymErrorLo())/2.);
-//		        m_chib3P_1S.setError((m_chib3P_1S.getAsymErrorHi()-m_chib3P_1S.getAsymErrorLo())/2.);
-
-         double Nllafter3P=simNLL.getVal();
-
-         cout<<"minNllNoSigAll "<<Nllbefore3P<<endl;
-         cout<<"minNll3PAll    "<<Nllafter3P<<endl;
-         double logLikelihoodRatio3PAll=TMath::Log(TMath::Exp(Nllafter3P-Nllbefore3P));
-         cout<<"logLikelihoodRatio3PAll "<<logLikelihoodRatio3PAll<<endl;
-         double ThreePsigALL=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio3PAll));
-         cout<<"ThreePsigALL "<<ThreePsigALL<<endl;
-
-
-
-
-
-
-        Nevt_buff=n3PnJ.getVal();
-		double minNll3P=modelPdf2S.createNLL(*data2S)->getVal();
-		n3PnJ.setVal(0);
-		double minNllNoSig2S=modelPdf2S.createNLL(*data2S)->getVal();
-		n3PnJ.setVal(Nevt_buff);
-
-        cout<<"minNllNoSig2S "<<minNllNoSig2S<<endl;
-        cout<<"minNll3P    "<<minNll3P<<endl;
-        double logLikelihoodRatio3P=TMath::Log(TMath::Exp(minNll3P-minNllNoSig2S));
-        cout<<"logLikelihoodRatio3P "<<logLikelihoodRatio3P<<endl;
-        double ThreePsig=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio3P));
-        cout<<"ThreePsig "<<ThreePsig<<endl;
-
-        Nevt_buff=n3PnJ_1S.getVal();
-		double minNll3P_1S=modelPdf1S.createNLL(*data1S)->getVal();
-		n3PnJ_1S.setVal(0);
-		double minNllNoSig1S=modelPdf1S.createNLL(*data1S)->getVal();
-		n3PnJ_1S.setVal(Nevt_buff);
-
-		cout<<"minNllNoSig1S "<<minNllNoSig1S<<endl;
-        cout<<"minNll3P_1S    "<<minNll3P_1S<<endl;
-        double logLikelihoodRatio3P_1S=TMath::Log(TMath::Exp(minNll3P_1S-minNllNoSig1S));
-        cout<<"logLikelihoodRatio3P_1S "<<logLikelihoodRatio3P_1S<<endl;
-        double ThreePsig_1S=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio3P_1S));
-        cout<<"ThreePsig_1S "<<ThreePsig_1S<<endl;
-
-        Nevt_buff=n1PnJ.getVal();
-		double minNll1P=modelPdf1S.createNLL(*data1S)->getVal();
-		n1PnJ.setVal(0);
-		double minNllNo1P1S=modelPdf1S.createNLL(*data1S)->getVal();
-		n1PnJ.setVal(Nevt_buff);
-
-		cout<<"minNllNo1P1S "<<minNllNo1P1S<<endl;
-        cout<<"minNll1P    "<<minNll1P<<endl;
-        double logLikelihoodRatio1P=TMath::Log(TMath::Exp(minNll1P-minNllNo1P1S));
-        cout<<"logLikelihoodRatio1P "<<logLikelihoodRatio1P<<endl;
-        double OnePsig=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio1P));
-        cout<<"OnePsig "<<OnePsig<<endl;
-
-        Nevt_buff=n2PnJ.getVal();
-		double minNll2P=modelPdf1S.createNLL(*data1S)->getVal();
-		n2PnJ.setVal(0);
-		double minNllNo2P1S=modelPdf1S.createNLL(*data1S)->getVal();
-		n2PnJ.setVal(Nevt_buff);
-
-		cout<<"minNllNo2P1S "<<minNllNo2P1S<<endl;
-        cout<<"minNll2P    "<<minNll2P<<endl;
-        double logLikelihoodRatio2P=TMath::Log(TMath::Exp(minNll2P-minNllNo2P1S));
-        cout<<"logLikelihoodRatio2P "<<logLikelihoodRatio2P<<endl;
-        double TwoPsig=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio2P));
-        cout<<"TwoPsig "<<TwoPsig<<endl;
-
-
-
-        double Nevt_buff_;
-        Nevt_buff=n1PnJ.getVal();
-        Nevt_buff_=n2PnJ.getVal();
-		double minNll1P2Pcomb=modelPdf1S.createNLL(*data1S)->getVal();
-		n2PnJ.setVal(0);
-		n1PnJ.setVal(0);
-		double minNllNo1P2Pcomv=modelPdf1S.createNLL(*data1S)->getVal();
-		n1PnJ.setVal(Nevt_buff);
-		n2PnJ.setVal(Nevt_buff_);
-
-		cout<<"minNllNo1P2Pcomv "<<minNllNo1P2Pcomv<<endl;
-        cout<<"minNll1P2Pcomb    "<<minNll1P2Pcomb<<endl;
-        double logLikelihoodRatio1P2Pcomb=TMath::Log(TMath::Exp(minNll1P2Pcomb-minNllNo1P2Pcomv));
-        cout<<"logLikelihoodRatio1P2Pcomb "<<logLikelihoodRatio1P2Pcomb<<endl;
-        double OnePTwoPsigComb=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio1P2Pcomb));
-        cout<<"OnePTwoPsigComb "<<OnePTwoPsigComb<<endl;
-
-
-        Nevt_buff=n2PnJ_2S.getVal();
-		double minNll2P_2S=modelPdf2S.createNLL(*data2S)->getVal();
-		n2PnJ_2S.setVal(0);
-		double minNllNo2P_2S=modelPdf2S.createNLL(*data2S)->getVal();
-		n2PnJ_2S.setVal(Nevt_buff);
-
-		cout<<"minNllNo2P_2S "<<minNllNo2P_2S<<endl;
-        cout<<"minNll2P_2S    "<<minNll2P_2S<<endl;
-        double logLikelihoodRatio2P_2S=TMath::Log(TMath::Exp(minNll2P_2S-minNllNo2P_2S));
-        cout<<"logLikelihoodRatio2P_2S "<<logLikelihoodRatio2P_2S<<endl;
-        double TwoPsig_2S=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio2P_2S));
-        cout<<"TwoPsig_2S "<<TwoPsig_2S<<endl;
 
 
         cout<<"chib1P_nevt: "<<chib1P_nevt.getVal()<<endl;
@@ -1359,7 +1187,7 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      double TotalRealEvents2S = data2S_masswindow->sumEntries();
      double totalEventsInFit2S;
 
-     totalEventsInFit1S = chib1P_nevt.getVal()+chib2P_nevt.getVal()+chib3P_nevt_1S.getVal()+background_nevt1S.getVal();
+     totalEventsInFit1S = chib1P_nevt.getVal()+background_nevt1S.getVal();
      totalEventsInFit2S = chib3P_nevt.getVal()+chib2P_nevt_2S.getVal()+background_nevt2S.getVal();
 
      cout<< "N_tot_Fit1S =                            "<<totalEventsInFit1S <<endl;
@@ -1372,45 +1200,6 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
 
 // likelihood gaussian check
-
-     if(SaveAll) {
-
-    	 char SaveLogs[200];
-
-     Nevt_buff=n3PnJ.getVal();
-
-     int nEvt3P2S=Nevt_buff;
-     TH1F  *logL_3P2S = new TH1F("logL_3P2S","",2*nEvt3P2S,0,2*nEvt3P2S);
-     double Nllafter3P2Svar;
-     for(int i=0;i<2*nEvt3P2S+1;i++){
-     n3PnJ.setVal(i);
-	 Nllafter3P2Svar=simNLL.getVal();
-	 cout<<"Nsig3P_2S = "<<i<<" Nll = "<<Nllafter3P2Svar<<endl;
-	 logL_3P2S->SetBinContent(i,-Nllafter3P2Svar);
-     }
-     sprintf(SaveLogs,"Figures/%s/logL_3P2S.root",FitID);
-     logL_3P2S->SaveAs(SaveLogs);
-
-     n3PnJ.setVal(Nevt_buff);
-
-
-     Nevt_buff=n3PnJ_1S.getVal();
-
-     int nEvt3P1S=Nevt_buff;
-     TH1F  *logL_3P1S = new TH1F("logL_3P1S","",2*nEvt3P1S,0,2*nEvt3P1S);
-     double Nllafter3P1Svar;
-     for(int i=0;i<2*nEvt3P1S+1;i++){
-     n3PnJ_1S.setVal(i);
-	 Nllafter3P1Svar=simNLL.getVal();
-	 cout<<"Nsig3P_1S = "<<i<<" Nll = "<<Nllafter3P1Svar<<endl;
-	 logL_3P1S->SetBinContent(i,-Nllafter3P1Svar);
-     }
-     sprintf(SaveLogs,"Figures/%s/logL_3P1S.root",FitID);
-     logL_3P1S->SaveAs(SaveLogs);
-
-     n3PnJ_1S.setVal(Nevt_buff);
-
-     }
 
      double nSig=1.5;
 
@@ -1545,79 +1334,19 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      sprintf(saveName,"Figures/%s/PhotonEnergy3P_1S.pdf",FitID);
      if(SaveAll) PhotonEnergyCanvas->SaveAs(saveName);
 
-     hCut_1Psig->SetBinContent(inCut+1,rsigchib1P);
-     if(rratchib1P<100) hCut_1PSB->SetBinContent(inCut+1,rratchib1P);
-     hCut_1PS->SetBinContent(inCut+1,rchib1P);
-     hCut_1PB->SetBinContent(inCut+1,rbgchib1P);
-     hCut_2Psig->SetBinContent(inCut+1,rsigchib2P);
-     if(rratchib2P<100) hCut_2PSB->SetBinContent(inCut+1,rratchib2P);
-     hCut_2PS->SetBinContent(inCut+1,rchib2P);
-     hCut_2PB->SetBinContent(inCut+1,rbgchib2P);
-     hCut_sig->SetBinContent(inCut+1,(rsigchib1P+rsigchib2P)/2.);
-     hCut_covQual1->SetBinContent(inCut+1,covQual_BG1S);
-     hCut_1Pmean ->SetBinContent(inCut+1,fmchib1P);
-     hCut_1Pwidth->SetBinContent(inCut+1,sigmaInd.getVal());
-     hCut_1Pnevt ->SetBinContent(inCut+1,fnchib1P);
-     hCut_2Pmean ->SetBinContent(inCut+1,fmchib2P);
-     hCut_2Pwidth->SetBinContent(inCut+1,sigmaInd2P.getVal());
-     hCut_2Pnevt ->SetBinContent(inCut+1,fnchib2P);
-     hCut_CBa    ->SetBinContent(inCut+1,alpha_3J.getVal());
-     hCut_CBn    ->SetBinContent(inCut+1,n_3J.getVal());
-     hCut_BGnevt1S ->SetBinContent(inCut+1,fnbg1S);
-     hCut_BGnevt2S ->SetBinContent(inCut+1,fnbg2S);
-     hCut_Ntotal1S ->SetBinContent(inCut+1,data1S_masswindow->sumEntries());
-     hCut_Ntotal2S ->SetBinContent(inCut+1,data2S_masswindow->sumEntries());
-     if(rchib1P>0.9) hCut_2PSover1PS->SetBinContent(inCut+1,rchib2P/rchib1P);
-
-     hCut_3Psig->SetBinContent(inCut+1,ThreePsig);
-     if(rratchib3P<100) hCut_3PSB->SetBinContent(inCut+1,rratchib3P);
-     hCut_3PS->SetBinContent(inCut+1,rchib3P);
-     hCut_3PB->SetBinContent(inCut+1,rbgchib3P);
-     hCut_3Pmass->SetBinContent(inCut+1,fmchib3P);
-     hCut_3Pmass->SetBinError(inCut+1,err_fmchib3P);
-
-     hCut_3Psig_1S->SetBinContent(inCut+1,ThreePsig_1S);
-     if(rratchib3P_1S<100) hCut_3PSB_1S->SetBinContent(inCut+1,rratchib3P_1S);
-     hCut_3PS_1S->SetBinContent(inCut+1,rchib3P_1S);
-     hCut_3PB_1S->SetBinContent(inCut+1,rbgchib3P_1S);
-
-     hCut_3PsigALL->SetBinContent(inCut+1,ThreePsigALL);
-
-     hCut_PhotonEnergyScale->SetBinContent(inCut+1,PhotonMassScale.getVal());
-     hCut_PhotonEnergyScale2P->SetBinContent(inCut+1,PhotonMassScale2P.getVal());
-     hCut_1PsigLL->SetBinContent(inCut+1,OnePsig);
-     hCut_2PsigLL->SetBinContent(inCut+1,TwoPsig);
-
-     hCut_3Pwidth->SetBinContent(inCut+1,sigmaInd3P.getVal());
-     hCut_3Pwidth_1S->SetBinContent(inCut+1,sigmaInd3P_1S.getVal());
-     hCut_2Pwidth_2S->SetBinContent(inCut+1,sigmaInd2P_2S.getVal());
-
-     hCut_2Pnevt_2S->SetBinContent(inCut+1,n2PnJ_2S.getVal());
-     hCut_sigLL->SetBinContent(inCut+1,OnePTwoPsigComb);
-     hCut_2Psig_2S->SetBinContent(inCut+1,TwoPsig_2S);
-
-     hCut_sigLLhalf->SetBinContent(inCut+1,(OnePsig+OnePsig)/2.);
-     hCut_3PsigLLhalf->SetBinContent(inCut+1,(ThreePsig_1S+ThreePsig)/2.);
+     double plotFrom=invm_min1S;
+     double plotTo=invm_max1S;
 
      double linewidth = 1;
      double chi21S;
      double chi22S;
-     double binWidth=12.5;
-     int FrameBins1S=100./4.*64./binWidth;
+     double binWidth=5;
+     int FrameBins1S=(plotTo-plotFrom)*1000/binWidth;
+
+
      int FrameBins2Sin1S=100./4.*44./binWidth;
      int FrameBins2S=100./4.*64./binWidth;
      int FrameBins3Sin1S=100./4.*32./binWidth;
-
-     n3PnJ_1S.setConstant(kFALSE);
-     m_chib3P.setConstant(kFALSE);
-
-     alpha_3J.setConstant(kFALSE);
-     n_3J.setConstant(kFALSE);
-     PhotonMassScale2P.setConstant(kFALSE);
-     ratio_J2overJ1.setConstant(kFALSE);
-     PhotonSigmaScale.setConstant(kFALSE);
-     PhotonMassScale.setConstant(kFALSE);
-
 
      char plotYtitle[200];
 
@@ -1629,226 +1358,73 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      n3PnJ_1S.setVal(1e-8);
      }
 
-    TCanvas* ChibCanvas1S = new TCanvas("#chi_{b} 1S invariant mass","#chi_{b} 1S invariant mass",2100, 800);
+//     TCanvas* ChibCanvas1S = new TCanvas("#chi_{b} 1S invariant mass","#chi_{b} 1S invariant mass",1600, 800);
+     TCanvas* ChibCanvas1S = new TCanvas("#chi_{b} 1S invariant mass","#chi_{b} 1S invariant mass",2100, 800);
     ChibCanvas1S->Divide(1);
     ChibCanvas1S->SetFillColor(kWhite);
     ChibCanvas1S->cd(1);
+//    gPad->SetLeftMargin(0.15);
     gPad->SetRightMargin(0.3);/////
     gPad->SetFillColor(kWhite);
 
     double FontSize=0.0325;
-
+    data1S->Print();
     RooPlot* frame1S= invm1S.frame(FrameBins1S);
-    frame1S->SetTitle("#chi_{b} invariant mass, Y1S decay");
+    frame1S->SetTitle("#chi_{c} invariant mass, J/#psi decay");
     data1S->plotOn(frame1S);
     sprintf(plotYtitle,"Events per %1.1f MeV",binWidth);
     frame1S->SetYTitle(plotYtitle);
         modelPdf1S.plotOn(frame1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));;
     chi21S = frame1S->chiSquare();
     /////////// Two CB adventure //////////////////
+    modelPdf1S.plotOn(frame1S, Components("chib1P0"), LineStyle(2),LineColor(kMagenta),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
     modelPdf1S.plotOn(frame1S, Components("chib1P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
     modelPdf1S.plotOn(frame1S, Components("chib1P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib2P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib2P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib3P1_1S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib3P2_1S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
     modelPdf1S.plotOn(frame1S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
     modelPdf1S.plotOn(frame1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));
 
+//    modelPdf1S.paramOn(frame1S, Layout(0.1875,0.42,0.875), Format("NE",AutoPrecision(1)));
     modelPdf1S.paramOn(frame1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
 
     frame1S->SetTitle(0);
     frame1S->SetMinimum(0);
+//    frame1S->SetMaximum(2000);
     frame1S->Draw();
 
-    double xText=10.35;
+    double xText=3.65;
     double highestText=frame1S->GetMaximum();
     double deltaText=0.06;
 
     char text[200];
 
     	cout<<"DRAW LATEX"<<endl;
-    sprintf(text,"S/B #chi_{b}(1P) = %1.0f / %1.0f, #chi_{b}(1P)_{sig.} = %1.3f",rchib1P,rbgchib1P,rsigchib1P);
+    sprintf(text,"PES = %1.4f +- %1.4f",PhotonMassScale.getVal(),PhotonMassScale.getError());
     TLatex text1 = TLatex(xText,highestText*(0.95-0*deltaText),text);
-    text1.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text1.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"S/B #chi_{b}(2P) = %1.0f / %1.0f, #chi_{b}(2P)_{sig.} = %1.3f",rchib2P,rbgchib2P,rsigchib2P);
-    TLatex text2 = TLatex(xText,highestText*(0.95-1*deltaText),text);
-    text2.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text2.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P_1S,rbgchib3P_1S,ThreePsig_1S);
-    TLatex text3 = TLatex(xText,highestText*(0.95-2*deltaText),text);
-    text3.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text3.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"M_{#chi_{b}(3P)} =  %1.4f #pm %1.4f",fmchib3P_1S,err_fmchib3P_1S);
-    TLatex text0 = TLatex(xText,highestText*(0.95-3*deltaText),text)                                                                                                                            ;
-    text0.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text0.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"N_{tot} = %1.0f",data1S_masswindow->sumEntries());
-    TLatex text4 = TLatex(xText,highestText*(0.95-4*deltaText),text);                                                                                                                                                                        ;
-    text4.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-//    if(DrawTextOnPlots)text4.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"#chi^{2}/ndf = %1.4f",chi21S);
-    TLatex text6 = TLatex(xText,highestText*(0.95-4*deltaText),text)                                                                                                                                                                                          ;
-    text6.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text6.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    text1.SetTextSize(FontSize);
+    text1.Draw( "same" );
+    sprintf(text,"#Delta M_{#chi_{c0}} = %1.3f MeV",deltaMJ0);
+    TLatex text4 = TLatex(xText,highestText*(0.95-1*deltaText),text);
+    text4.SetTextSize(FontSize);
+    text4.Draw( "same" );
+    sprintf(text,"#Delta M_{#chi_{c1}} = %1.3f MeV",deltaMJ1);
+    TLatex text40 = TLatex(xText,highestText*(0.95-2*deltaText),text);
+    text40.SetTextSize(FontSize);
+    text40.Draw( "same" );
+    sprintf(text,"#Delta M_{#chi_{c2}} = %1.3f MeV",deltaMJ2);
+    TLatex text400 = TLatex(xText,highestText*(0.95-3*deltaText),text);
+    text400.SetTextSize(FontSize);
+    text400.Draw( "same" );
+    sprintf(text,"#chi^{2} / ndf = %1.3f",chi21S);
+    TLatex text4000 = TLatex(xText,highestText*(0.95-4.5*deltaText),text);
+    text4000.SetTextSize(FontSize);
+    text4000.Draw( "same" );
+
 
 //    ChibCanvas1S->Modified();
         sprintf(cutName_,"vtxProb%d_ctCut%d_nYsig%d_cut_gammapt%d_cut_RconvMin%d_cut_RconvMax%d_cut_Ypt%d_vtxChi2ProbGamma%d_vtxChi2ProbGammaLog%d",int(1000000*cut_vtxProb),int(1000000*cut_ct),int(1000000*nYsig),int(1000000*cut_gammapt),int(1000000*cut_RconvMin),int(1000000*cut_RconvMax),int(1000000*cut_Ypt),int(100000000*cut_vtxChi2ProbGamma),-int(10000*cut_vtxChi2ProbGammaLog));
     sprintf(saveName,"Figures/%s/InvMass_Y1S_%s.pdf",FitID,cutName_);
     ChibCanvas1S->SaveAs(saveName);
 
-
-
-
-
-
-    TCanvas* ChibCanvas2S = new TCanvas("#chi_{b} 2S invariant mass","#chi_{b} 2S invariant mass",2100, 800);
-    ChibCanvas2S->Divide(1);
-    ChibCanvas2S->SetFillColor(kWhite);
-    ChibCanvas2S->cd(1);
-    gPad->SetRightMargin(0.3);/////
-    gPad->SetFillColor(kWhite);
-
-    RooPlot* frame2S= invm2S.frame(invm_min1S,invm_max2S,FrameBins2S);
-    frame2S->SetTitle("#chi_{b} invariant mass, Y2S decay");
-    frame2S->SetYTitle(plotYtitle);
-    data2S->plotOn(frame2S,MarkerStyle(24));
-
-
-    modelPdf2S.plotOn(frame2S,Range(invm_min2S,invm_max2S),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));;
-    chi22S = frame2S->chiSquare();
-
-    modelPdf2S.plotOn(frame2S, Components("chib3P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S, Components("chib3P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S, Components("chib2P1_2S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S, Components("chib2P2_2S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S, Components("background2S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S,Range(invm_min2S,invm_max2S),LineColor(kGreen+2),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));
-
-    modelPdf2S.paramOn(frame2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
-
-    frame2S->SetTitle(0);
-    frame2S->SetMinimum(0);
-    frame2S->Draw();
-
-    xText=9.6;
-    highestText=frame2S->GetMaximum();
-    deltaText=0.06;
-
-    sprintf(text,"M_{#chi_{b}(3P)} =  %1.4f #pm %1.4f",fmchib3P,err_fmchib3P);
-    TLatex text5 = TLatex(xText,highestText*(0.95-0*deltaText),text)                                                                                                                            ;
-    text5.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text5.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P,rbgchib3P,ThreePsig);
-    TLatex text8 = TLatex(xText,highestText*(0.95-1*deltaText),text)                                                                                                                            ;
-    text8.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text8.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"N_{tot} = %1.0f",data2S_masswindow->sumEntries());
-    TLatex text9 = TLatex(xText,highestText*(0.95-2*deltaText),text);                                                                                                                                                                        ;
-    text9.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-//    if(DrawTextOnPlots)text9.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"#chi^{2}/ndf = %1.4f",chi22S);
-    TLatex text10 = TLatex(xText,highestText*(0.95-2*deltaText),text)                                                                                                                                                                                          ;
-    text10.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text10.Draw( "same" )                                                                                                                                                                                                                                                 ;
-
-
-    ChibCanvas2S->Modified();
-    sprintf(saveName,"Figures/%s/InvMass_Y2S_%s.pdf",FitID,cutName_);
-    if(nState==2) ChibCanvas2S->SaveAs(saveName);
-
-
-
-
-
-
-
-    TCanvas* ChibCanvas1S2S = new TCanvas("#chi_{b} 1S2S invariant mass","#chi_{b} 1S2S invariant mass",2100,800);
-    ChibCanvas1S2S->Divide(1);
-    ChibCanvas1S2S->SetFillColor(kWhite);
-    ChibCanvas1S2S->cd(1);
-    gPad->SetRightMargin(0.3);/////
-    gPad->SetFillColor(kWhite);
-
-    RooPlot* frame1S2S= invm1S.frame(FrameBins1S);
-    frame1S2S->SetYTitle(plotYtitle);
-    frame1S2S->SetTitle("#chi_{b} invariant mass, Y1S decay");
-    data1S->plotOn(frame1S2S);
-
-    modelPdf1S.plotOn(frame1S2S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));;
-    modelPdf1S.plotOn(frame1S2S, Components("chib1P_sig"), LineStyle(2),LineColor(kMagenta),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S2S, Components("chib2P_sig"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S2S, Components("chib3P_sig_1S"), LineStyle(2),LineColor(kOrange),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S2S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S2S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));
-
-    modelPdf1S.paramOn(frame1S2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
-
-    alpha_3J.setConstant();
-    n_3J.setConstant();
-    n1PnJ.setConstant();
-    n2PnJ.setConstant();
-    PhotonMassScale2P.setConstant();
-    ratio_J2overJ1.setConstant();
-    PhotonSigmaScale.setConstant();
-    PhotonMassScale.setConstant();
-
-    RooPlot* frame1S2S_= invm2S.frame(FrameBins2Sin1S);
-    frame1S2S_->SetTitle("#chi_{b} invariant mass, Y1S decay");
-    frame1S2S_->SetYTitle(plotYtitle);
-    data2S->plotOn(frame1S2S_,MarkerStyle(24));
-
-    modelPdf2S.plotOn(frame1S2S_, Components("chib3P_sig"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame1S2S_, Components("chib2P_sig_2S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame1S2S_, Components("background2S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame1S2S_,Range(invm_min2S,invm_max2S),LineWidth(linewidth),LineColor(kGreen+2),Normalization(totalEventsInFit2S,2));
-
-    modelPdf2S.paramOn(frame1S2S_, Layout(0.725,0.9875,0.275), Format("NE",AutoPrecision(2)));
-
-    RooPlot* frame1S2S__= invm3S.frame(FrameBins3Sin1S);
-    frame1S2S__->SetTitle("#chi_{b} invariant mass, Y3S decay");
-    frame1S2S__->SetYTitle(plotYtitle);
-    data3S->plotOn(frame1S2S__,MarkerStyle(22));
-
-    sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(nS)^{PDG}} [GeV]");
-
-    frame1S2S->GetXaxis()->SetTitle(invmName);
-    frame1S2S->SetTitle(0);
-    frame1S2S->SetMinimum(0);
-    frame1S2S->Draw();
-    frame1S2S_->SetTitle(0);
-    frame1S2S_->SetMinimum(0);
-    frame1S2S_->Draw("same");
-    frame1S2S__->SetTitle(0);
-    frame1S2S__->SetMinimum(0);
-//    frame1S2S__->Draw("same");
-
-
-    xText=10.35;
-    highestText=frame1S->GetMaximum();
-    deltaText=0.06;
-
-    sprintf(text,"M_{#chi_{b}(3P)} =  %1.4f #pm %1.4f",fmchib3P,err_fmchib3P);
-    TLatex text14 = TLatex(xText,highestText*(0.95-0*deltaText),text)                                                                                                                            ;
-    text14.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text14.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"Y(2S) + #gamma: S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P,rbgchib3P,ThreePsig);
-    TLatex text11 = TLatex(xText,highestText*(0.95-1*deltaText),text)                                                                                                                            ;
-    text11.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text11.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"Y(1S) + #gamma: S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P_1S,rbgchib3P_1S,ThreePsig_1S);
-    TLatex text12 = TLatex(xText,highestText*(0.95-2*deltaText),text)                                                                                                                            ;
-    text12.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text12.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"Combined Significance: #chi_{b}(3P)_{sig.} = %1.3f",ThreePsigALL);
-    TLatex text13 = TLatex(xText,highestText*(0.95-3*deltaText),text)                                                                                                                            ;
-    text13.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text13.Draw( "same" )                                                                                                                                                                                                                                                 ;
-
-    ChibCanvas1S2S->Modified();
-    sprintf(saveName,"Figures/%s/InvMass_Y1S2S_%s.pdf",FitID,cutName_);
-    if(nState==2) ChibCanvas1S2S->SaveAs(saveName);
 
 
 
@@ -1868,17 +1444,12 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     delete dataSB1S;
     delete dataSB2S;
 
-    delete minuit;
     delete PhotonEnergyCanvas;
     delete fQ;
 
 	delete frame1S;
-	delete frame2S;
-	delete frame1S2S_;
 
 	delete ChibCanvas1S;
-    delete ChibCanvas2S;
-    delete ChibCanvas1S2S;
 
 
     cout<<"deleted pointers"<<endl;
