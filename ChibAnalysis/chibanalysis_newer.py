@@ -488,8 +488,8 @@ def loopOnEvents():
         if nevents % 100 == 0 :
             print 'Events Processed ' , nevents
 
-        if nevents > 1000:
-            break
+        #if nevents > 1000:
+            #break
     
         #print "run %d \t lumi %d \t orbit %d \t file %s" % (event._event.getRun().run(),event._event.luminosityBlock(), event._event.orbitNumber(),event._event.getTFile().GetName())
     
