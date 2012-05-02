@@ -43,7 +43,14 @@
 #include "TPad.h"
 #include "TRandom3.h"
 #include "TF1.h"
-
+#include "TGraphAsymmErrors.h"
+#include "TH1.h"
+#include "TStyle.h"
+#include "TGraphErrors.h"
+#include "TLine.h"
+//#include "ProfileLikelihoodCalculator.h"
+//#include "HypoTestResult.h"
+#include "BkgMixer.C"
 
 double NormalizedIntegral(RooAbsPdf * function, RooRealVar& integrationVar, double lowerLimit, double upperLimit)
 {
@@ -51,9 +58,12 @@ using namespace RooFit;
 integrationVar.setRange("integralRange", lowerLimit, upperLimit);
 RooAbsReal* integral = (*function).createIntegral(integrationVar,NormSet(integrationVar), Range("integralRange"));
 double normalizedIntegralValue = integral->getVal();
+delete integral;
 return normalizedIntegralValue;
 }
 int main(int argc, char** argv) {
+
+//	using namespace RooStats;
 
 	Char_t *FitID = "Default"; //Storage Directory
 	Char_t *cutName = "Default"; //Code Directory
@@ -61,6 +71,7 @@ int main(int argc, char** argv) {
   	int nState=1000;
   	char cutName_[500];
     int nToy=5000000;
+    int nMix=5000000;
 
   	bool nYsigCut=false;
   	bool vtxProbCut=false;
@@ -79,6 +90,23 @@ int main(int argc, char** argv) {
     bool DrawTextOnPlots=false;
     bool useLeftSB=false;
     bool useRightSB=false;
+    bool PlotStep1=false;
+    bool PlotStep2=false;
+    bool finalPlots=false;
+    bool FixStuffForStep2=false;
+    bool MCsample=false;
+    bool useAnalyticalBKG=false;
+    bool BkgMixerBool=false;
+    bool BkgToy=false;
+	bool useExistingMixFile=false;
+	bool Pi0Cut=false;
+	bool dzSigCut=false;
+    bool OneSPlotModel=true;
+    bool dzCut=false;
+    bool restrictMaximum=false;
+    bool NarrowOptimization=false;
+    bool gammaptDCut=false;
+    bool determine3PparametersDuringStep1=false;
 
 	  for( int i=0;i < argc; ++i ) {
 		    if(std::string(argv[i]).find("FitID") != std::string::npos) {char* FitIDchar = argv[i]; char* FitIDchar2 = strtok (FitIDchar, "="); FitID = FitIDchar2; cout<<"FitID = "<<FitID<<endl;}
@@ -86,17 +114,25 @@ int main(int argc, char** argv) {
 		    if(std::string(argv[i]).find("fileName") != std::string::npos) {char* fileNamechar = argv[i]; char* fileNamechar2 = strtok (fileNamechar, "="); fileName = fileNamechar2; cout<<"fileName = "<<fileName<<endl;}
 		    if(std::string(argv[i]).find("nState") != std::string::npos) {char* nStatechar = argv[i]; char* nStatechar2 = strtok (nStatechar, "p"); nState = atof(nStatechar2); cout<<"nState = "<<nState<<endl;}
 		    if(std::string(argv[i]).find("nToy") != std::string::npos) {char* nToychar = argv[i]; char* nToychar2 = strtok (nToychar, "p"); nToy = atof(nToychar2); cout<<"nToy = "<<nToy<<endl;}
+		    if(std::string(argv[i]).find("nMix") != std::string::npos) {char* nMixchar = argv[i]; char* nMixchar2 = strtok (nMixchar, "p"); nMix = atof(nMixchar2); cout<<"nMix = "<<nMix<<endl;}
 
 		    if(std::string(argv[i]).find("nYsigCut") != std::string::npos) {nYsigCut=true; cout<<"Optimizing nYsigCut"<<endl;}
 		    if(std::string(argv[i]).find("vtxProbCut") != std::string::npos) {vtxProbCut=true; cout<<"Optimizing vtxProbCut"<<endl;}
 		    if(std::string(argv[i]).find("ctSigCut") != std::string::npos) {ctSigCut=true; cout<<"Optimizing ctSigCut"<<endl;}
 		    if(std::string(argv[i]).find("ctCut") != std::string::npos) {ctCut=true; cout<<"Optimizing ctCut"<<endl;}
 		    if(std::string(argv[i]).find("gammaptCut") != std::string::npos) {gammaptCut=true; cout<<"Optimizing gammaptCut"<<endl;}
+		    if(std::string(argv[i]).find("gammaptDCut") != std::string::npos) {gammaptDCut=true; cout<<"Optimizing gammaptDCut"<<endl;}
 		    if(std::string(argv[i]).find("RConvUpperCut") != std::string::npos) {RConvUpperCut=true; cout<<"Optimizing RConvUpperCut"<<endl;}
 		    if(std::string(argv[i]).find("RConvLowerCut") != std::string::npos) {RConvLowerCut=true; cout<<"Optimizing RConvLowerCut"<<endl;}
 		    if(std::string(argv[i]).find("pTCut") != std::string::npos) {pTCut=true; cout<<"Optimizing pTCut"<<endl;}
 		    if(std::string(argv[i]).find("vtxChi2ProbGammaCut") != std::string::npos) {vtxChi2ProbGammaCut=true; cout<<"Optimizing vtxChi2ProbGammaCut"<<endl;}
 		    if(std::string(argv[i]).find("vtxChi2ProbGammaLogCut") != std::string::npos) {vtxChi2ProbGammaLogCut=true; cout<<"Optimizing vtxChi2ProbGammaLogCut"<<endl;}
+		    if(std::string(argv[i]).find("Pi0Cut") != std::string::npos) {Pi0Cut=true; cout<<"Optimizing Pi0Cut"<<endl;}
+		    if(std::string(argv[i]).find("dzSigCut") != std::string::npos) {dzSigCut=true; cout<<"Optimizing dzSigCut"<<endl;}
+		    if(std::string(argv[i]).find("dzCut") != std::string::npos) {dzCut=true; cout<<"Optimizing dzCut"<<endl;}
+		    if(std::string(argv[i]).find("restrictMaximum=true") != std::string::npos) {restrictMaximum=true; cout<<"restrictMaximum"<<endl;}
+		    if(std::string(argv[i]).find("NarrowOptimization=true") != std::string::npos) {NarrowOptimization=true; cout<<"NarrowOptimization"<<endl;}
+		    if(std::string(argv[i]).find("determine3PparametersDuringStep1=true") != std::string::npos) {determine3PparametersDuringStep1=true; cout<<"determine3PparametersDuringStep1"<<endl;}
 
 		    if(std::string(argv[i]).find("useSBforBKGmodel=true") != std::string::npos) {useSBforBKGmodel=true; cout<<"use SB for BKG model"<<endl;}
 		    if(std::string(argv[i]).find("SaveAll=true") != std::string::npos) {SaveAll=true; cout<<"SaveAll"<<endl;}
@@ -105,18 +141,36 @@ int main(int argc, char** argv) {
 		    if(std::string(argv[i]).find("useLeftSB=true") != std::string::npos) {useLeftSB=true; cout<<"useLeftSB"<<endl;}
 		    if(std::string(argv[i]).find("useRightSB=true") != std::string::npos) {useRightSB=true; cout<<"useRightSB"<<endl;}
 		    if(std::string(argv[i]).find("alteredToy=true") != std::string::npos) {alteredToy=true; cout<<"alteredToy"<<endl;}
+		    if(std::string(argv[i]).find("PlotStep1=true") != std::string::npos) {PlotStep1=true; cout<<"PlotStep1"<<endl;}
+		    if(std::string(argv[i]).find("PlotStep2=true") != std::string::npos) {PlotStep2=true; cout<<"PlotStep2"<<endl;}
+		    if(std::string(argv[i]).find("finalPlots=true") != std::string::npos) {finalPlots=true; cout<<"finalPlots"<<endl;}
+		    if(std::string(argv[i]).find("FixStuffForStep2=true") != std::string::npos) {FixStuffForStep2=true; cout<<"FixStuffForStep2"<<endl;}
+		    if(std::string(argv[i]).find("MCsample=true") != std::string::npos) {MCsample=true; cout<<"MCsample"<<endl;}
+		    if(std::string(argv[i]).find("useAnalyticalBKG=true") != std::string::npos) {useAnalyticalBKG=true; cout<<"useAnalyticalBKG"<<endl;}
+		    if(std::string(argv[i]).find("BkgMixer=true") != std::string::npos) {BkgMixerBool=true; cout<<"BkgMixerBool"<<endl;}
+		    if(std::string(argv[i]).find("BkgToy=true") != std::string::npos) {BkgToy=true; cout<<"BkgToy"<<endl;}
+		    if(std::string(argv[i]).find("useExistingMixFile=true") != std::string::npos) {useExistingMixFile=true; cout<<"useExistingMixFile"<<endl;}
+		    if(std::string(argv[i]).find("OneSPlotModel=false") != std::string::npos) {OneSPlotModel=false; cout<<"OneSPlotModel"<<endl;}
 
 	  }
 
 
+
+	  bool Optimize=false;
+	  if(gammaptDCut || dzCut || dzSigCut || Pi0Cut|| nYsigCut||vtxProbCut||ctSigCut||ctCut||gammaptCut||RConvUpperCut||RConvLowerCut||pTCut||vtxChi2ProbGammaCut||vtxChi2ProbGammaLogCut) {cout<<"Optimize!"<<endl; Optimize=true;}
+
 	  char dirstruct[200];
 	  sprintf(dirstruct,"Figures/%s",FitID);
 	  gSystem->mkdir(dirstruct);
+	  bool PlotBothSteps=false;
+	  if(PlotStep1&&PlotStep2) PlotBothSteps=true;
+
 
 //load RooFit library
 	using namespace RooFit;
     gSystem->Load("libRooFit");
     gROOT->SetBatch(1);
+    gStyle->SetFrameBorderMode(0);
 
 //open file
     char filename_[500];
@@ -124,7 +178,8 @@ int main(int argc, char** argv) {
     TFile data_file(filename_);
 
 //grab roodataset
-    RooDataSet* data_=(RooDataSet*)data_file.Get("d");
+//    RooDataSet* data_=new RooDataSet();
+//    data_=(RooDataSet*)data_file.Get("d");
 
 //declare RooDataSet data variables
     char invmName[200];
@@ -145,6 +200,9 @@ int main(int argc, char** argv) {
     invm_min2S=10; invm_max2S=11.1;
     invm_min3S=10.3; invm_max3S=11.1;
 
+    if(MCsample) invm_min1S=9.7;
+    if(MCsample) invm_max1S=10.35;
+
     sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(1S)^{PDG}} [GeV]");
     RooRealVar invm1S("invm1S",invmName,invm_min1S,invm_max1S);
     sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(2S)^{PDG}} [GeV]");
@@ -156,11 +214,11 @@ int main(int argc, char** argv) {
     invm2S.setRange("TotalRange2S",invm_min2S,invm_max2S);
     invm3S.setRange("TotalRange3S",invm_min3S,invm_max3S);
 
-    RooRealVar jpsipt   = RooRealVar("jpsipt", "jpsipt",0,100);
+    RooRealVar jpsipt   = RooRealVar("jpsipt", "jpsipt",0,200);
     RooRealVar jpsimass   = RooRealVar("jpsimass", "jpsimass",8,12);
     RooRealVar gammapt   = RooRealVar("gammapt", "gammapt",0,100);
-    RooRealVar deltaRChiJpsi  = RooRealVar("deltaRChiJpsi","deltaRChiJpsi",0,1);
-    RooRealVar deltaRJpsig    = RooRealVar("deltaRJpsig","deltaRJpsig",0,1);
+    RooRealVar deltaRChiJpsi  = RooRealVar("deltaRChiJpsi","deltaRChiJpsi",0,10);
+    RooRealVar deltaRJpsig    = RooRealVar("deltaRJpsig","deltaRJpsig",0,10);
     RooRealVar jpsieta  = RooRealVar("jpsieta","jpsieta",-5,5);
     RooRealVar ctpv     = RooRealVar("ctpv",   "ctpv",-5,5);
     RooRealVar ctpverr  = RooRealVar("ctpverr","ctpverr",0,10);
@@ -182,18 +240,35 @@ int main(int argc, char** argv) {
     RooRealVar gammapx   = RooRealVar("gammapx", "gammapx",-100,100);
     RooRealVar gammapy   = RooRealVar("gammapy", "gammapy",-100,100);
     RooRealVar gammapz   = RooRealVar("gammapz", "gammapz",-100,100);
+    RooRealVar gammaeta   = RooRealVar("gammaeta", "gammaeta",-100,100);
     RooRealVar Q   = RooRealVar("Q", "Q",0,100);
+    RooRealVar Pi0Mass   = RooRealVar("Pi0Mass", "Pi0Mass",0,5);
+
+    RooRealVar vtxNsigmadz   = RooRealVar("vtxNsigmadz", "vtxNsigmadz",-15,15);
+    RooRealVar vtxdz   = RooRealVar("vtxdz", "vtxdz",-15,15);
+    RooRealVar vtxerrdz   = RooRealVar("vtxerrdz", "vtxerrdz",0,15);
+
+    RooRealVar UpsIndex   	= RooRealVar("UpsIndex", "UpsIndex",0,10000000);
+	RooRealVar GammaIndex   	= RooRealVar("GammaIndex", "GammaIndex",0,500);
+
+	RooRealVar RunNb     = RooRealVar("RunNb", "RunNb",0,1e9);
+	RooRealVar EventNb     = RooRealVar("EventNb", "EventNb",0,1e15);
+
 
     int n_Cut=1;
     double n_Cut_0;
     double deltaCut;
-    int n_Cut_Default=100;
+    int n_Cut_Default=5;
 
 // nYsig
     if(nYsigCut){
         n_Cut=n_Cut_Default;
-        n_Cut_0=0.1;
-        deltaCut=0.05;
+        n_Cut_0=1.5;
+        deltaCut=0.02;
+        if(NarrowOptimization){
+            n_Cut_0= 1.5;
+            deltaCut=0.5;
+        }
     }
 // vtxProb
     if(vtxProbCut){
@@ -204,38 +279,57 @@ int main(int argc, char** argv) {
 // ctSig
     if(ctSigCut){
         n_Cut=n_Cut_Default;
-        n_Cut_0=0.1;
-        deltaCut=0.025;
+        n_Cut_0=0.5;
+        deltaCut=0.05;
+        if(NarrowOptimization){
+            n_Cut_0= 2.;
+            deltaCut=0.5;
+        }
     }
 // ct
     if(ctCut){
         n_Cut=n_Cut_Default;
-        n_Cut_0=0.0001;
-        deltaCut=0.00025;
+        n_Cut_0=0.005;
+        deltaCut=0.0005;
     }
 // gammapt
     if(gammaptCut){
         n_Cut=n_Cut_Default;
-        n_Cut_0=0.5;
-        deltaCut=0.02;
+        n_Cut_0=0.3;
+        deltaCut=0.017;
     }
+// gammaptD
+    if(gammaptDCut){
+        n_Cut=n_Cut_Default;
+        n_Cut_0=0.3;
+        deltaCut=0.017;
+        if(NarrowOptimization){
+            n_Cut_0= -0.3;
+            deltaCut=0.15;
+        }
+    }
+
 // RConvUpperCut
     if(RConvUpperCut){
         n_Cut=n_Cut_Default;
-        n_Cut_0=10;
-        deltaCut=0.2;
+        n_Cut_0=5;
+        deltaCut=0.6;
     }
 // RConvLowerCut
     if(RConvLowerCut){
         n_Cut=n_Cut_Default;
         n_Cut_0=1.5;
-        deltaCut=0.025;
+        deltaCut=0.035;
+        if(NarrowOptimization){
+            n_Cut_0= 1.5;
+            deltaCut=0.5;
+        }
     }
 // pT
     if(pTCut){
         n_Cut=n_Cut_Default;
         n_Cut_0=0;
-        deltaCut=0.2;
+        deltaCut=0.15;
     }
 // vtxChi2ProbGamma
     if(vtxChi2ProbGammaCut){
@@ -243,11 +337,44 @@ int main(int argc, char** argv) {
         n_Cut_0= 0;
         deltaCut=0.000005;
     }
-    // vtxChi2ProbGammaLog
+// vtxChi2ProbGammaLog
         if(vtxChi2ProbGammaLogCut){
             n_Cut=n_Cut_Default;
             n_Cut_0= -50;
             deltaCut=0.5;
+        }
+
+// Pi0Cut
+        if(Pi0Cut){
+            n_Cut=n_Cut_Default;
+            n_Cut_0= 0;
+            deltaCut=0.00018;
+            if(NarrowOptimization){
+                n_Cut_0= 0.010;
+                deltaCut=0.0025;
+            }
+        }
+
+// dzSigCut
+        if(dzSigCut){
+            n_Cut=n_Cut_Default;
+            n_Cut_0= 1.;
+            deltaCut=0.2;
+            if(NarrowOptimization){
+                n_Cut_0= 2.;
+                deltaCut=0.5;
+            }
+        }
+
+// dzCut
+        if(dzCut){
+            n_Cut=n_Cut_Default;
+            n_Cut_0= 0.05;
+            deltaCut=0.025;
+            if(NarrowOptimization){
+                n_Cut_0= 0.25;
+                deltaCut=0.25;
+            }
         }
 
     TH1F  *hCut_1Psig = new TH1F("hCut_1Psig","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
@@ -288,6 +415,7 @@ int main(int argc, char** argv) {
     TH1F  *hCut_3PS = new TH1F("hCut_3PS","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
     TH1F  *hCut_3PB = new TH1F("hCut_3PB","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
     TH1F  *hCut_3Pmass = new TH1F("hCut_3Pmass","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
+    TH1F  *hCut_3PMerr = new TH1F("hCut_3PMerr","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
 
     TH1F  *hCut_3Psig_1S = new TH1F("hCut_3Psig_1S","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
     TH1F  *hCut_3PSB_1S = new TH1F("hCut_3PSB_1S","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
@@ -298,10 +426,14 @@ int main(int argc, char** argv) {
     TH1F  *hCut_PhotonEnergyScale = new TH1F("hCut_PhotonEnergyScale","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
     TH1F  *hCut_PhotonEnergyScale2P = new TH1F("hCut_PhotonEnergyScale2P","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
 
+    TH1F  *hCut_PhotonSigmaScale = new TH1F("hCut_PhotonSigmaScale","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
+    TH1F  *hCut_PhotonSigmaScale2P = new TH1F("hCut_PhotonSigmaScale2P","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
+
     TH1F  *hCut_1PsigLL = new TH1F("hCut_1PsigLL","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
     TH1F  *hCut_2PsigLL = new TH1F("hCut_2PsigLL","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
     TH1F  *hCut_sigLLhalf = new TH1F("hCut_sigLLhalf","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
     TH1F  *hCut_3PsigLLhalf = new TH1F("hCut_3PsigLLhalf","",n_Cut,n_Cut_0,n_Cut_0+deltaCut*n_Cut);
+
 
 
     for(int inCut=0; inCut<n_Cut; inCut++){
@@ -309,30 +441,71 @@ int main(int argc, char** argv) {
 ///////////////////////////////////////////////
 //////////// CUTS /////////////////////////////
 ///////////////////////////////////////////////
+        RooDataSet* data_=new RooDataSet();
+        data_=(RooDataSet*)data_file.Get("d");
+
     	cout<<"Cut number "<<inCut<<endl;
         data_->Print();
 
 // Y cuts
 
-    double cut_rap=1000;
+    double cut_rap=1000.;
     double nYsig=2.5;
     double cut_vtxProb=0.01;
-    double cut_ctSig=1000;
-    double cut_ct=0.01;
+    double cut_ctSig=3.;
+    double cut_ct=1000.;//0.01;
     double cut_Ypt=0.;
 
 // Gamma cuts
 
-    double cut_gammapt = 1.1;
+    double cut_gammapt = 0.;//1.1;
     double cut_gammapt1S = cut_gammapt;
+    double cut_gammapt_max = 10000;//1.1;
+    double gammaptK = 1.111;//1.388//1.111//1.666
+    double gammaptD = 0.0111;//0.088//0.0111//-0.4333
+    double cut_gammaeta=1000.;
 
-    double cut_RconvMin = 2.5;
+//    AN Apr6
+//    gammapt>1.388*Q+0.088 && Rconv>1.5 && ctpv<0.01 && abs(Y1Smass_nSigma)<2.5 && abs(Pi0Mass-0.135)>0.025 && vertexChi2ProbGamma>5e-4 && jpsiVprob>0.01
+
+    double cut_RconvMin = 1.5;
     double cut_RconvMax = 200;
-    double cut_vtxChi2ProbGamma = 0.;//0.0005;//1e-5;//000005;
+    double cut_vtxChi2ProbGamma = 0.;//5e-4;//5e-4;//000005;
     double cut_vtxChi2ProbGammaLog = -1000.;//1e-5;//000005;
+
+    double cut_Pi0 = 0.015;//0.03
+    double Pi0_mean = 0.134;//0.134
 
 // Y - Gamma cuts
 
+    double MINcosalphaCut=-1000;
+    double cut_dzSig=15.;
+    double cut_dz=0.5;//1.
+
+//1S extreme cuts
+/*    nYsig=3;
+    Pi0_mean=0.135;
+    cut_Pi0=0.1;
+    cut_Ypt=10;
+    cut_gammaeta=1.1;
+    cut_rap=1000;
+    gammaptD=-1000;
+    gammaptK=0;
+    cut_dz=1000;
+    cut_ctSig=1000;
+*/
+/*//2S extreme cuts
+     nYsig=2;
+    Pi0_mean=0.165;
+    cut_Pi0=0.03;
+    cut_Ypt=6;
+    cut_gammaeta=1.1;
+    cut_rap=1000;
+    gammaptD=-1000;
+    gammaptK=0;
+    cut_dz=1000;
+    cut_ctSig=1000;
+*/
 
 
 ///////////////////////////////////////////////
@@ -349,41 +522,55 @@ int main(int argc, char** argv) {
     if(pTCut)    	cut_Ypt=n_Cut_0+inCut*deltaCut;
     if(vtxChi2ProbGammaCut)    	cut_vtxChi2ProbGamma=n_Cut_0+inCut*deltaCut;
     if(vtxChi2ProbGammaLogCut)    	cut_vtxChi2ProbGammaLog=n_Cut_0+inCut*deltaCut;
+    if(Pi0Cut)    	cut_Pi0=n_Cut_0+inCut*deltaCut;
+    if(dzSigCut)    	cut_dzSig=n_Cut_0+inCut*deltaCut;
+    if(dzCut)    	cut_dz=n_Cut_0+inCut*deltaCut;
+    if(gammaptDCut)    gammaptD=n_Cut_0+inCut*deltaCut;
 
 //Cut RooDataSet
 
 
-    char DScutChar[1000];
+    char DScutChar[2000];
 
-    sprintf(DScutChar,"jpsipt>%f",cut_Ypt);
-	cout<<DScutChar<<endl;
-    RooDataSet* data_______=(RooDataSet*)data_->reduce(Cut(DScutChar));
-    sprintf(DScutChar,"gammapt>%f",cut_gammapt);
-	cout<<DScutChar<<endl;
-    RooDataSet* data__=(RooDataSet*)data_______->reduce(Cut(DScutChar));
-    data__->Print();
-    sprintf(DScutChar,"Rconv > %f && Rconv < %f",cut_RconvMin,cut_RconvMax);
-    cout<<DScutChar<<endl;
-    RooDataSet* data___=(RooDataSet*)data__->reduce(Cut(DScutChar));
-    data___->Print();
-    sprintf(DScutChar,"jpsieta < %f && jpsieta > %f",cut_rap,-cut_rap);
-    cout<<DScutChar<<endl;
-    RooDataSet* data____=(RooDataSet*)data___->reduce(Cut(DScutChar));
-    data____->Print();
-    sprintf(DScutChar,"ctpv < %f &&  ctpv > %f",cut_ct,-cut_ct);
-    cout<<DScutChar<<endl;
-    RooDataSet* data_____=(RooDataSet*)data____->reduce(Cut(DScutChar));
-    data_____->Print();
+	 RooArgSet CutVars("CutVars");
+	 CutVars.add(invm1S);
+	 CutVars.add(jpsimass);
+	 CutVars.add(invm2S);
+	 CutVars.add(invm3S);
+	 CutVars.add(Y1Smass_nSigma);
+	 CutVars.add(Y2Smass_nSigma);
+	 CutVars.add(Y3Smass_nSigma);
+	 CutVars.add(gammapx);
+	 CutVars.add(gammapy);
+	 CutVars.add(gammapz);
+	 CutVars.add(gammapt);
+	 CutVars.add(jpsipx);
+	 CutVars.add(jpsipy);
+	 CutVars.add(jpsipz);
+	 CutVars.add(jpsieta);
+	 CutVars.add(gammaeta);
+	 CutVars.add(Rconv);
 
-    sprintf(DScutChar,"vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f",cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog);
-    cout<<DScutChar<<endl;
-    RooDataSet* data______vtx=(RooDataSet*)data_____->reduce(Cut(DScutChar));
-    data______vtx->Print();
+//    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && (TMath::Sign(-1.,Q-1.65)+1)/2.*0.8+(TMath::Sign(-1.,1.65-Q)+1)/2.*(gammapt>%f*Q+%f) && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut);
 
-    sprintf(DScutChar,"jpsiVprob > %f",cut_vtxProb);
-    cout<<DScutChar<<endl;
-    RooDataSet* data______=(RooDataSet*)data______vtx->reduce(Cut(DScutChar));
-    data______->Print();
+    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(Pi0Mass-%f)>%f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f && TMath::Abs(gammaeta)<%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut,cut_dzSig, Pi0_mean, cut_Pi0, cut_dz, cut_ctSig, cut_gammaeta);
+//    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut);
+    RooDataSet* dataAfterBasicCuts=(RooDataSet*)data_->reduce(Cut(DScutChar));
+    cout<<DScutChar<<endl;cout<<endl;
+    dataAfterBasicCuts->Print();
+
+    sprintf(cutName_,"vtxY%d_ct%d_ctSig%d_nYsig%d_gampt%d_gammaptD%d_RMin%d_RMax%d_Ypt%d_vtxgam%d_vtxgamLog%d_Pi0%d_dzSig%d_dz%d",int(1000000*cut_vtxProb),int(1000000*cut_ct),int(1000000*cut_ctSig),int(1000000*nYsig),int(1000000*cut_gammapt),int(1000000*gammaptD),int(1000000*cut_RconvMin),int(1000000*cut_RconvMax),int(1000000*cut_Ypt),int(100000000*cut_vtxChi2ProbGamma),-int(10000*cut_vtxChi2ProbGammaLog),int(100000*cut_Pi0),int(100000*cut_dzSig),int(100000*cut_dz));
+
+
+    RooDataSet* dataAfterBasicCutsExceptGammaPtCut;
+    if(BkgMixerBool&&!useExistingMixFile){
+    	char DScutCharNoGammaPtCut[2000];
+        sprintf(DScutCharNoGammaPtCut,"jpsipt>%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(Pi0Mass-%f)>%f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f",cut_Ypt,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,MINcosalphaCut,cut_dzSig, Pi0_mean, cut_Pi0, cut_dz, cut_ctSig);
+        dataAfterBasicCutsExceptGammaPtCut=(RooDataSet*)data_->reduce(Cut(DScutCharNoGammaPtCut));
+        cout<<"without gammapt cut:"<<endl;
+        dataAfterBasicCutsExceptGammaPtCut->Print();
+    }
+
 /////// Producing SB dataset
 
         double LowerSBmin;
@@ -435,29 +622,43 @@ int main(int argc, char** argv) {
 
     sprintf(DScutChar,"jpsimass > %f && Y1Smass_nSigma < %f || jpsimass < %f && Y2Smass_nSigma > %f",LowerSBmin,nSigSBlow,UpperSBmax,nSigSBhigh);
     cout<<DScutChar<<endl;
-    RooDataSet* dataSB1S=(RooDataSet*)data______->reduce(Cut(DScutChar));
+    RooDataSet* dataSB1S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
     dataSB1S->Print();
 
     sprintf(DScutChar,"jpsimass > %f && Y1Smass_nSigma < %f || jpsimass < %f && Y2Smass_nSigma > %f",LowerSBmin2S,nSigSBlow2S,UpperSBmax2S,nSigSBhigh2S);
     cout<<DScutChar<<endl;
-    RooDataSet* dataSB2S=(RooDataSet*)data______->reduce(Cut(DScutChar));
+    RooDataSet* dataSB2S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
     dataSB2S->Print();
 
 
 /////// Producing Signal dataset
-    sprintf(DScutChar,"Y1Smass_nSigma > %f && Y1Smass_nSigma < %f && Y2Smass_nSigma < %f && gammapt>%f",-nYsig,nYsig,-nYsig,cut_gammapt1S);
+    sprintf(DScutChar,"Y1Smass_nSigma > %f && Y1Smass_nSigma < %f && Y2Smass_nSigma < %f",-nYsig,nYsig,10000.);
     cout<<DScutChar<<endl;
-    RooDataSet* data1S=(RooDataSet*)data______->reduce(Cut(DScutChar));
+    RooDataSet* data1S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
     data1S->Print();
+
+    RooDataSet* data1SExceptGammaPtCut;
+    if(BkgMixerBool&&!useExistingMixFile){
+        data1SExceptGammaPtCut=(RooDataSet*)dataAfterBasicCutsExceptGammaPtCut->reduce(Cut(DScutChar));
+        cout<<"without gammapt cut:"<<endl;
+        data1SExceptGammaPtCut->Print();
+    }
 
     sprintf(DScutChar,"Y2Smass_nSigma > %f && Y2Smass_nSigma < %f ",-nYsig,nYsig);
     cout<<DScutChar<<endl;
-    RooDataSet* data2S=(RooDataSet*)data______->reduce(Cut(DScutChar));
+    RooDataSet* data2S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
     data2S->Print();
 
-    sprintf(DScutChar,"Y3Smass_nSigma > %f && Y3Smass_nSigma < %f && Y2Smass_nSigma > %f",-nYsig,nYsig,nYsig);
+    RooDataSet* data2SExceptGammaPtCut;
+    if(BkgMixerBool&&!useExistingMixFile){
+        data2SExceptGammaPtCut=(RooDataSet*)dataAfterBasicCutsExceptGammaPtCut->reduce(Cut(DScutChar));
+        cout<<"without gammapt cut:"<<endl;
+        data2SExceptGammaPtCut->Print();
+    }
+
+    sprintf(DScutChar,"Y3Smass_nSigma > %f && Y3Smass_nSigma < %f && Y2Smass_nSigma > %f",-nYsig,nYsig,-10000.);
     cout<<DScutChar<<endl;
-    RooDataSet* data3S=(RooDataSet*)data______->reduce(Cut(DScutChar));
+    RooDataSet* data3S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
     data3S->Print();
 
 
@@ -465,9 +666,20 @@ int main(int argc, char** argv) {
     	data1S=dataSB1S;
     	data2S=dataSB2S;
     }
-    TTree* tree1S=(TTree*)data1S->tree();
-    TTree* tree2S=(TTree*)data2S->tree();
-    TTree* treeAllCuts=(TTree*)data______->tree();
+    TTree* tree1S=new TTree();
+    TTree* tree2S=new TTree();
+    TTree* treeAllCuts=new TTree();
+
+    TTree* tree1SExceptGammaPtCut=new TTree();
+    TTree* tree2SExceptGammaPtCut=new TTree();
+    if(BkgMixerBool&&!useExistingMixFile){
+    	tree1SExceptGammaPtCut=(TTree*)data1SExceptGammaPtCut->tree();
+    	tree2SExceptGammaPtCut=(TTree*)data2SExceptGammaPtCut->tree();
+    }
+
+    tree1S=(TTree*)data1S->tree();
+    tree2S=(TTree*)data2S->tree();
+    treeAllCuts=(TTree*)dataAfterBasicCuts->tree();
 
     if(useSBforBKGmodel){
     	tree1S=(TTree*)dataSB1S->tree();
@@ -479,6 +691,11 @@ int main(int argc, char** argv) {
     	data2S=dataSB2S;
     }
 
+    if(MCsample){
+        tree2S=(TTree*)data1S->tree();
+    	data2S=data1S;
+    }
+
     char treeName[200];
     sprintf(treeName,"Figures/%s/tree_Y1S.root",FitID);
     if(SaveAll) tree1S->SaveAs(treeName);
@@ -486,19 +703,11 @@ int main(int argc, char** argv) {
     if(SaveAll) tree2S->SaveAs(treeName);
     sprintf(treeName,"Figures/%s/treeAllCuts.root",FitID);
     if(SaveAll) treeAllCuts->SaveAs(treeName);
+    sprintf(treeName,"Figures/%s/tree1SExceptGammaPtCut.root",FitID);
 
     if(SaveAll){
-    char saveMass[200];
-    TH1F  *MassHisto = new TH1F("MassHisto","",100,8.6,11.4);
-    treeAllCuts->Draw("jpsimass>>MassHisto");
-    TCanvas* MassCanvas = new TCanvas("MassCanvas","MassCanvas",1600, 800);
-    MassCanvas->SetFillColor(kWhite);
-    MassHisto->GetYaxis()->SetTitleOffset(1.7); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); MassHisto->SetStats(0);MassHisto->GetXaxis()->SetTitle("m_{#mu#mu}");	MassHisto->Draw();
-    MassCanvas->Modified();
-    sprintf(saveMass,"Figures/%s/DimuonMass.pdf",FitID);
-    MassCanvas->SaveAs(saveMass);
 
-    TH1F  *MassHisto1S = new TH1F("MassHisto1S","",100,-20,20);
+/*    TH1F  *MassHisto1S = new TH1F("MassHisto1S","",100,-20,20);
     treeAllCuts->Draw("Y1Smass_nSigma>>MassHisto1S");
     MassCanvas->SetFillColor(kWhite);
     MassHisto1S->GetYaxis()->SetTitleOffset(1.7); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); MassHisto1S->SetStats(0);MassHisto1S->GetXaxis()->SetTitle("n_{#sigma} Y(1S)");	MassHisto1S->Draw();
@@ -521,12 +730,148 @@ int main(int argc, char** argv) {
     MassCanvas->Modified();
     sprintf(saveMass,"Figures/%s/nSigmaY3SMass.pdf",FitID);
     MassCanvas->SaveAs(saveMass);
+*/
 
-    }
+        char saveMass[200];
+        char InvmCutChar[200];
+        sprintf(InvmCutChar,"invm1S<%f",invm_max1S);
+        double yOff=1.3;
+
+    TH1F  *MassHisto = new TH1F("MassHisto","",112,8.6,11.4);//25MeV
+    TH1F  *GammaPtHisto = new TH1F("GammaPtHisto","",100,0,15);//150MeV
+    TH1F  *GammaEtaHisto = new TH1F("GammaEtaHisto","",100,-2.6,2.6);
+    TH1F  *UpsPtHisto = new TH1F("UpsPtHisto","",100,0,50);//500MeV
+    TH1F  *UpsRapHisto = new TH1F("UpsRapHisto","",100,-1.75,1.75);
+    TH1F  *RConvHisto = new TH1F("RConvHisto","",150,0,75);//0.5cm
+
+    TH1F  *MassHistoInvmCut = new TH1F("MassHistoInvmCut","",112,8.6,11.4);//25MeV
+    TH1F  *GammaPtHistoInvmCut = new TH1F("GammaPtHistoInvmCut","",100,0,5);//50MeV
+    TH1F  *GammaEtaHistoInvmCut = new TH1F("GammaEtaHistoInvmCut","",100,-2.6,2.6);
+    TH1F  *UpsPtHistoInvmCut = new TH1F("UpsPtHistoInvmCut","",100,0,50);//500MeV
+    TH1F  *UpsRapHistoInvmCut = new TH1F("UpsRapHistoInvmCut","",100,-1.75,1.75);
+    TH1F  *RConvHistoInvmCut = new TH1F("RConvHistoInvmCut","",100,0,75);//0.5cm
+
+    treeAllCuts->Draw("jpsimass>>MassHisto");
+    treeAllCuts->Draw("sqrt(gammapx*gammapx+gammapy*gammapy)>>GammaPtHisto");
+    treeAllCuts->Draw("0.5*TMath::Log((sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)+gammapz)/(sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)-gammapz))>>GammaEtaHisto");
+    treeAllCuts->Draw("jpsipt>>UpsPtHisto");
+    treeAllCuts->Draw("jpsieta>>UpsRapHisto");
+    treeAllCuts->Draw("Rconv>>RConvHisto");
+
+    treeAllCuts->Draw("jpsimass>>MassHistoInvmCut",InvmCutChar);
+    treeAllCuts->Draw("sqrt(gammapx*gammapx+gammapy*gammapy)>>GammaPtHistoInvmCut",InvmCutChar);
+    treeAllCuts->Draw("0.5*TMath::Log((sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)+gammapz)/(sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)-gammapz))>>GammaEtaHistoInvmCut",InvmCutChar);
+    treeAllCuts->Draw("jpsipt>>UpsPtHistoInvmCut",InvmCutChar);
+    treeAllCuts->Draw("jpsieta>>UpsRapHistoInvmCut",InvmCutChar);
+    treeAllCuts->Draw("Rconv>>RConvHistoInvmCut",InvmCutChar);
+
+    TCanvas* PlotCanvas = new TCanvas("PlotCanvas","PlotCanvas",1600, 800);
+    PlotCanvas->SetFillColor(kWhite);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(kWhite);
+
+    GammaPtHisto->GetYaxis()->SetTitleOffset(yOff); GammaPtHisto->SetStats(0);GammaPtHisto->GetXaxis()->SetTitle("p_{T#gamma} [GeV]");	GammaPtHisto->GetYaxis()->SetTitle("Events per 150 MeV"); GammaPtHisto->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+    sprintf(saveMass,"Figures/%s/NoInvmCut_GammaPt.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    GammaEtaHisto->GetYaxis()->SetTitleOffset(yOff); GammaEtaHisto->SetStats(0);GammaEtaHisto->GetXaxis()->SetTitle("#eta_{#gamma}");	GammaEtaHisto->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/NoInvmCut_GammaEta.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    UpsPtHisto->GetYaxis()->SetTitleOffset(yOff); UpsPtHisto->SetStats(0);UpsPtHisto->GetXaxis()->SetTitle("p_{T#mu#mu} [GeV]"); UpsPtHisto->GetYaxis()->SetTitle("Events per 500 MeV");	UpsPtHisto->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+    sprintf(saveMass,"Figures/%s/NoInvmCut_UpsPt.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    UpsRapHisto->GetYaxis()->SetTitleOffset(yOff); UpsRapHisto->SetStats(0);UpsRapHisto->GetXaxis()->SetTitle("y_{#mu#mu}");	UpsRapHisto->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/NoInvmCut_UpsRap.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    RConvHisto->GetYaxis()->SetTitleOffset(yOff); RConvHisto->SetStats(0);RConvHisto->GetXaxis()->SetTitle("#rho_{conv} [cm]");	RConvHisto->GetYaxis()->SetTitle("Conversions per 0.5 cm");RConvHisto->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/NoInvmCut_RConv.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+     MassHisto->GetYaxis()->SetTitleOffset(yOff); MassHisto->SetStats(0);MassHisto->GetXaxis()->SetTitle("m_{#mu#mu} [GeV]");	MassHisto->GetYaxis()->SetTitle("Events per 25 MeV");MassHisto->Draw("E");
+     PlotCanvas->Modified();
+     PlotCanvas->SetLogy(false);
+     sprintf(saveMass,"Figures/%s/NoInvmCut_UpsMass.pdf",FitID);
+     PlotCanvas->SaveAs(saveMass);
+
+
+    GammaPtHistoInvmCut->GetYaxis()->SetTitleOffset(yOff); GammaPtHistoInvmCut->SetStats(0);GammaPtHistoInvmCut->GetXaxis()->SetTitle("p_{T#gamma} [GeV]");		GammaPtHistoInvmCut->GetYaxis()->SetTitle("Events per 50 MeV"); GammaPtHistoInvmCut->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+    sprintf(saveMass,"Figures/%s/InvmCut_GammaPt.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    GammaEtaHistoInvmCut->GetYaxis()->SetTitleOffset(yOff); GammaEtaHistoInvmCut->SetStats(0);GammaEtaHistoInvmCut->GetXaxis()->SetTitle("#eta_{#gamma}");	GammaEtaHistoInvmCut->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/InvmCut_GammaEta.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    UpsPtHistoInvmCut->GetYaxis()->SetTitleOffset(yOff); UpsPtHistoInvmCut->SetStats(0);UpsPtHistoInvmCut->GetXaxis()->SetTitle("p_{T#mu#mu} [GeV]");UpsPtHistoInvmCut->GetYaxis()->SetTitle("Events per 500 MeV");	UpsPtHistoInvmCut->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+    sprintf(saveMass,"Figures/%s/InvmCut_UpsPt.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    UpsRapHistoInvmCut->GetYaxis()->SetTitleOffset(yOff); UpsRapHistoInvmCut->SetStats(0);UpsRapHistoInvmCut->GetXaxis()->SetTitle("y_{#mu#mu}");	UpsRapHistoInvmCut->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/InvmCut_UpsRap.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    RConvHistoInvmCut->GetYaxis()->SetTitleOffset(yOff); RConvHistoInvmCut->SetStats(0);RConvHistoInvmCut->GetXaxis()->SetTitle("#rho_{conv} [cm]");	RConvHistoInvmCut->GetYaxis()->SetTitle("Conversions per 0.5 cm"); RConvHistoInvmCut->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/InvmCut_RConv.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    MassHistoInvmCut->GetYaxis()->SetTitleOffset(yOff); MassHistoInvmCut->SetStats(0);MassHistoInvmCut->GetXaxis()->SetTitle("m_{#mu#mu} [GeV]");MassHistoInvmCut->GetYaxis()->SetTitle("Events per 25 MeV");	MassHistoInvmCut->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/InvmCut_UpsMass.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    delete PlotCanvas;
+    delete MassHisto;
+    delete GammaPtHisto;
+    delete GammaEtaHisto;
+    delete UpsPtHisto;
+    delete UpsRapHisto;
+    delete RConvHisto;
+    delete MassHistoInvmCut;
+    delete GammaPtHistoInvmCut;
+    delete GammaEtaHistoInvmCut;
+    delete UpsPtHistoInvmCut;
+    delete UpsRapHistoInvmCut;
+    delete RConvHistoInvmCut;
+
+   }
+
+
+
+    /////////////////////////////////////////////
+    ///////////// THE Background Saga ///////////
+    /////////////////////////////////////////////
+
+    RooAbsPdf* background1S;
+    RooAbsPdf* background2S;
+
 
     // Ernest's ToyMC for background estimation:
 
-    double bb_thresh=10.56;
+    double bb_thresh=10.58;
     double chib1Pmin=9.85;
     double chib1Pmax=9.95;
     double chib2Pmin=10.15;
@@ -537,7 +882,7 @@ int main(int argc, char** argv) {
         float m_gamma = 0.;
         char DrawChar[500];
 
-        sprintf(DrawChar,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax);
+        sprintf(DrawChar,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f &&invm1S<10.4|invm1S>10.55",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax);
         if(useSBforBKGmodel) sprintf(DrawChar,"invm1S<10000");
 
         TH1F  *hYmass1S = new TH1F("hYmass1S","",nHistBins,8.7,11.4);
@@ -545,27 +890,27 @@ int main(int argc, char** argv) {
         TH1F  *hYmass2S = new TH1F("hYmass2S","",nHistBins,8.7,11.4);
         TH1F  *hYmass_check2S = new TH1F("hYmass_check2S","",nHistBins,8.7,11.4);
 
-       tree1S->Draw("jpsimass>>hYmass1S",DrawChar);
-       tree2S->Draw("jpsimass>>hYmass2S");
+        tree1S->Draw("jpsimass>>hYmass1S",DrawChar);
+        tree2S->Draw("jpsimass>>hYmass2S");
 
-        TH1F  *hGammaP1S = new TH1F("hGammaP1S","",nHistBins,0,100);
-        TH1F  *hGammaP_check1S = new TH1F("hGammaP_check1S","",nHistBins,0,100);
-        TH1F  *hGammaP2S = new TH1F("hGammaP2S","",nHistBins,0,100);
-        TH1F  *hGammaP_check2S = new TH1F("hGammaP_check2S","",nHistBins,0,100);
+        TH1F  *hGammaP1S = new TH1F("hGammaP1S","",10*nHistBins,0,150);
+        TH1F  *hGammaP_check1S = new TH1F("hGammaP_check1S","",10*nHistBins,0,100);
+        TH1F  *hGammaP2S = new TH1F("hGammaP2S","",10*nHistBins,0,100);
+        TH1F  *hGammaP_check2S = new TH1F("hGammaP_check2S","",10*nHistBins,0,100);
 
         tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaP1S",DrawChar);
         tree2S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaP2S");
 
-        TH1F  *hUpsP1S = new TH1F("hUpsP1S","",nHistBins,0,100);
-        TH1F  *hUpsP_check1S = new TH1F("hUpsP_check1S","",nHistBins,0,100);
-        TH1F  *hUpsP2S = new TH1F("hUpsP2S","",nHistBins,0,100);
-        TH1F  *hUpsP_check2S = new TH1F("hUpsP_check2S","",nHistBins,0,100);
+        TH1F  *hUpsP1S = new TH1F("hUpsP1S","",3*nHistBins,0,100);
+        TH1F  *hUpsP_check1S = new TH1F("hUpsP_check1S","",3*nHistBins,0,100);
+        TH1F  *hUpsP2S = new TH1F("hUpsP2S","",1.5*nHistBins,0,100);
+        TH1F  *hUpsP_check2S = new TH1F("hUpsP_check2S","",1.5*nHistBins,0,100);
 
         tree1S->Draw("sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hUpsP1S",DrawChar);
         tree2S->Draw("sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hUpsP2S");
 
-        TH1F  *hCosAlphaP1S = new TH1F("hCosAlphaP1S","",nHistBins,-1,1);
-        TH1F  *hCosAlphaP_check1S = new TH1F("hCosAlphaP_check1S","",nHistBins,-1,1);
+        TH1F  *hCosAlphaP1S = new TH1F("hCosAlphaP1S","",1.5*nHistBins,-1,1);
+        TH1F  *hCosAlphaP_check1S = new TH1F("hCosAlphaP_check1S","",1.5*nHistBins,-1,1);
         TH1F  *hCosAlphaP2S = new TH1F("hCosAlphaP2S","",nHistBins,-1,1);
         TH1F  *hCosAlphaP_check2S = new TH1F("hCosAlphaP_check2S","",nHistBins,-1,1);
 
@@ -588,12 +933,12 @@ int main(int argc, char** argv) {
 
 
 
-        if(existingBKGfile) {
-        	cout<<"using existing bkt-toyMC file"<<endl;
+        if(existingBKGfile&&BkgToy) {
+        	cout<<"using existing bkg-toyMC file"<<endl;
         }
 
-        if(!existingBKGfile){
-        	cout<<"producing new bkt-toyMC file"<<endl;
+        if(!existingBKGfile&&BkgToy){
+        	cout<<"producing new bkg-toyMC file"<<endl;
 
         hYmass1S->Write();
         hGammaP1S->Write();
@@ -679,7 +1024,11 @@ int main(int argc, char** argv) {
 
         }
 
-        if(SaveAll){
+
+
+
+
+        if(SaveAll&&BkgToy){
               char saveBkgToy[200];
                  TCanvas* BkgToyCanvas = new TCanvas("BkgToyCanvas","BkgToyCanvas",1600, 800);
 
@@ -769,16 +1118,15 @@ int main(int argc, char** argv) {
         RooBkgToySet->Print();
         RooDataHist* RooBkgToyHist1S = new RooDataHist("RooBkgToyHist1S","RooBkgToyHist1S",RooArgList(invm1S),*RooBkgToySet);
         RooBkgToyHist1S->Print();
-        RooHistPdf background1S = RooHistPdf("background1S","background1S",RooArgSet(invm1S),*RooBkgToyHist1S,1);
+        if(BkgToy) background1S = new RooHistPdf("background1S","background1S",RooArgSet(invm1S),*RooBkgToyHist1S,1);
         BkgToyHist1S->Write();
         RooDataHist* RooBkgToyHist2S = new RooDataHist("RooBkgToyHist2S","RooBkgToyHist2S",RooArgList(invm2S),*RooBkgToySet);
         RooBkgToyHist2S->Print();
-        RooHistPdf background2S = RooHistPdf("background2S","background2S",RooArgSet(invm2S),*RooBkgToyHist2S,1);
+        if(BkgToy) background2S = new RooHistPdf("background2S","background2S",RooArgSet(invm2S),*RooBkgToyHist2S,1);
         BkgToyHist2S->Write();
 
         fQ->Write();
         fQ->Close();
-
 
 
 
@@ -801,6 +1149,310 @@ int main(int argc, char** argv) {
 
 
 
+////////////////// New Bkg mixer /////////////////
+
+        if(BkgMixerBool){
+        	cout<<"Using BkgMixer tool to build background shape"<<endl;
+     	    gROOT->ProcessLine(".L BkgMixer.C++");
+     	    gROOT->ProcessLine(".L BkgMixer.C++");
+     	    gROOT->ProcessLine(".L BkgMixer.C++");
+     	    char MixerInputTree[200];
+     	    int nStateToMix;
+     	    char ExcludeSignal[200];
+     	    int nBinsCosAlphaTry;
+
+     	    nStateToMix=1;
+     	    nBinsCosAlphaTry=1000;
+     	    sprintf(ExcludeSignal,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f &&invm1S<10.4|invm1S>10.55",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax);
+     	    sprintf(MixerInputTree,"BkgMixTree/tree_Y1S_Apr18_dz5mm_.root");
+     	    BkgMixer(MixerInputTree,tree1SExceptGammaPtCut,nStateToMix,invm_min1S,invm_max1S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass1S,nBinsCosAlphaTry);
+     	    TH1F *hInvM1S=(TH1F*)hInvMnS->Clone("hInvM1S");
+     	    hInvMnS->Print();
+     	    hInvM1S->Print();
+
+          RooDataHist* RooBkgToyHist1S_Mixer = new RooDataHist("RooBkgToyHist1S_Mixer","RooBkgToyHist1S_Mixer",RooArgList(invm1S),hInvM1S);
+          RooBkgToyHist1S_Mixer->Print();
+          background1S = new  RooHistPdf("background1S","background1S",RooArgSet(invm1S),*RooBkgToyHist1S_Mixer,1);
+
+          char copyFrom[200];
+          char copyTo[200];
+          if(Optimize){
+              cout<<"Saving eventMixer file for 1S background..."<<endl;
+        	  sprintf(copyFrom,"%s/eventMixer1S.root",dirstruct);
+        	  sprintf(copyTo,"%s/eventMixer1S_Cut%d.root",dirstruct,inCut);
+        	  gSystem->CopyFile(copyFrom,copyTo,kTRUE);
+          }
+
+          cout<<"Finished Bkg mixing for 1S..."<<endl;
+
+          TH1F *hInvM2S;
+          if(nState==2){
+          nStateToMix=2;
+   	      nBinsCosAlphaTry=1000;
+		  sprintf(ExcludeSignal,"invm2S>%f",chib2Pmax);
+          sprintf(MixerInputTree,"BkgMixTree/tree_Y2S_Apr18_dz5mm_.root");
+          BkgMixer(MixerInputTree,tree2SExceptGammaPtCut,nStateToMix,invm_min2S,invm_max2S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass2S,nBinsCosAlphaTry);
+          hInvM2S=(TH1F*)hInvMnS->Clone("hInvM2S");
+          hInvMnS->Print();
+          hInvM2S->Print();
+
+          if(Optimize){
+              cout<<"Saving eventMixer file for 2S background..."<<endl;
+        	  sprintf(copyFrom,"%s/eventMixer2S.root",dirstruct);
+        	  sprintf(copyTo,"%s/eventMixer2S_Cut%d.root",dirstruct,inCut);
+        	  gSystem->CopyFile(copyFrom,copyTo,kTRUE);
+          }
+          cout<<"Finished Bkg mixing for 2S..."<<endl;
+          }
+
+          if(nState==1) hInvM2S=(TH1F*)hInvMnS->Clone("hInvM2S");
+          RooDataHist* RooBkgToyHist2S_Mixer = new RooDataHist("RooBkgToyHist2S_Mixer","RooBkgToyHist2S_Mixer",RooArgList(invm2S),hInvM2S);
+          RooBkgToyHist2S_Mixer->Print();
+          background2S = new  RooHistPdf("background2S","background2S",RooArgSet(invm2S),*RooBkgToyHist2S_Mixer,1);
+
+          fMix->Close();
+
+        }
+
+        cout<<"Fully finished Bkg mixing..."<<endl;
+
+        /*
+        if(BkgMixerBool){
+
+      	  TH1F *hInvM1S = new TH1F("hInvM1S",";Q + M(#Upsilon(1S)) [GeV]",100,invm_min1S-0.1,invm_max1S+0.1);
+      	TFile *fMix;
+
+        	if(!useExistingMixFile){
+
+        	  int n_evt=nMix;
+
+        	  TFile *f = new TFile("BkgMixTree/tree_Y1S_Pt0.root");
+        	  TTree *t = (TTree*)f->Get("d");
+              sprintf(bkgToyname,"%s/eventMixer.root",dirstruct);
+        	  fMix = new TFile(bkgToyname,"recreate");
+
+        	  char gammaPtCutChar[200];
+        	  sprintf(gammaPtCutChar,"gammapt>%f && gammapt>%f *Q+%f",cut_gammapt,gammaptK,gammaptD);
+        	  char ExcludeSignal[200];
+        	  sprintf(ExcludeSignal,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f &&invm1S<10.4|invm1S>10.55",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax);
+        	  TTree *t2 = (TTree*)tree1S->CopyTree(ExcludeSignal);
+
+
+
+
+              const int nBinsCosAlphaDataHist=25;
+
+              TH1F *hWNonEqu = new TH1F("hWNonEqu","; weights for cos#alpha",nBinsCosAlphaDataHist,-1,1);
+              TH1F *hCosAlphaNonEqu = new TH1F("hCosAlphaNonEqu",";cos#alpha",nBinsCosAlphaDataHist,-1,1);
+              TH1F *hCosAlphaDataNonEqu = new TH1F("hCosAlphaDataNonEqu",";cos#alpha",nBinsCosAlphaDataHist,-1,1);
+
+              cout<<"Begin weighting of cosAlpha histo"<<endl;
+
+
+              TH1F *hCosAlphaDataBuffer;
+              int nBinsCosAlphaTry=1000;
+              double BinBordersCosAlpha[nBinsCosAlphaDataHist+1];
+              int n_t2 = t2->GetEntries(ExcludeSignal);
+              int targetNumEventsPerBin=n_t2/nBinsCosAlphaDataHist;
+
+              BinBordersCosAlpha[0]=-1.;
+              int iRealBin=1;
+              for(int iBins=1;iBins<nBinsCosAlphaTry+1;iBins++){
+              hCosAlphaDataBuffer = new TH1F("hCosAlphaDataBuffer",";cos#alpha",50,-1,1);
+              double cosAlphaBufferCut=-1+2.*double(iBins)/double(nBinsCosAlphaTry);
+              char AlphaCut[200];
+              sprintf(AlphaCut,"(jpsipx*gammapx + jpsipy*gammapy + jpsipz*gammapz)/sqrt(gammapx*gammapx + gammapy*gammapy + gammapz*gammapz)/sqrt(jpsipx*jpsipx + jpsipy*jpsipy + jpsipz*jpsipz) < %f",cosAlphaBufferCut);
+              t2->Draw("(jpsipx*gammapx + jpsipy*gammapy + jpsipz*gammapz)/sqrt(gammapx*gammapx + gammapy*gammapy + gammapz*gammapz)/sqrt(jpsipx*jpsipx + jpsipy*jpsipy + jpsipz*jpsipz)>>hCosAlphaDataBuffer",AlphaCut);
+
+              if(hCosAlphaDataBuffer->GetEntries()>iRealBin*targetNumEventsPerBin){
+      //        	cout<<"hCosAlphaDataBuffer->GetEntries() = "<<hCosAlphaDataBuffer->GetEntries()<<endl;
+              	cout<<"iCosAlphaBin = "<<iRealBin<<" / "<<nBinsCosAlphaDataHist<<endl;
+              	BinBordersCosAlpha[iRealBin]=cosAlphaBufferCut-1./double(nBinsCosAlphaTry);
+      //        	cout<<"BinBordersCosAlpha[iRealBin] = "<<BinBordersCosAlpha[iRealBin]<<endl;
+              	iRealBin++;
+              }
+              if(iRealBin>nBinsCosAlphaDataHist-1) break;
+              delete hCosAlphaDataBuffer;
+              }
+              BinBordersCosAlpha[nBinsCosAlphaDataHist]=1.;
+
+              double xBinsCosAlpha[nBinsCosAlphaDataHist+1];
+
+              for(int iBinCosAlpha=0;iBinCosAlpha<nBinsCosAlphaDataHist+1;iBinCosAlpha++){
+              	xBinsCosAlpha[iBinCosAlpha]=BinBordersCosAlpha[iBinCosAlpha];
+      //        	cout<<iBinCosAlpha<<" xBinsCosAlpha[iBinCosAlpha]"<<xBinsCosAlpha[iBinCosAlpha]<<endl;
+              }
+
+
+              hCosAlphaDataNonEqu->GetXaxis()->Set(nBinsCosAlphaDataHist, xBinsCosAlpha);
+              hCosAlphaNonEqu->GetXaxis()->Set(nBinsCosAlphaDataHist, xBinsCosAlpha);
+              hWNonEqu->GetXaxis()->Set(nBinsCosAlphaDataHist, xBinsCosAlpha);
+
+              t2->Draw("(jpsipx*gammapx + jpsipy*gammapy + jpsipz*gammapz)/sqrt(gammapx*gammapx + gammapy*gammapy + gammapz*gammapz)/sqrt(jpsipx*jpsipx + jpsipy*jpsipy + jpsipz*jpsipz)>>hCosAlphaDataNonEqu");
+
+
+
+
+        	  double jpsimass,jpsipx,jpsipy,jpsipz,gammapt_,gammapx,gammapy,gammapz;
+
+        	  t->SetBranchAddress("jpsimass",&jpsimass);
+        	  t->SetBranchAddress("jpsipx",&jpsipx);
+        	  t->SetBranchAddress("jpsipy",&jpsipy);
+        	  t->SetBranchAddress("jpsipz",&jpsipz);
+        	  t->SetBranchAddress("gammapt",&gammapt_);
+        	  t->SetBranchAddress("gammapx",&gammapx);
+        	  t->SetBranchAddress("gammapy",&gammapy);
+        	  t->SetBranchAddress("gammapz",&gammapz);
+
+//              RooRealVar invm1S_write = RooRealVar("invm1S_write", "invm1S_write",0,100);
+//              RooRealVar gammapt_write = RooRealVar("gammapt_write", "gammapt_write",0,100);
+//              RooRealVar cosalpha_write = RooRealVar("cosalpha_write", "cosalpha_write",-1,1);
+//              RooRealVar Q_write = RooRealVar("Q_write", "Q_write",0,100);
+//              RooArgSet argSet = RooArgSet();
+//              argSet.add(invm1S_write);
+//              argSet.add(gammapt_write);
+//              argSet.add(cosalpha_write);
+//              argSet.add(Q_write);
+//
+//              RooDataSet rds = RooDataSet("d","d",argSet);
+
+
+        	  int i_evt=0;
+        	  int bin;
+
+        	  TRandom3 *r = new TRandom3();
+
+        	  int n = t->GetEntries();
+
+        	  for(int iIter=1;iIter<3;iIter++){
+
+        		  if(iIter==1) cout<<"Start mixing..."<<endl;
+
+        		  if(iIter==2){
+            		for(int iDivide=1;iDivide<nBinsCosAlphaDataHist+1;iDivide++){
+//            			cout<<"dataHist "<<hCosAlphaDataNonEqu->GetBinContent(iDivide)<<endl;
+//            			cout<<" mixHist "<<hCosAlphaNonEqu->GetBinContent(iDivide)<<endl;
+            		hWNonEqu->SetBinContent(iDivide,hCosAlphaDataNonEqu->GetBinContent(iDivide)/hCosAlphaNonEqu->GetBinContent(iDivide));
+            		}
+            		cout<<"Finish weighting of cosAlpha histo"<<endl;
+        		  }
+
+        		  i_evt=0;
+
+        	  while(i_evt<n_evt){
+        	    double m_jpsimass,m_jpsipx,m_jpsipy,m_jpsipz;
+        	    int i=n*r->Uniform();
+        	    if (i==n) i=0;
+        	    t->GetEntry(i);
+        	    m_jpsimass = jpsimass;
+        	    m_jpsipx = jpsipx;
+        	    m_jpsipy = jpsipy;
+        	    m_jpsipz = jpsipz;
+        	    double m_jpsip = sqrt(m_jpsipx*m_jpsipx + m_jpsipy*m_jpsipy + m_jpsipz*m_jpsipz);
+        	    double m_jpsie = sqrt(m_jpsimass*m_jpsimass + m_jpsip*m_jpsip);
+        	    int j=n*r->Uniform();
+        	    if (j==n) j=0;
+        	    if (j!=i){
+        	      t->GetEntry(j);
+        	      double gammae = sqrt(gammapx*gammapx + gammapy*gammapy + gammapz*gammapz);
+        	      double chibe = gammae + m_jpsie;
+        	      double chibpx = gammapx + m_jpsipx;
+        	      double chibpy = gammapy + m_jpsipy;
+        	      double chibpz = gammapz + m_jpsipz;
+        	      double chibmass = sqrt(chibe*chibe - chibpx*chibpx - chibpy*chibpy - chibpz*chibpz);
+        	      double Q = chibmass - m_jpsimass;
+        	      if (gammapt_>cut_gammapt&&gammapt_>gammaptK*Q+gammaptD){
+        		double cosalpha = (m_jpsipx*gammapx + m_jpsipy*gammapy + m_jpsipz*gammapz)/gammae/m_jpsip;
+        		double chibmass_corr = Q + Ymass1S;
+        		if(iIter==1) hCosAlphaNonEqu->Fill(cosalpha);
+        		if(iIter==2) {
+         	    	bin = hWNonEqu->FindBin(cosalpha);
+              	    hInvM1S->Fill(chibmass_corr,hWNonEqu->GetBinContent(bin));
+//              	    cout<<"chibmass_corr "<<chibmass_corr<<endl;
+//              	    cout<<"bin "<<bin<<endl;
+//              	    cout<<"hWNonEqu->GetBinContent(bin) "<<hWNonEqu->GetBinContent(bin)<<endl;
+        		}
+
+       		if (i_evt%10000==9999) cout << i_evt+1 << endl;
+        		i_evt ++;
+        	      }
+        	    }
+        	  }
+        	  }
+
+          	  hInvM1S->Write();
+          	  hCosAlphaNonEqu->Write();
+          	  hCosAlphaDataNonEqu->Write();
+          	  hWNonEqu->Write();
+
+
+        	}
+
+        	else {
+        		sprintf(bkgToyname,"%s/eventMixer.root",dirstruct);
+        		fMix = new TFile(bkgToyname,"update");
+              	hInvM1S=(TH1F*)fMix->Get("hInvM1S");
+        	}
+
+
+
+
+//        	hInvM1S->Rebin(2);
+
+        RooDataHist* RooBkgToyHist1S_Mixer = new RooDataHist("RooBkgToyHist1S_Mixer","RooBkgToyHist1S_Mixer",RooArgList(invm1S),hInvM1S);
+        RooBkgToyHist1S_Mixer->Print();
+        background1S = new  RooHistPdf("background1S","background1S",RooArgSet(invm1S),*RooBkgToyHist1S_Mixer,1);
+
+      	fMix->Close();
+
+
+
+        }
+*/
+
+////////////////// End New Bkg mixer /////////////////
+
+
+
+
+        char BGformula[200];
+/*        RooRealVar BGalpha_1S= RooRealVar("#alpha_{BG,1S}","",1.,0.,3.);
+        RooRealVar BGbeta_1S= RooRealVar("#beta_{BG,1S}","",-1.,-3.,0.);
+        sprintf(BGformula,"pow((@0-%f),@1)*exp((@0-%f)*@2)",q01S,q01S);
+        RooGenericPdf background1S=RooGenericPdf("background1S","background1S",BGformula,RooArgList(invm1S,BGalpha_1S,BGbeta_1S));
+*/
+
+        double q01S_Start=9.55;
+        RooRealVar alpha1("alpha1","alpha1",1.5,0.2,3.5);
+        RooRealVar beta1("beta1","beta1",-2.5,-7.,0.);
+        RooRealVar gamma1("gamma1","gamma1",0.,0.,0.2);
+        RooRealVar q01S("q01S","q01S",q01S_Start,9.5,9.7);
+        RooFormulaVar a1("a1","TMath::Abs(@0-@1)",RooArgList(invm1S,q01S));
+        RooFormulaVar b1("b1","@0*(@1-@2)",RooArgList(beta1,invm1S,q01S));
+        RooFormulaVar c1("c1","TMath::Abs(@0*(@1-@2))",RooArgList(gamma1,invm1S,q01S));
+        RooFormulaVar signum1("signum1","(TMath::Sign(-1.,@0-@1)+1)/2.",RooArgList(invm1S,q01S));
+        RooFormulaVar signum1_2("signum1_2","(TMath::Sign(-1.,@4*pow(@0,@1)*exp(@2)+@3)+1)/2.",RooArgList(a1,alpha1,b1,c1,signum1));
+
+//        RooGenericPdf background1S("background1S","(signum1*pow(a1,alpha1)*exp(b1)+c1)*signum1_2",RooArgSet(signum1,a1,alpha1,b1,c1,signum1_2));
+
+	if(useAnalyticalBKG) background1S = new RooGenericPdf("background1S","signum1*pow(a1,alpha1)*exp(b1)",RooArgSet(signum1,a1,alpha1,b1));
+
+//        q01S.setConstant();
+//        gamma1.setConstant();
+
+        double q02S_Start=10.25;
+        RooRealVar alpha2("alpha2","alpha2",0.6,0.1,15.);
+        RooRealVar beta2("beta2","beta2",-2.5,-15.,5.);
+        RooRealVar gamma2("gamma2","gamma2",0.,-0.1,0.1);
+        RooRealVar q02S("q02S","q02S",q02S_Start,10.10,10.4);
+        RooFormulaVar a2("a2","TMath::Abs(@0-@1)",RooArgList(invm2S,q02S));
+        RooFormulaVar b2("b2","@0*(@1-@2)",RooArgList(beta2,invm2S,q02S));
+        RooFormulaVar c2("c2","@0*(@1-@2)",RooArgList(gamma2,invm2S,q02S));
+        RooFormulaVar signum2("signum2","(TMath::Sign(-1.,@0-@1)+1)/2.",RooArgList(invm2S,q02S));
+        RooFormulaVar signum2_2("signum2_2","(TMath::Sign(-1.,@4*pow(@0,@1)*exp(@2)+@3)+1)/2.",RooArgList(a2,alpha2,b2,c2,signum2));
+
+        if(useAnalyticalBKG) background2S = new RooGenericPdf("background2S","(signum2*pow(a2,alpha2)*exp(b2)+c2)*signum2_2",RooArgSet(signum2,a2,alpha2,b2,c2,signum2_2));
+
 //declare fit variables
 
     RooRealVar m_chib1P= RooRealVar("Mean #chi_{b}(1P)","Mean #chi_{b}(1P)",9.888,9.85,9.925);
@@ -815,8 +1467,8 @@ int main(int argc, char** argv) {
 
 
 
-    double m_chib3P_START=10.45;
-    double m_chib3P_1S_START=10.45;
+    double m_chib3P_START=10.51;
+    double m_chib3P_1S_START=10.51;
 
     RooRealVar m_chib3P= RooRealVar("M_{#chi_{b}(3P)}","Mean #chi_{b}(3P)",m_chib3P_START,10.325,10.56);
     RooRealVar m_chib3P_1S= RooRealVar("M_{#chi_{b}(3P),1S}","Mean #chi_{b}(3P) in 1S sample",m_chib3P_1S_START,10.325,10.56);
@@ -847,24 +1499,38 @@ int main(int argc, char** argv) {
     double sigmaInd2P_2S_START=0.010;
     double sigmaInd3P_START=0.010;
     double sigmaInd3P_1S_START=0.010;
-    double alpha_3J_START=0.74;
+    double alpha_3J_START=0.6;
     double n_3J_START=3.;
-    double PhotonMassScale_START=9.8485e-01;
-    double PhotonMassScale2P_START=1.;
-    double PhotonSigmaScale_START=1.6970e-02;
+    double PhotonMassScale_START=0.9840;
+    double PhotonMassScale2P_START=0.9835;
+    double PhotonMassScale3P_START=0.985;
+    double PhotonSigmaScale_START=0.0171;
+    double PhotonSigmaScale2P_START=0.0170;
+    double PhotonSigmaScale3P_START=0.016561;
+
+//    PhotonMassScale3P_START+=0;
+//    PhotonMassScale3P_START+=0.0005;
+//    PhotonSigmaScale3P_START+=0.;
+//    PhotonSigmaScale3P_START+=-0.000498;
 
     RooRealVar sigmaInd  = RooRealVar("sigmaInd","sigmaInd",sigmaInd_START,0.003,0.015);
     RooRealVar sigmaInd2P  = RooRealVar("sigmaInd2P","sigmaInd2P",sigmaInd2P_START,0.003,0.025);
     RooRealVar sigmaInd2P_2S  = RooRealVar("sigmaInd2P_2S","sigmaInd2P_2S",sigmaInd2P_2S_START,0.003,0.025);
     RooRealVar sigmaInd3P  = RooRealVar("sigmaInd3P","sigmaInd3P",sigmaInd3P_START,0.003,0.025);
     RooRealVar sigmaInd3P_1S  = RooRealVar("sigmaInd3P_1S","sigmaInd3P_1S",sigmaInd3P_1S_START,0.003,0.04);
-    RooRealVar alpha_3J  = RooRealVar("#alpha","#alpha_3J",alpha_3J_START,0.,2.);
-    RooRealVar alpha_3J_2P  = RooRealVar("#alpha_{2P}","#alpha_3J",alpha_3J_START,0.,2.);
+    RooRealVar alpha_3J  = RooRealVar("#alpha","#alpha_3J",alpha_3J_START,0.,3.);//0.2,1.);
+    RooRealVar alpha_3J_2P  = RooRealVar("#alpha_{2P}","#alpha_3J",alpha_3J_START,0.,3.);
+    RooRealVar alpha_3J_3P  = RooRealVar("#alpha_{3P}","#alpha_3J",alpha_3J_START,0.,3.);
     RooRealVar n_3J      = RooRealVar("n","n_3J",n_3J_START,.5,15.);
-    RooRealVar PhotonMassScale= RooRealVar("PES","PhotonMassScale",PhotonMassScale_START,0.95,1.05);
+    RooRealVar n_3J_2P      = RooRealVar("n_3J_2P","n_3J_2P",n_3J_START,.5,15.);
+    RooRealVar PhotonMassScale= RooRealVar("PES","PhotonMassScale",PhotonMassScale_START,0.95,1.05);//0.97,0.99);
     RooRealVar PhotonMassScale2P= RooRealVar("PES_{2P}","PhotonMassScale2P",PhotonMassScale2P_START,0.95,1.05);
-    RooRealVar PhotonSigmaScale= RooRealVar("#sigma_{Q}/Q","PhotonSigmaScale",PhotonSigmaScale_START,0.01,0.025);
-    RooRealVar PhotonSigmaScale2P= RooRealVar("#sigma_{Q}/Q, 2P","PhotonSigmaScale",PhotonSigmaScale_START,0.01,0.025);
+    RooRealVar PhotonMassScale3P= RooRealVar("PES_{3P}","PhotonMassScale3P",PhotonMassScale3P_START,0.95,1.05);
+    RooRealVar PhotonMassScaleX= RooRealVar("PES_{X}","PhotonMassScaleX",PhotonMassScale3P_START,0.95,1.05);
+    RooRealVar PhotonSigmaScale= RooRealVar("#sigma_{Q}/Q","PhotonSigmaScale",PhotonSigmaScale_START,0.005,0.04);//0.012,0.02);
+    RooRealVar PhotonSigmaScale2P= RooRealVar("#sigma_{Q}/Q, 2P","PhotonSigmaScale",PhotonSigmaScale2P_START,0.005,0.04);
+    RooRealVar PhotonSigmaScale3P= RooRealVar("#sigma_{Q}/Q, 3P","PhotonSigmaScale",PhotonSigmaScale3P_START,0.01,0.025);
+    RooRealVar PhotonSigmaScaleX= RooRealVar("#sigma_{Q}/Q, X","PhotonSigmaScale",PhotonSigmaScale3P_START,0.01,0.05);
 
     sigmaInd.setVal(sigmaInd_START);
     sigmaInd2P.setVal(sigmaInd2P_START);
@@ -872,24 +1538,42 @@ int main(int argc, char** argv) {
     sigmaInd3P.setVal(sigmaInd3P_START);
     sigmaInd3P_1S.setVal(sigmaInd3P_1S_START);
     alpha_3J.setVal(alpha_3J_START);
+    alpha_3J_3P.setVal(alpha_3J_START);
     n_3J.setVal(n_3J_START);
+    n_3J_2P.setVal(n_3J_START);
     PhotonMassScale.setVal(PhotonMassScale_START);
     PhotonMassScale2P.setVal(PhotonMassScale2P_START);
+    PhotonMassScale3P.setVal(PhotonMassScale3P_START);
     PhotonSigmaScale.setVal(PhotonSigmaScale_START);
+    PhotonSigmaScale2P.setVal(PhotonSigmaScale2P_START);
+    PhotonSigmaScale3P.setVal(PhotonSigmaScale3P_START);
 
-//    PhotonMassScale.setConstant();
-//    PhotonSigmaScale.setConstant();
-    n_3J.setConstant();
+    if(FixStuffForStep2){
+        PhotonMassScale3P.setVal(0.9862);
+        PhotonSigmaScale3P.setVal(0.015346);
+        PhotonMassScale3P.setConstant();
+        PhotonSigmaScale3P.setConstant();
+    }
+
+    if(!MCsample) n_3J.setConstant();
 //    alpha_3J.setConstant();
 
     double ratio_J2overJ1_START=.5;
-    RooRealVar ratio_J2overJ1= RooRealVar("N_{#chi_{b2}}/N_{#chi_{b1}}","ratio_J2overJ1",ratio_J2overJ1_START);//,0.,5.);
+    RooRealVar ratio_J2overJ1= RooRealVar("N_{#chi_{b2}}/N_{#chi_{b1}}","ratio_J2overJ1",ratio_J2overJ1_START,0.,5.);
     ratio_J2overJ1.setVal(ratio_J2overJ1_START);
 	RooFormulaVar fracJ1("fracJ1", "1./(1.+@0)", RooArgList(ratio_J2overJ1));
 
+    ratio_J2overJ1.setConstant();
+
+    RooRealVar ratio_J2overJ1_1P= RooRealVar("N_{#chi_{b2}}/N_{#chi_{b1}},1P","ratio_J2overJ1",ratio_J2overJ1_START,0.,5.);
+    ratio_J2overJ1_1P.setVal(ratio_J2overJ1_START);
+	RooFormulaVar fracJ1_1P("fracJ1_1P", "1./(1.+@0)", RooArgList(ratio_J2overJ1_1P));
+
+
+    RooRealVar fracJ1_2P= RooRealVar("fracJ1_2P","fracJ1_2P",0.666);
 
     RooRealVar m_chib1P1fix= RooRealVar("m_chib1P1fix","m_chib1P1fix",9.89278);
-    RooRealVar m_chib1P2fix= RooRealVar("m_chib1P2fix","m_chib1P2fix",9.91221);
+    RooRealVar m_chib1P2fix= RooRealVar("m_chib1P2fix","m_chib1P2fix",9.91221);//mean~9.9, Q=0.44
 
     sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass1S,Ymass1S);
     sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass1S);
@@ -900,37 +1584,42 @@ int main(int argc, char** argv) {
     RooFormulaVar w_chib1P1float("w_chib1P1float", SigmaScaleFormula, RooArgList(m_chib1P1float, PhotonSigmaScale));
     RooFormulaVar w_chib1P2float("w_chib1P2float", SigmaScaleFormula, RooArgList(m_chib1P2float, PhotonSigmaScale));
 
-//	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,sigmaInd,alpha_3J,n_3J);
+
+    //	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,sigmaInd,alpha_3J,n_3J);
 //    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,sigmaInd,alpha_3J,n_3J);
-	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,w_chib1P1float,alpha_3J,n_3J);
-    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,w_chib1P2float,alpha_3J,n_3J);
+	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,w_chib1P1float,alpha_3J_2P,n_3J);
+    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,w_chib1P2float,alpha_3J_2P,n_3J);
 
-    double n1PnJ_START=200;
-    RooRealVar n1PnJ= RooRealVar("N_{#chi_{b}(1P)}","n1PJ",n1PnJ_START,0,450);
+    double n1PnJ_Max=6000;
+    if(MCsample) n1PnJ_Max=6000;
+    double n1PnJ_START=400;
+    RooRealVar n1PnJ= RooRealVar("N_{#chi_{b}(1P)}","n1PJ",n1PnJ_START,100,n1PnJ_Max);
     n1PnJ.setVal(n1PnJ_START);
-    RooAddPdf chib1P_sigInd= RooAddPdf("chib1P_sigInd","chib1P_sigInd",RooArgList(chib1P1,chib1P2),RooArgList(fracJ1));
+    RooAddPdf chib1P_sigInd= RooAddPdf("chib1P_sigInd","chib1P_sigInd",RooArgList(chib1P1,chib1P2),RooArgList(fracJ1_1P));
 
-    RooFormulaVar chib1P_nevt("chib1P_nevt", "@1*@0+(1-@1)*@0", RooArgList(n1PnJ,fracJ1));
+    RooFormulaVar chib1P_nevt("chib1P_nevt", "@1*@0+(1-@1)*@0", RooArgList(n1PnJ,fracJ1_1P));
     RooAddPdf chib1P_sig= RooAddPdf("chib1P_sig","chib1P_sig",RooArgList(chib1P_sigInd),RooArgList(chib1P_nevt));
 
 
 
     RooRealVar m_chib2P1fix= RooRealVar("m_chib2P1fix","m_chib2P1fix",10.25546);
-    RooRealVar m_chib2P2fix= RooRealVar("m_chib2P2fix","m_chib2P2fix",10.26865);
+    RooRealVar m_chib2P2fix= RooRealVar("m_chib2P2fix","m_chib2P2fix",10.26865);//mean~10.260, Q=0.8
 
-	RooFormulaVar m_chib2P1float("m_chib2P1float", MassScaleFormula, RooArgList(m_chib2P1fix, PhotonMassScale));
-	RooFormulaVar m_chib2P2float("m_chib2P2float", MassScaleFormula, RooArgList(m_chib2P2fix, PhotonMassScale));
+	RooFormulaVar m_chib2P1float("m_chib2P1float", MassScaleFormula, RooArgList(m_chib2P1fix, PhotonMassScale2P));
+	RooFormulaVar m_chib2P2float("m_chib2P2float", MassScaleFormula, RooArgList(m_chib2P2fix, PhotonMassScale2P));
 
-    RooFormulaVar w_chib2P1float("w_chib2P1float", SigmaScaleFormula, RooArgList(m_chib2P1float, PhotonSigmaScale));
-    RooFormulaVar w_chib2P2float("w_chib2P2float", SigmaScaleFormula, RooArgList(m_chib2P2float, PhotonSigmaScale));
+    RooFormulaVar w_chib2P1float("w_chib2P1float", SigmaScaleFormula, RooArgList(m_chib2P1float, PhotonSigmaScale2P));
+    RooFormulaVar w_chib2P2float("w_chib2P2float", SigmaScaleFormula, RooArgList(m_chib2P2float, PhotonSigmaScale2P));
 
 //    RooCBShape chib2P1      = RooCBShape ("chib2P1","chib2P1",invm1S,m_chib2P1float,sigmaInd2P,alpha_3J,n_3J);
 //    RooCBShape chib2P2      = RooCBShape ("chib2P2","chib2P2",invm1S,m_chib2P2float,sigmaInd2P,alpha_3J,n_3J);
     RooCBShape chib2P1      = RooCBShape ("chib2P1","chib2P1",invm1S,m_chib2P1float,w_chib2P1float,alpha_3J,n_3J);
     RooCBShape chib2P2      = RooCBShape ("chib2P2","chib2P2",invm1S,m_chib2P2float,w_chib2P2float,alpha_3J,n_3J);
 
-    double n2PnJ_START=160;
-    RooRealVar n2PnJ= RooRealVar("N_{#chi_{b}(2P),1S}","n2PJ",n2PnJ_START,0,450);
+    double n2PnJ_Max=3000;
+    if(MCsample) n2PnJ_Max=15000;
+    double n2PnJ_START=260;
+    RooRealVar n2PnJ= RooRealVar("N_{#chi_{b}(2P),1S}","n2PJ",n2PnJ_START,100,n2PnJ_Max);
     n2PnJ.setVal(n2PnJ_START);
     RooAddPdf chib2P_sigInd= RooAddPdf("chib2P_sigInd","chib2P_sigInd",RooArgList(chib2P1,chib2P2),RooArgList(fracJ1));
 
@@ -953,7 +1642,7 @@ int main(int argc, char** argv) {
     RooCBShape chib2P2_2S      = RooCBShape ("chib2P2_2S","chib2P2_2S",invm2S,m_chib2P2float_2S,w_chib2P2float_2S,alpha_3J,n_3J);
 
     double n2PnJ_2S_START=8;
-    RooRealVar n2PnJ_2S= RooRealVar("N_{#chi_{b}(2P),2S}","n2PnJ_2S",n2PnJ_2S_START,0,200);
+    RooRealVar n2PnJ_2S= RooRealVar("N_{#chi_{b}(2P),2S}","n2PnJ_2S",n2PnJ_2S_START,0,300);
     n2PnJ_2S.setVal(n2PnJ_2S_START);
     RooAddPdf chib2P_sigInd_2S= RooAddPdf("chib2P_sigInd_2S","chib2P_sigInd_2S",RooArgList(chib2P1_2S,chib2P2_2S),RooArgList(fracJ1));
 
@@ -975,7 +1664,7 @@ int main(int argc, char** argv) {
     RooCBShape chib3P2      = RooCBShape ("chib3P2","chib3P2",invm2S,m_chib3P2float,w_chib3P1float,alpha_3J,n_3J);
 
     double n3PnJ_START=8;
-    RooRealVar n3PnJ= RooRealVar("N_{#chi_{b}(3P)},2S","n3PnJ",n3PnJ_START,0,100);
+    RooRealVar n3PnJ= RooRealVar("N_{#chi_{b}(3P)},2S","n3PnJ",n3PnJ_START,0,300);
     n3PnJ.setVal(n3PnJ_START);
     RooAddPdf chib3P_sigInd= RooAddPdf("chib3P_sigInd","chib3P_sigInd",RooArgList(chib3P1,chib3P2),RooArgList(fracJ1));
 
@@ -987,38 +1676,74 @@ int main(int argc, char** argv) {
 
 
     sprintf(MassScaleFormula,"(@0-%f-0.012*(1-@2))*@1+%f",Ymass1S,Ymass1S);
-	RooFormulaVar m_chib3P1float_1S("m_chib3P1float_1S", MassScaleFormula, RooArgList(m_chib3P, PhotonMassScale, fracJ1));
+	RooFormulaVar m_chib3P1float_1S("m_chib3P1float_1S", MassScaleFormula, RooArgList(m_chib3P, PhotonMassScale3P, fracJ1));
     sprintf(MassScaleFormula,"(@0-%f+0.012*@2)*@1+%f",Ymass1S,Ymass1S);
-	RooFormulaVar m_chib3P2float_1S("m_chib3P2float_1S", MassScaleFormula, RooArgList(m_chib3P, PhotonMassScale, fracJ1));
+	RooFormulaVar m_chib3P2float_1S("m_chib3P2float_1S", MassScaleFormula, RooArgList(m_chib3P, PhotonMassScale3P, fracJ1));
 
     sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass1S);
-    RooFormulaVar w_chib3P1float_1S("w_chib3P1float_1S", SigmaScaleFormula, RooArgList(m_chib3P1float_1S, PhotonSigmaScale));
-    RooFormulaVar w_chib3P2float_1S("w_chib3P2float_1S", SigmaScaleFormula, RooArgList(m_chib3P2float_1S, PhotonSigmaScale));
+    RooFormulaVar w_chib3P1float_1S("w_chib3P1float_1S", SigmaScaleFormula, RooArgList(m_chib3P1float_1S, PhotonSigmaScale3P));
+    RooFormulaVar w_chib3P2float_1S("w_chib3P2float_1S", SigmaScaleFormula, RooArgList(m_chib3P2float_1S, PhotonSigmaScale3P));
 
 //    RooCBShape chib3P1_1S      = RooCBShape ("chib3P1_1S","chib3P1_1S",invm1S,m_chib3P1float_1S,sigmaInd3P_1S,alpha_3J,n_3J);
 //    RooCBShape chib3P2_1S     = RooCBShape ("chib3P2_1S","chib3P2_1S",invm1S,m_chib3P2float_1S,sigmaInd3P_1S,alpha_3J,n_3J);
     RooCBShape chib3P1_1S      = RooCBShape ("chib3P1_1S","chib3P1_1S",invm1S,m_chib3P1float_1S,w_chib3P1float_1S,alpha_3J,n_3J);
     RooCBShape chib3P2_1S     = RooCBShape ("chib3P2_1S","chib3P2_1S",invm1S,m_chib3P2float_1S,w_chib3P2float_1S,alpha_3J,n_3J);
 
-    double n3PnJ_1S_START=8;
-    RooRealVar n3PnJ_1S= RooRealVar("N_{#chi_{b}(3P),1S}","n3PnJ_1S",n3PnJ_1S_START,0,250);
+    double n3PnJ_1S_START=100;
+    RooRealVar n3PnJ_1S= RooRealVar("N_{#chi_{b}(3P),1S}","n3PnJ_1S",n3PnJ_1S_START,0,1000);
     n3PnJ_1S.setVal(n3PnJ_1S_START);
     RooAddPdf chib3P_sigInd_1S= RooAddPdf("chib3P_sigInd_1S","chib3P_sigInd_1S",RooArgList(chib3P1_1S,chib3P2_1S),RooArgList(fracJ1));
 
     RooFormulaVar chib3P_nevt_1S("chib3P_nevt_1S", "@1*@0+(1-@1)*@0", RooArgList(n3PnJ_1S,fracJ1));
     RooAddPdf chib3P_sig_1S= RooAddPdf("chib3P_sig_1S","chib3P_sig_1S",RooArgList(chib3P_sigInd_1S),RooArgList(chib3P_nevt_1S));
 
+
+    RooRealVar mX= RooRealVar("mX","mX",9.69,9.66,9.72);
+
+/*    sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass1S,Ymass1S);
+    sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass1S);
+	RooFormulaVar m_Xfloat("m_Xfloat", MassScaleFormula, RooArgList(mX, PhotonMassScale3P));
+    RooFormulaVar w_Xfloat("w_Xfloat", SigmaScaleFormula, RooArgList(m_Xfloat, PhotonSigmaScale3P));
+    RooRealVar nX= RooRealVar("N_{X}","nX",10,0,50);
+    RooCBShape XCB      = RooCBShape ("XCB","XCB",invm1S,m_Xfloat,w_Xfloat,alpha_3J,n_3J);
+    RooAddPdf Xsig= RooAddPdf("Xsig","Xsig",RooArgList(XCB),RooArgList(nX));
+*/
+
+
+
+    sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass2S,Ymass1S);
+    sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass1S);
+
+
+	RooFormulaVar m_chib2P1float_2Sin1S("m_chib2P1float_2Sin1S", "@0", RooArgList(mX));
+	RooFormulaVar m_chib2P2float_2Sin1S("m_chib2P2float_2Sin1S", "@0+0.01319", RooArgList(mX));
+
+    RooFormulaVar w_chib2P1float_2Sin1S("w_chib2P1float_2Sin1S", SigmaScaleFormula, RooArgList(m_chib2P1float_2Sin1S, PhotonSigmaScale3P));
+    RooFormulaVar w_chib2P2float_2Sin1S("w_chib2P2float_2Sin1S", SigmaScaleFormula, RooArgList(m_chib2P1float_2Sin1S, PhotonSigmaScale3P));
+
+	RooCBShape chib2P1_2Sin1S      = RooCBShape ("chib2P1_2Sin1S","chib2P1_2Sin1S",invm1S,m_chib2P1float_2Sin1S,w_chib2P1float_2Sin1S,alpha_3J,n_3J);
+    RooCBShape chib2P2_2Sin1S      = RooCBShape ("chib2P2_2Sin1S","chib2P2_2Sin1S",invm1S,m_chib2P2float_2Sin1S,w_chib2P2float_2Sin1S,alpha_3J,n_3J);
+
+    double nX_START=10;
+    RooRealVar nX= RooRealVar("nX","nX",nX_START,0,200);
+    nX.setVal(nX_START);
+    RooAddPdf chib2P_sigInd_2Sin1S= RooAddPdf("chib2P_sigInd_2Sin1S","chib2P_sigInd_2Sin1S",RooArgList(chib2P1_2Sin1S,chib2P2_2Sin1S),RooArgList(fracJ1));
+
+    RooFormulaVar chib2P_nevt_2Sin1S("chib2P_nevt_2Sin1S", "@1*@0+(1-@1)*@0", RooArgList(nX,fracJ1));
+    RooAddPdf Xsig= RooAddPdf("Xsig","Xsig",RooArgList(chib2P_sigInd_2Sin1S),RooArgList(chib2P_nevt_2Sin1S));
+
+
 ////////////////////////////////////////////////////////
 
 
-    RooRealVar background_nevt1S = RooRealVar("N_{bkg}1S","N_{bkg}1S",1500,0,10000);
+    RooRealVar background_nevt1S = RooRealVar("N_{bkg}1S","N_{bkg}1S",1500,0,100000);
     RooRealVar background_nevtSB1S = RooRealVar("background_nevtSB1S","background_nevtSB1S",1500,0,10000);
-    RooAddPdf backgroundSB1S= RooAddPdf("backgroundSB1S","backgroundSB1S",RooArgList(background1S),RooArgList(background_nevtSB1S));
-    RooAddPdf backgroundE1S= RooAddPdf("backgroundE1S","backgroundE1S",RooArgList(background1S),RooArgList(background_nevt1S));
-    RooRealVar background_nevt2S = RooRealVar("N_{bkg}2S","N_{bkg}2S",1500,0,10000);
+    RooAddPdf backgroundSB1S= RooAddPdf("backgroundSB1S","backgroundSB1S",RooArgList(*background1S),RooArgList(background_nevtSB1S));
+    RooAddPdf backgroundE1S= RooAddPdf("backgroundE1S","backgroundE1S",RooArgList(*background1S),RooArgList(background_nevt1S));
+    RooRealVar background_nevt2S = RooRealVar("N_{bkg}2S","N_{bkg}2S",1500,0,40000);
     RooRealVar background_nevtSB2S = RooRealVar("background_nevtSB2S","background_nevtSB2S",1500,0,10000);
-    RooAddPdf backgroundSB2S= RooAddPdf("backgroundSB2S","backgroundSB2S",RooArgList(background2S),RooArgList(background_nevtSB2S));
-    RooAddPdf backgroundE2S= RooAddPdf("backgroundE2S","backgroundE2S",RooArgList(background2S),RooArgList(background_nevt2S));
+    RooAddPdf backgroundSB2S= RooAddPdf("backgroundSB2S","backgroundSB2S",RooArgList(*background2S),RooArgList(background_nevtSB2S));
+    RooAddPdf backgroundE2S= RooAddPdf("backgroundE2S","backgroundE2S",RooArgList(*background2S),RooArgList(background_nevt2S));
 
 
     sprintf(DScutChar,"invm1S > %f && invm1S < %f",invm_min1S,invm_max1S);
@@ -1028,14 +1753,37 @@ int main(int argc, char** argv) {
 
 
 
-    RooAddPdf modelPdf1S= RooAddPdf("modelPdf1S","modelPdf1S",RooArgList(chib1P_sig,chib2P_sig,chib3P_sig_1S,background1S),RooArgList(chib1P_nevt,chib2P_nevt,chib3P_nevt_1S,background_nevt1S));
 
-    RooAddPdf modelPdf2S= RooAddPdf("modelPdf2S","modelPdf2S",RooArgList(chib3P_sig,chib2P_sig_2S,background2S),RooArgList(chib3P_nevt,chib2P_nevt_2S,background_nevt2S));
+////////// Y1S //////////////////////
 
-    RooAddPdf modelPdf1S_1P2P= RooAddPdf("modelPdf1S_1P2P","modelPdf1S_1P2P",RooArgList(chib1P_sig,chib2P_sig,background1S),RooArgList(chib1P_nevt,chib2P_nevt,background_nevt1S));
-    RooAddPdf modelPdf1S_3P= RooAddPdf("modelPdf1S_3P","modelPdf1S_3P",RooArgList(chib3P_sig_1S,background1S),RooArgList(chib3P_nevt_1S,background_nevt1S));
-    RooAddPdf modelPdf2S_red= RooAddPdf("modelPdf2S_red","modelPdf2S_red",RooArgList(chib3P_sig,chib2P_sig_2S,background2S),RooArgList(chib3P_nevt,chib2P_nevt_2S,background_nevt2S));
+	 RooArgSet Set_modelPdf1S_1P2P("Set_modelPdf1S_1P2P");
+	 Set_modelPdf1S_1P2P.add(chib1P_sig);
+	 Set_modelPdf1S_1P2P.add(chib2P_sig);
+	 if(!MCsample) Set_modelPdf1S_1P2P.add(*background1S);
 
+	 RooArgSet Set_Coef_modelPdf1S_1P2P("Set_Coef_modelPdf1S_1P2P");
+	 Set_Coef_modelPdf1S_1P2P.add(chib1P_nevt);
+	 Set_Coef_modelPdf1S_1P2P.add(chib2P_nevt);
+	 if(!MCsample) Set_Coef_modelPdf1S_1P2P.add(background_nevt1S);
+
+
+//    RooAddPdf modelPdf1S= RooAddPdf("modelPdf1S","modelPdf1S",RooArgList(chib1P_sig,chib2P_sig,chib3P_sig_1S,*background1S),RooArgList(chib1P_nevt,chib2P_nevt,chib3P_nevt_1S,background_nevt1S));
+//    RooAddPdf modelPdf1S_1P2P= RooAddPdf("modelPdf1S_1P2P","modelPdf1S_1P2P",Set_modelPdf1S_1P2P,Set_Coef_modelPdf1S_1P2P);
+
+// MC:
+//    RooAddPdf modelPdf1S_1P2P= RooAddPdf("modelPdf1S_1P2P","modelPdf1S_1P2P",RooArgList(chib1P_sig,chib2P_sig),RooArgList(chib1P_nevt,chib2P_nevt));
+
+// Include X:
+    RooAddPdf modelPdf1S= RooAddPdf("modelPdf1S","modelPdf1S",RooArgList(Xsig,chib1P_sig,chib2P_sig,chib3P_sig_1S,*background1S),RooArgList(nX,chib1P_nevt,chib2P_nevt,chib3P_nevt_1S,background_nevt1S));
+    RooAddPdf modelPdf1S_1P2P= RooAddPdf("modelPdf1S_1P2P","modelPdf1S_1P2P",RooArgList(Xsig,chib1P_sig,chib2P_sig,*background1S),RooArgList(nX,chib1P_nevt,chib2P_nevt,background_nevt1S));
+
+    RooAddPdf modelPdf1S_3P= RooAddPdf("modelPdf1S_3P","modelPdf1S_3P",RooArgList(chib3P_sig_1S,*background1S),RooArgList(chib3P_nevt_1S,background_nevt1S));
+
+////////// Y2S //////////////////////
+
+    RooAddPdf modelPdf2S= RooAddPdf("modelPdf2S","modelPdf2S",RooArgList(chib3P_sig,chib2P_sig_2S,*background2S),RooArgList(chib3P_nevt,chib2P_nevt_2S,background_nevt2S));
+    RooAddPdf modelPdf2S_red= RooAddPdf("modelPdf2S_red","modelPdf2S_red",RooArgList(chib3P_sig,chib2P_sig_2S,*background2S),RooArgList(chib3P_nevt,chib2P_nevt_2S,background_nevt2S));
+    RooAddPdf modelPdf2S_2P= RooAddPdf("modelPdf2S_2P","modelPdf2S_2P",RooArgList(chib2P_sig_2S,*background2S),RooArgList(chib2P_nevt_2S,background_nevt2S));
 
 
 
@@ -1045,6 +1793,11 @@ int main(int argc, char** argv) {
     invm1S.setRange("Chib1Pregion",invm_min1S,chib1Pmax);
     invm1S.setRange("Chib2Pregion",chib2Pmin,chib2Pmax);
     invm1S.setRange("Chib3Pregion",chib2Pmax,bb_thresh);
+    invm1S.setRange("Above2P",chib2Pmax,invm_max1S);
+
+    invm1S.setRange("ChibSBregion1",invm_min1S,chib1Pmin);
+    invm1S.setRange("ChibSBregion2",chib1Pmax,chib2Pmin);
+    invm1S.setRange("ChibSBregion3",bb_thresh,invm_max1S);
 
     invm1S.setRange("TotalBlindedRegion1",invm_min1S,chib2Pmax);
     invm1S.setRange("TotalBlindedRegion2",bb_thresh,invm_max1S);
@@ -1052,6 +1805,7 @@ int main(int argc, char** argv) {
     invm1S.setRange("Chib1P2Pregion",invm_min1S,chib2Pmax);
 
     invm2S.setRange("Y2SAll",invm_min2S,invm_max2S);
+    invm1S.setRange("Y1SAll",invm_min1S,invm_max1S);
     invm2S.setRange("SBregion32S",bb_thresh,invm_max2S);
     invm2S.setRange("Chib3Pregion2S",invm_min2S,bb_thresh);
 
@@ -1090,7 +1844,7 @@ int main(int argc, char** argv) {
     double covQual_BG1S=0;
     double covQual_1P2P1S=0;
 
-
+    double Nevt_buff2;
     double Nevt_buff=n3PnJ_1S.getVal();
     n3PnJ_1S.setVal(0);
     n3PnJ_1S.setConstant();
@@ -1098,18 +1852,138 @@ int main(int argc, char** argv) {
     sigmaInd3P_1S.setConstant();
 
     char SignormRegion[200];
-    sprintf(SignormRegion,"Chib1P2Pregion");
+    sprintf(SignormRegion,"Chib1P2Pregion,ChibSBregion3");
     char OnePTwoPDatacut[200];
     sprintf(OnePTwoPDatacut,"invm1S<%f",chib2Pmax);
 
+    char BGnormRegion[200];
+     sprintf(BGnormRegion,"ChibSBregion1,ChibSBregion2,ChibSBregion3");
 
+     if(useAnalyticalBKG) background_nevt1S.setConstant(kFALSE);
+     if(useAnalyticalBKG) background_nevt2S.setConstant(kFALSE);
 
-    RooDataSet* data1S_=(RooDataSet*)data1S->reduce(Cut(OnePTwoPDatacut));
+     if(MCsample){
+     	background_nevt1S.setVal(0.001);
+     	background_nevt1S.setConstant();
+//     	n2PnJ.setVal(0.001);
+//     	n2PnJ.setConstant();
+     	n3PnJ_1S.setVal(0.001);
+     	n3PnJ_1S.setConstant();
+//     	PhotonMassScale2P.setConstant();
+//     	PhotonSigmaScale2P.setConstant();
+     	alpha1.setConstant();
+     	beta1.setConstant();
+     	q01S.setConstant();
+     	ratio_J2overJ1.setConstant(kFALSE);
+        m_chib3P.setConstant();
+     }
 
-        RooFitResult* Fit1P2P = modelPdf1S_1P2P.fitTo(*data1S,Save(1),Range(SignormRegion));
+/*    RooFitResult* BG1SFitResult = background1S.fitTo(*data1S,Save(1),Range(BGnormRegion),PrintEvalErrors(-1),PrintLevel(-1),Warnings(kFALSE));
+    BG1SFitResult->Print();
+
+    alpha1.setConstant();
+    beta1.setConstant();
+    q0.setConstant();
+
+*/
+
+ /*       RooFitResult* Fit1P2P = modelPdf1S_1P2P.fitTo(*data1S,Save(1),Range(SignormRegion),PrintEvalErrors(-1),PrintLevel(1),Warnings(kFALSE));
         Fit1P2P->Print();
         covQual_1P2P1S = Fit1P2P->covQual();
+*/
 
+ //   alpha1.setConstant();
+  //  beta1.setConstant();
+
+	 RooAbsReal* nll1S_1P2P_=modelPdf1S_1P2P.createNLL(*data1S,Range(9.72,chib2Pmax));
+
+	 //	 RooFitResult* r_sig = modelPdf1S_1P2P.fitTo(*data1S,Save(kTRUE),Range("Y1SAll"),PrintEvalErrors(-1),PrintLevel(-1),Warnings(kFALSE));
+	 //	 r_sig->Print();
+
+//	 data1S->Print();
+//	    RooDataSet* data1Sexclude3P=(RooDataSet*)data1S->reduce(Cut("invm1S<10.325||invm1S>10.58"));
+//	    data1Sexclude3P->Print();
+
+
+
+
+
+	 RooAbsReal* nll1S_1P2P=modelPdf1S_1P2P.createNLL(*data1S,Range(invm_min1S,chib2Pmax));//chib2Pmax
+	 RooAbsReal* nll1S_BB=modelPdf1S_1P2P.createNLL(*data1S,Range(bb_thresh,invm_max1S));//bb_thresh
+
+//	 RooAbsReal* nll1S_1P2P=modelPdf1S_1P2P.createNLL(*data1S,Range(SignormRegion),SplitRange(kTRUE));//chib2Pmax
+
+
+	 RooArgSet simNLL_Set("simNLL_Set");
+	 simNLL_Set.add(*nll1S_1P2P);
+	 if(useAnalyticalBKG) simNLL_Set.add(*nll1S_BB);
+
+     RooAddition simNLL_innitial = RooAddition("add_innitial","add_innitial",simNLL_Set);//RooArgSet(*nll1S_1P2P));
+
+	 RooMinuit* minuit1 = new RooMinuit(simNLL_innitial);
+
+	 minuit1->setStrategy(2);
+	 minuit1->setPrintEvalErrors(-1);
+	 minuit1->setPrintLevel(-1);
+	 minuit1->setNoWarn();
+
+	 char result1name[200];
+
+	 cout<<"InitialHesse_"<<endl;
+	 minuit1->hesse();
+	 sprintf(result1name,"initialhesse");
+	 RooFitResult* initialhesseresult1=minuit1->save(result1name,result1name);
+	 cout<<"INITIAL HESSE RESULT:"<<endl;
+	 cout<<initialhesseresult1->edm()<<endl;
+	 cout<<initialhesseresult1->status()<<endl;
+	 cout<<"InitialHesse-covQual"<<endl;
+	 cout<<initialhesseresult1->covQual()<<endl;
+	 initialhesseresult1->Print();
+       delete initialhesseresult1;
+
+	 cout<<"Migrad_"<<endl;
+	 minuit1->migrad();
+	 sprintf(result1name,"migrad");
+	 RooFitResult* migradresult1=minuit1->save(result1name,result1name);
+	 cout<<"MIGRAD RESULT:"<<endl;
+	 cout<<migradresult1->edm()<<endl;
+	 cout<<migradresult1->status()<<endl;
+	 cout<<"Migrad-covQual"<<endl;
+	 cout<<migradresult1->covQual()<<endl;
+	 migradresult1->Print();
+
+	 if(migradresult1->edm()>0.1){
+	 cout<<"Migrad_2"<<endl;
+	 minuit1->migrad();
+	 sprintf(result1name,"migrad");
+	 migradresult1=minuit1->save(result1name,result1name);
+	 cout<<"MIGRAD RESULT 2:"<<endl;
+	 cout<<migradresult1->edm()<<endl;
+	 cout<<migradresult1->status()<<endl;
+	 cout<<"Migrad-covQual 2"<<endl;
+	 cout<<migradresult1->covQual()<<endl;
+	 migradresult1->Print();
+	 }
+	 int covQualOptimization=migradresult1->covQual();
+     delete migradresult1;
+
+
+	 cout<<"Hesse_"<<endl;
+	 minuit1->hesse();
+	 sprintf(result1name,"hesse");
+	 RooFitResult* hesseresult1=minuit1->save(result1name,result1name);
+	 cout<<"HESSE RESULT:"<<endl;
+	 cout<<hesseresult1->edm()<<endl;
+	 cout<<hesseresult1->status()<<endl;
+	 cout<<"Hesse-covQual"<<endl;
+	 cout<<hesseresult1->covQual()<<endl;
+	 hesseresult1->Print();
+       delete hesseresult1;
+
+/*        RooFitResult* Fit1P2P = modelPdf1S_1P2P.fitTo(*data1S,Save(1),Range("Chib1P2Pregion,ChibSBregion3"),PrintEvalErrors(-1),PrintLevel(1),Warnings(kFALSE));
+        Fit1P2P->Print();
+        covQual_1P2P1S = Fit1P2P->covQual();
+*/
         n3PnJ_1S.setConstant(kFALSE);
         n3PnJ_1S.setVal(Nevt_buff);
         m_chib3P.setConstant(kFALSE);
@@ -1125,16 +1999,91 @@ int main(int argc, char** argv) {
         n_3J.setConstant();
         PhotonMassScale2P.setConstant();
         ratio_J2overJ1.setConstant();
+        ratio_J2overJ1_1P.setConstant();
         PhotonSigmaScale.setConstant();
+        PhotonMassScale.setConstant();
+
+        alpha1.setConstant();
+        beta1.setConstant();
+        background_nevt1S.setConstant();
+        q01S.setConstant();
+        gamma1.setConstant();
+
+        mX.setConstant();
+        nX.setConstant();
+
+        if(MCsample){
+            n3PnJ_1S.setVal(0.01);
+            n3PnJ_1S.setConstant();
+            m_chib3P.setConstant();
+//            n2PnJ.setVal(0.01);
+//            n2PnJ.setConstant();
+
+        }
+
+   	 RooAbsReal* nll2S_2P=modelPdf2S_2P.createNLL(*data2S,Range(invm_min2S,10.55));
+   	 RooAbsReal* nll2S_BB=modelPdf2S_2P.createNLL(*data2S,Range(10.55,invm_max2S));
+
+        RooAddition simNLL_innitial2S = RooAddition("simNLL_innitial2S","simNLL_innitial2S",RooArgSet(*nll2S_2P,*nll2S_BB));
+
+/*   	 RooMinuit* minuit2 = new RooMinuit(simNLL_innitial2S);
+
+   	 minuit2->setStrategy(1);
+   	 minuit2->setPrintEvalErrors(-1);
+   	 minuit2->setPrintLevel(-1);
+   	 minuit2->setNoWarn();
+
+   	 char result2name[200];
+
+   	 cout<<"InitialHesse_"<<endl;
+   	 minuit2->hesse();
+   	 sprintf(result2name,"initialhesse");
+   	 RooFitResult* initialhesseresult2=minuit2->save(result2name,result2name);
+   	 cout<<"INITIAL HESSE RESULT:"<<endl;
+   	 cout<<initialhesseresult2->edm()<<endl;
+   	 cout<<initialhesseresult2->status()<<endl;
+   	 cout<<"InitialHesse-covQual"<<endl;
+   	 cout<<initialhesseresult2->covQual()<<endl;
+   	 initialhesseresult2->Print();
+          delete initialhesseresult2;
+
+   	 cout<<"Migrad_"<<endl;
+   	 minuit2->migrad();
+   	 sprintf(result2name,"migrad");
+   	 RooFitResult* migradresult2=minuit2->save(result2name,result2name);
+   	 cout<<"MIGRAD RESULT:"<<endl;
+   	 cout<<migradresult2->edm()<<endl;
+   	 cout<<migradresult2->status()<<endl;
+   	 cout<<"Migrad-covQual"<<endl;
+   	 cout<<migradresult2->covQual()<<endl;
+   	 migradresult2->Print();
+          delete migradresult2;
+
+
+   	 cout<<"Hesse_"<<endl;
+   	 minuit2->hesse();
+   	 sprintf(result2name,"hesse");
+   	 RooFitResult* hesseresult2=minuit2->save(result2name,result2name);
+   	 cout<<"HESSE RESULT:"<<endl;
+   	 cout<<hesseresult2->edm()<<endl;
+   	 cout<<hesseresult2->status()<<endl;
+   	 cout<<"Hesse-covQual"<<endl;
+   	 cout<<hesseresult2->covQual()<<endl;
+   	 hesseresult2->Print();
+          delete hesseresult2;
+*/
+        alpha2.setConstant();
+        beta2.setConstant();
+        gamma2.setConstant();
+        q02S.setConstant();
 
 //        PhotonMassScale.setVal(PhotonMassScale.getVal()-PhotonMassScale.getError());
-        PhotonMassScale.setConstant();
 
 
         background_nevt1S.setConstant();
         background_nevt2S.setConstant();
 
-        delete Fit1P2P;
+//        delete Fit1P2P;
 //        sigmaInd2P.setVal(sigmaInd.getVal());
 
         double k=(sigmaInd.getVal()-sigmaInd2P.getVal())/(430.-783.);
@@ -1177,20 +2126,32 @@ cout<<"m_chib1P: "<<m_chib1P.getVal()<<endl;
 cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
 
+if(Optimize||determine3PparametersDuringStep1){
+	cout<<"Set 3P PES and PWS to the mean of the 1P/2P estimates"<<endl;
+PhotonMassScale3P.setVal( (PhotonMassScale.getVal()+PhotonMassScale2P.getVal())/2.);
+PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal())/2.);
+}
+
 
 
 		 RooAbsReal* nll1S=modelPdf1S_3P.createNLL(*data1S,Range(chib2Pmax,bb_thresh));
 		 RooAbsReal* nll2S=modelPdf2S_red.createNLL(*data2S,Range(invm_min2S,bb_thresh));
 
+		 RooArgSet simNLL_Set2("simNLL_Set2");
+		 simNLL_Set2.add(*nll1S);
+		 if(nState==2) simNLL_Set2.add(*nll2S);
 
-         RooAddition simNLL = RooAddition("add","add",RooArgSet(*nll1S,*nll2S));
+
+		 RooAddition simNLL = RooAddition("add","add",simNLL_Set2);
+//         RooAddition simNLL = RooAddition("add","add",RooArgSet(*nll1S));
          double Nllbefore3P=simNLL.getVal();
 
 		 RooMinuit* minuit = new RooMinuit(simNLL);
 
-		 minuit->setStrategy(2);
+		 minuit->setStrategy(1);
 		 minuit->setPrintEvalErrors(-1);
-		 minuit->setPrintLevel(3);
+		 minuit->setPrintLevel(-1);
+		 minuit->setNoWarn();
 
 		 char resultname[200];
 
@@ -1244,10 +2205,49 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 			 minosresult->Print();
 		        delete minosresult;
 
+
+
+//////// Calculate significance of 3P state
+/*
+//		        modelProd.fitTo(data1S,Extended(kTRUE),Save());
+
+//		        mean.setConstant(kTRUE);
+//		        width.setConstant(kTRUE);
+		        m_chib3P.setConstant(kTRUE);
+		        n3PnJ_1S.setConstant(kTRUE);
+
+		        RooArgSet POI(RooArgList(n3PnJ_1S,m_chib3P));
+
+		        ProfileLikelihoodCalculator plc(data1S, modelPdf1S_3P, POI);
+
+		        // Create a copy of the POI parameters to set the values to zero
+		        RooArgSet nullparams;
+		        nullparams.addClone(POI);
+		        ((RooRealVar *) (nullparams.find("N_{#chi_{b}(3P),1S}")))->setVal(0);
+		        ((RooRealVar *) (nullparams.find("M_{#chi_{b}(3P),1S}")))->setConstant(kTRUE);
+		        plc.SetNullParameters(nullparams);
+
+		        HypoTestResult* htr = plc.GetHypoTest();
+
+		        cout << "significance: " << htr->NullPValue() << " " << htr->Significance() << endl;
+
+
+*/
+
 		        m_chib3P.setError((m_chib3P.getAsymErrorHi()-m_chib3P.getAsymErrorLo())/2.);
 //		        m_chib3P_1S.setError((m_chib3P_1S.getAsymErrorHi()-m_chib3P_1S.getAsymErrorLo())/2.);
 
+		        background_nevt2S.setConstant();
+
+
          double Nllafter3P=simNLL.getVal();
+         Nevt_buff=n3PnJ.getVal();
+         Nevt_buff2=n3PnJ_1S.getVal();
+ 		 n3PnJ.setVal(0.001);
+ 		 n3PnJ_1S.setVal(0.001);
+ 		 Nllbefore3P=simNLL.getVal();
+ 		 n3PnJ.setVal(Nevt_buff);
+ 		 n3PnJ_1S.setVal(Nevt_buff2);
 
          cout<<"minNllNoSigAll "<<Nllbefore3P<<endl;
          cout<<"minNll3PAll    "<<Nllafter3P<<endl;
@@ -1259,12 +2259,11 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
 
 
-
-
+        RooAbsReal* model2SNLL=modelPdf2S.createNLL(*data2S);
         Nevt_buff=n3PnJ.getVal();
-		double minNll3P=modelPdf2S.createNLL(*data2S)->getVal();
+		double minNll3P=model2SNLL->getVal();
 		n3PnJ.setVal(0);
-		double minNllNoSig2S=modelPdf2S.createNLL(*data2S)->getVal();
+		double minNllNoSig2S=model2SNLL->getVal();
 		n3PnJ.setVal(Nevt_buff);
 
         cout<<"minNllNoSig2S "<<minNllNoSig2S<<endl;
@@ -1274,10 +2273,13 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
         double ThreePsig=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio3P));
         cout<<"ThreePsig "<<ThreePsig<<endl;
 
+
+        RooAbsReal* model1SNLL=modelPdf1S.createNLL(*data1S);
+        RooAbsReal* model1SNLL_3P=modelPdf1S_3P.createNLL(*data1S,Range(chib2Pmax,bb_thresh));
         Nevt_buff=n3PnJ_1S.getVal();
-		double minNll3P_1S=modelPdf1S.createNLL(*data1S)->getVal();
-		n3PnJ_1S.setVal(0);
-		double minNllNoSig1S=modelPdf1S.createNLL(*data1S)->getVal();
+		double minNll3P_1S=model1SNLL_3P->getVal();
+		n3PnJ_1S.setVal(0.001);
+		double minNllNoSig1S=model1SNLL_3P->getVal();
 		n3PnJ_1S.setVal(Nevt_buff);
 
 		cout<<"minNllNoSig1S "<<minNllNoSig1S<<endl;
@@ -1288,9 +2290,9 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
         cout<<"ThreePsig_1S "<<ThreePsig_1S<<endl;
 
         Nevt_buff=n1PnJ.getVal();
-		double minNll1P=modelPdf1S.createNLL(*data1S)->getVal();
+		double minNll1P=model1SNLL->getVal();
 		n1PnJ.setVal(0);
-		double minNllNo1P1S=modelPdf1S.createNLL(*data1S)->getVal();
+		double minNllNo1P1S=model1SNLL->getVal();
 		n1PnJ.setVal(Nevt_buff);
 
 		cout<<"minNllNo1P1S "<<minNllNo1P1S<<endl;
@@ -1301,9 +2303,9 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
         cout<<"OnePsig "<<OnePsig<<endl;
 
         Nevt_buff=n2PnJ.getVal();
-		double minNll2P=modelPdf1S.createNLL(*data1S)->getVal();
+		double minNll2P=model1SNLL->getVal();
 		n2PnJ.setVal(0);
-		double minNllNo2P1S=modelPdf1S.createNLL(*data1S)->getVal();
+		double minNllNo2P1S=model1SNLL->getVal();
 		n2PnJ.setVal(Nevt_buff);
 
 		cout<<"minNllNo2P1S "<<minNllNo2P1S<<endl;
@@ -1318,10 +2320,10 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
         double Nevt_buff_;
         Nevt_buff=n1PnJ.getVal();
         Nevt_buff_=n2PnJ.getVal();
-		double minNll1P2Pcomb=modelPdf1S.createNLL(*data1S)->getVal();
+		double minNll1P2Pcomb=model1SNLL->getVal();
 		n2PnJ.setVal(0);
 		n1PnJ.setVal(0);
-		double minNllNo1P2Pcomv=modelPdf1S.createNLL(*data1S)->getVal();
+		double minNllNo1P2Pcomv=model1SNLL->getVal();
 		n1PnJ.setVal(Nevt_buff);
 		n2PnJ.setVal(Nevt_buff_);
 
@@ -1334,9 +2336,9 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
 
         Nevt_buff=n2PnJ_2S.getVal();
-		double minNll2P_2S=modelPdf2S.createNLL(*data2S)->getVal();
+		double minNll2P_2S=model2SNLL->getVal();
 		n2PnJ_2S.setVal(0);
-		double minNllNo2P_2S=modelPdf2S.createNLL(*data2S)->getVal();
+		double minNllNo2P_2S=model2SNLL->getVal();
 		n2PnJ_2S.setVal(Nevt_buff);
 
 		cout<<"minNllNo2P_2S "<<minNllNo2P_2S<<endl;
@@ -1346,6 +2348,25 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
         double TwoPsig_2S=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio2P_2S));
         cout<<"TwoPsig_2S "<<TwoPsig_2S<<endl;
 
+
+
+
+
+        Nevt_buff=nX.getVal();
+		double minNll_X=model1SNLL->getVal();
+		nX.setVal(0);
+		double minNll_NoX=model1SNLL->getVal();
+		nX.setVal(Nevt_buff);
+
+		cout<<"minNll_NoX "<<minNll_NoX<<endl;
+        cout<<"minNll_X    "<<minNll_X<<endl;
+        double logLikelihoodRatio_X=TMath::Log(TMath::Exp(minNll_X-minNll_NoX));
+        cout<<"logLikelihoodRatio_X "<<logLikelihoodRatio_X<<endl;
+        double Xsignificance=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio_X));
+        cout<<"Xsignificance "<<Xsignificance<<endl;
+
+		delete model2SNLL;
+		delete model1SNLL;
 
         cout<<"chib1P_nevt: "<<chib1P_nevt.getVal()<<endl;
         cout<<"chib2P_nevt: "<<chib2P_nevt.getVal()<<endl;
@@ -1359,7 +2380,7 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      double TotalRealEvents2S = data2S_masswindow->sumEntries();
      double totalEventsInFit2S;
 
-     totalEventsInFit1S = chib1P_nevt.getVal()+chib2P_nevt.getVal()+chib3P_nevt_1S.getVal()+background_nevt1S.getVal();
+     totalEventsInFit1S = nX.getVal()+chib1P_nevt.getVal()+chib2P_nevt.getVal()+chib3P_nevt_1S.getVal()+background_nevt1S.getVal();
      totalEventsInFit2S = chib3P_nevt.getVal()+chib2P_nevt_2S.getVal()+background_nevt2S.getVal();
 
      cout<< "N_tot_Fit1S =                            "<<totalEventsInFit1S <<endl;
@@ -1370,7 +2391,10 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      cout<< "N_tot_Samlpe2S =                         "<<TotalRealEvents2S <<endl;
      cout<< "Delta_N_tot2S = N_tot_Sample2S-N_tot_Fit2S = "<<TotalRealEvents2S-totalEventsInFit2S <<endl;
 
-
+     double onePwidth=(m_chib1P1fix.getVal()-Ymass1S)*PhotonSigmaScale.getVal();
+     double onePwidtherr=(m_chib1P1fix.getVal()-Ymass1S)*PhotonSigmaScale.getError();
+     cout<< "onePwidth =                            "<<onePwidth <<endl;
+     cout<< "onePwidtherr =                            "<<onePwidtherr <<endl;
 // likelihood gaussian check
 
      if(SaveAll) {
@@ -1410,6 +2434,8 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
      n3PnJ_1S.setVal(Nevt_buff);
 
+     delete logL_3P2S;
+     delete logL_3P1S;
      }
 
      double nSig=1.5;
@@ -1448,6 +2474,7 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      }
      double fsigma3_1S=sigmaCalc;
 
+     m_chib2P.setVal(m_chib2P1float.getVal()*fracJ1.getVal()+m_chib2P2float.getVal()*(1-fracJ1.getVal()));
 
 
      cout<<"m_chib1P: "<<m_chib1P.getVal()<<endl;
@@ -1457,7 +2484,25 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      cout<<"fsigma1: "<<fsigma1<<endl;
      cout<<"fsigma2: "<<fsigma2<<endl;
      cout<<"fsigma3: "<<fsigma3<<endl;
-     cout<<"fsigma3_1S: "<<fsigma3_1S<<endl;
+     cout<<"fsigma3_1S: "<<fsigma3_1S<<endl<<endl;
+
+     cout<<"m_chib1_2Pin1S: "<<m_chib2P1float_2Sin1S.getVal()<<endl;
+     cout<<"m_chib2_2Pin1S: "<<m_chib2P2float_2Sin1S.getVal()<<endl;
+
+     double m_chib1_2Pin1S_corrected=(m_chib2P1float_2Sin1S.getVal()-Ymass1S)/PhotonMassScale3P.getVal()+Ymass1S;
+     cout<<"m_chib1_2Pin1S corrected: "<<m_chib1_2Pin1S_corrected<<endl;
+     double expectedMass_m_chib1_2Pin1S_corrected=m_chib2P1fix.getVal()-Ymass2S+Ymass1S;
+     cout<<"expectedMass_m_chib1_2Pin1S_corrected: "<<expectedMass_m_chib1_2Pin1S_corrected<<endl;
+     cout<<"shift m_chib1_2Pin1S = "<<m_chib1_2Pin1S_corrected-expectedMass_m_chib1_2Pin1S_corrected<<" +- "<<mX.getError()<<endl;
+
+     double m_chib2_2Pin1S_corrected=(m_chib2P2float_2Sin1S.getVal()-Ymass1S)/PhotonMassScale3P.getVal()+Ymass1S;
+     cout<<"m_chib2_2Pin1S corrected: "<<m_chib2_2Pin1S_corrected<<endl;
+     double expectedMass_m_chib2_2Pin1S_corrected=m_chib2P2fix.getVal()-Ymass2S+Ymass1S;
+     cout<<"expectedMass_m_chib2_2Pin1S_corrected: "<<expectedMass_m_chib2_2Pin1S_corrected<<endl;
+     cout<<"shift m_chib2_2Pin1S = "<<m_chib2_2Pin1S_corrected-expectedMass_m_chib2_2Pin1S_corrected<<" +- "<<mX.getError()<<endl;
+
+//     cout<<"shift m_chib1_2Pin1S = "<<mX.getVal()-(m_chib2P1fix.getVal()-Ymass2S)*PhotonMassScale3P.getVal()-Ymass1S<<" +- "<<mX.getError()<<endl;
+//     cout<<"shift m_chib2_2Pin1S = "<<mX.getVal()-(m_chib2P2fix.getVal()-Ymass2S)*PhotonMassScale3P.getVal()-Ymass1S<<" +- "<<mX.getError()<<endl;
 
      double fnchib1P = chib1P_nevt.getVal();
      double fnchib2P = chib2P_nevt.getVal();
@@ -1471,10 +2516,10 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      rchib2P=fnchib2P*NormalizedIntegral(&chib2P_sig, invm1S, fmchib2P-nSig*fsigma2, fmchib2P+nSig*fsigma2);
      rchib3P=fnchib3P*NormalizedIntegral(&chib3P_sig, invm2S, fmchib3P-nSig*fsigma3, fmchib3P+nSig*fsigma3);
      rchib3P_1S=fnchib3P_1S*NormalizedIntegral(&chib3P_sig_1S, invm1S, fmchib3P_1S-nSig*fsigma3_1S, fmchib3P_1S+nSig*fsigma3_1S);
-     rbgchib1P=fnbg1S*NormalizedIntegral(&background1S, invm1S, fmchib1P-nSig*fsigma1, fmchib1P+nSig*fsigma1);
-     rbgchib2P=fnbg1S*NormalizedIntegral(&background1S, invm1S, fmchib2P-nSig*fsigma2, fmchib2P+nSig*fsigma2);
-     rbgchib3P=fnbg2S*NormalizedIntegral(&background2S, invm2S, fmchib3P-nSig*fsigma3, fmchib3P+nSig*fsigma3);
-     rbgchib3P_1S=fnbg1S*NormalizedIntegral(&background1S, invm1S, fmchib3P_1S-nSig*fsigma3_1S, fmchib3P_1S+nSig*fsigma3_1S);
+     rbgchib1P=fnbg1S*NormalizedIntegral(&*background1S, invm1S, fmchib1P-nSig*fsigma1, fmchib1P+nSig*fsigma1);
+     rbgchib2P=fnbg1S*NormalizedIntegral(&*background1S, invm1S, fmchib2P-nSig*fsigma2, fmchib2P+nSig*fsigma2);
+     rbgchib3P=fnbg2S*NormalizedIntegral(&*background2S, invm2S, fmchib3P-nSig*fsigma3, fmchib3P+nSig*fsigma3);
+     rbgchib3P_1S=fnbg1S*NormalizedIntegral(&*background1S, invm1S, fmchib3P_1S-nSig*fsigma3_1S, fmchib3P_1S+nSig*fsigma3_1S);
      rratchib1P=rchib1P/rbgchib1P;
      rratchib2P=rchib2P/rbgchib2P;
      rratchib3P=rchib3P/rbgchib3P;
@@ -1504,20 +2549,62 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      cout<<"rsigchib3P_ScL: "<<rsigchib3P_ScL<<endl;
      cout<<"rsigchib3P_ScL_1S: "<<rsigchib3P_ScL_1S<<endl<<endl;
 
+     int nHistBins_Gamma=25;
      char MasswindowChar[200];
-     TH1F  *hGammaE_1P = new TH1F("hGammaE_1P","",nHistBins,0,10);
-     TH1F  *hGammaE_2P = new TH1F("hGammaE_2P","",nHistBins,0,10);
-     TH1F  *hGammaE_3P = new TH1F("hGammaE_3P","",nHistBins,0,10);
-     TH1F  *hGammaE_3P_1S = new TH1F("hGammaE_3P_1S","",nHistBins,0,10);
+     TH1F  *hGammaE_1P = new TH1F("hGammaE_1P","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaE_2P = new TH1F("hGammaE_2P","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaE_3P = new TH1F("hGammaE_3P","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaE_3P_1S = new TH1F("hGammaE_3P_1S","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaE_1PSB2P = new TH1F("hGammaE_1PSB2P","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaE_2PSB3P = new TH1F("hGammaE_2PSB3P","",nHistBins_Gamma,0,5);
+
+     TH1F  *hGammaPt_1P = new TH1F("hGammaPt_1P","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaPt_2P = new TH1F("hGammaPt_2P","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaPt_3P = new TH1F("hGammaPt_3P","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaPt_3P_1S = new TH1F("hGammaPt_3P_1S","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaPt_1PSB2P = new TH1F("hGammaPt_1PSB2P","",nHistBins_Gamma,0,5);
+     TH1F  *hGammaPt_2PSB3P = new TH1F("hGammaPt_2PSB3P","",nHistBins_Gamma,0,5);
+
+     TH1F  *hChibPt_1P = new TH1F("hChibPt_1P","",nHistBins_Gamma,0,50);
+     TH1F  *hChibPt_2P = new TH1F("hChibPt_2P","",nHistBins_Gamma,0,50);
+
+     hGammaE_1P->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaE_2P->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaE_3P->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaE_3P_1S->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaE_1PSB2P->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaE_2PSB3P->GetYaxis()->SetTitle("Events per 200 MeV");
+
+     hGammaPt_1P->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaPt_2P->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaPt_3P->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaPt_3P_1S->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaPt_1PSB2P->GetYaxis()->SetTitle("Events per 200 MeV");
+     hGammaPt_2PSB3P->GetYaxis()->SetTitle("Events per 200 MeV");
+
+     hChibPt_1P->GetYaxis()->SetTitle("Events per 2 GeV");
+     hChibPt_2P->GetYaxis()->SetTitle("Events per 2 GeV");
 
      sprintf(MasswindowChar,"invm1S < %f && invm1S > %f",fmchib1P+nSig*fsigma1,fmchib1P-nSig*fsigma1);
      tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaE_1P",MasswindowChar);
+     tree1S->Draw("gammapt>>hGammaPt_1P",MasswindowChar);
+     tree1S->Draw("sqrt((gammapx+jpsipx)*(gammapx+jpsipx)+(gammapy+jpsipy)*(gammapy+jpsipy))>>hChibPt_1P",MasswindowChar);
      sprintf(MasswindowChar,"invm1S < %f && invm1S > %f",fmchib2P+nSig*fsigma2,fmchib2P-nSig*fsigma2);
      tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaE_2P",MasswindowChar);
+     tree1S->Draw("gammapt>>hGammaPt_2P",MasswindowChar);
+     tree1S->Draw("sqrt((gammapx+jpsipx)*(gammapx+jpsipx)+(gammapy+jpsipy)*(gammapy+jpsipy))>>hChibPt_2P",MasswindowChar);
      sprintf(MasswindowChar,"invm1S < %f && invm1S > %f",fmchib3P+nSig*fsigma3_1S,fmchib3P-nSig*fsigma3_1S);
      tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaE_3P_1S",MasswindowChar);
+     tree1S->Draw("gammapt>>hGammaPt_3P_1S",MasswindowChar);
      sprintf(MasswindowChar,"invm2S < %f && invm2S > %f",fmchib3P+nSig*fsigma3,fmchib3P-nSig*fsigma3);
      tree2S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaE_3P",MasswindowChar);
+     tree2S->Draw("gammapt>>hGammaPt_3P",MasswindowChar);
+     sprintf(MasswindowChar,"invm1S > %f && invm1S < %f",fmchib1P+nSig*fsigma1,fmchib2P-nSig*fsigma2);
+     tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaE_1PSB2P",MasswindowChar);
+     tree1S->Draw("gammapt>>hGammaPt_1PSB2P",MasswindowChar);
+     sprintf(MasswindowChar,"invm1S > %f && invm1S < %f",fmchib2P+nSig*fsigma2,fmchib3P-nSig*fsigma3);
+     tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaE_2PSB3P",MasswindowChar);
+     tree1S->Draw("gammapt>>hGammaPt_2PSB3P",MasswindowChar);
 
      hGammaE_1P->Print();
      hGammaE_2P->Print();
@@ -1528,22 +2615,146 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
      TCanvas* PhotonEnergyCanvas = new TCanvas("PhotonEnergyCanvas","PhotonEnergyCanvas",1600, 1200);
      PhotonEnergyCanvas->SetFillColor(kWhite);
-     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_1P->GetXaxis()->SetTitle("E_{#gamma} in 1P peak (1S sample)");	hGammaE_1P->Draw();
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_1P->GetXaxis()->SetTitle("E_{#gamma} in 1P peak (1S sample)");	hGammaE_1P->Draw("E");
      PhotonEnergyCanvas->Modified();
      sprintf(saveName,"Figures/%s/PhotonEnergy_1P_1S.pdf",FitID);
      if(SaveAll) PhotonEnergyCanvas->SaveAs(saveName);
-     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_2P->GetXaxis()->SetTitle("E_{#gamma} in 2P peak (1S sample)");	hGammaE_2P->Draw();
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_2P->GetXaxis()->SetTitle("E_{#gamma} in 2P peak (1S sample)");	hGammaE_2P->Draw("E");
      PhotonEnergyCanvas->Modified();
      sprintf(saveName,"Figures/%s/PhotonEnergy_2P_1S.pdf",FitID);
      if(SaveAll) PhotonEnergyCanvas->SaveAs(saveName);
-     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_3P->GetXaxis()->SetTitle("E_{#gamma} in 3P peak (2S sample)");	hGammaE_3P->Draw();
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_3P->GetXaxis()->SetTitle("E_{#gamma} in 3P peak (2S sample)");	hGammaE_3P->Draw("E");
      PhotonEnergyCanvas->Modified();
      sprintf(saveName,"Figures/%s/PhotonEnergy_3P_2S.pdf",FitID);
      if(SaveAll) PhotonEnergyCanvas->SaveAs(saveName);
-     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_3P_1S->GetXaxis()->SetTitle("E_{#gamma} in 3P peak (1S sample)");	hGammaE_3P_1S->Draw();
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_3P_1S->GetXaxis()->SetTitle("E_{#gamma} in 3P peak (1S sample)");	hGammaE_3P_1S->Draw("E");
      PhotonEnergyCanvas->Modified();
      sprintf(saveName,"Figures/%s/PhotonEnergy3P_1S.pdf",FitID);
      if(SaveAll) PhotonEnergyCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_1PSB2P->GetXaxis()->SetTitle("E_{#gamma} of events in mass region between 1P and 2P peaks");	hGammaE_1PSB2P->Draw("E");
+     PhotonEnergyCanvas->Modified();
+     sprintf(saveName,"Figures/%s/PhotonEnergy1PSB2P.pdf",FitID);
+     if(SaveAll) PhotonEnergyCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaE_2PSB3P->GetXaxis()->SetTitle("E_{#gamma} of events in mass region between 2P and 3P peaks");	hGammaE_2PSB3P->Draw("E");
+     PhotonEnergyCanvas->Modified();
+     sprintf(saveName,"Figures/%s/PhotonEnergy2PSB3P.pdf",FitID);
+     if(SaveAll) PhotonEnergyCanvas->SaveAs(saveName);
+
+     TCanvas* PhotonPtCanvas = new TCanvas("PhotonPtCanvas","PhotonPtCanvas",1600, 1200);
+     PhotonPtCanvas->SetFillColor(kWhite);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_1P->GetXaxis()->SetTitle("p_{T#gamma} in 1P peak (1S sample)");	hGammaPt_1P->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/PhotonPt_1P_1S.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_2P->GetXaxis()->SetTitle("p_{T#gamma} in 2P peak (1S sample)");	hGammaPt_2P->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/PhotonPt_2P_1S.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_3P->GetXaxis()->SetTitle("p_{T#gamma} in 3P peak (2S sample)");	hGammaPt_3P->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/PhotonPt_3P_2S.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_3P_1S->GetXaxis()->SetTitle("p_{T#gamma} in 3P peak (1S sample)");	hGammaPt_3P_1S->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/PhotonPt_3P_1S.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_1PSB2P->GetXaxis()->SetTitle("p_{T#gamma} of events in mass region between 1P and 2P peaks");	hGammaPt_1PSB2P->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/PhotonPt_1PSB2P.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_2PSB3P->GetXaxis()->SetTitle("p_{T#gamma} of events in mass region between 2P and 3P peaks");	hGammaPt_2PSB3P->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/PhotonPt_2PSB3P.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hChibPt_1P->GetXaxis()->SetTitle("p_{T#chi_{b}} in 1P peak");	hChibPt_1P->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/ChibPt_1P_1S.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hChibPt_2P->GetXaxis()->SetTitle("p_{T#chi_{b}} in 2P peak (1S sample)");	hChibPt_2P->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/ChibPt_2P_1S.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+
+     int nHistBins_Gamma_2D=50;
+     TH2F  *hGammaPt_invm1S = new TH2F("hGammaPt_invm1S","",nHistBins_Gamma_2D,invm_min1S,invm_max1S,nHistBins_Gamma_2D,0,5);
+     tree1S->Draw("gammapt:invm1S>>hGammaPt_invm1S");
+     TH2F  *hGammaPt_invm1S_broad = new TH2F("hGammaPt_invm1S_broad","",100,invm_min1S,14,100,0,7);
+     tree1S->Draw("gammapt:invm1S>>hGammaPt_invm1S_broad");
+     TH2F  *hCosAlpha_invm1S = new TH2F("hCosAlpha_invm1S","",100,invm_min1S,invm_max1S,100,-1,1);
+     tree1S->Draw("(gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz):invm1S>>hCosAlpha_invm1S");
+     gStyle->SetPalette(1);
+     hGammaPt_invm1S->SetStats(0);
+     hGammaPt_invm1S_broad->SetStats(0);
+     hCosAlpha_invm1S->SetStats(0);
+
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_invm1S->GetXaxis()->SetTitle(invm1S.getTitle());hGammaPt_invm1S->GetYaxis()->SetTitle("p_{T#gamma}");	hGammaPt_invm1S->Draw("colz");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/GammaPt_vs_invm1S.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_invm1S->GetXaxis()->SetTitle(invm1S.getTitle());hGammaPt_invm1S->GetYaxis()->SetTitle("p_{T#gamma}");	hGammaPt_invm1S->Draw("box");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/GammaPt_vs_invm1S_Scatter.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaPt_invm1S_broad->GetXaxis()->SetTitle(invm1S.getTitle());hGammaPt_invm1S_broad->GetYaxis()->SetTitle("p_{T#gamma}");	hGammaPt_invm1S_broad->Draw("box");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/GammaPt_vs_invm1S_Scatter_Broad.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hCosAlpha_invm1S->GetXaxis()->SetTitle(invm1S.getTitle());hCosAlpha_invm1S->GetYaxis()->SetTitle("cos#alpha");	hCosAlpha_invm1S->Draw("colz");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/CosAlpha_vs_invm1S_colz.root",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+
+     sprintf(saveName,"Figures/%s/GammaPt_vs_invm1S_Histo.root",FitID);
+     if(SaveAll) hGammaPt_invm1S->SaveAs(saveName);
+
+     int nHistBins_MeanPt=50;
+     TH1F  *hGammaMeanPt = new TH1F("hGammaMeanPt","",nHistBins_MeanPt,invm_min1S,invm_max1S);
+     double massrange=invm_max1S-invm_min1S;
+
+     int nHistBins_GammaForMeanPt=25;
+     for(int i=1;i<nHistBins_MeanPt+1;i++){
+     TH1F  *hGammaPtBuffer = new TH1F("hGammaPtBuffer","",nHistBins_GammaForMeanPt,0,5);
+     sprintf(MasswindowChar,"invm1S > %f && invm1S < %f",invm_min1S+(i-1)*massrange/nHistBins_MeanPt,invm_min1S+(i)*massrange/nHistBins_MeanPt);
+     tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaPtBuffer",MasswindowChar);
+
+     double numEntriesGammaMeanPtBuffer=hGammaPtBuffer->GetSumOfWeights();
+     double median;
+     double binContentBuffer=0;
+     for(int j=1;j<nHistBins_GammaForMeanPt+1;j++){
+    	 binContentBuffer+=hGammaPtBuffer->GetBinContent(j);
+    	 if(binContentBuffer/numEntriesGammaMeanPtBuffer>0.5){median=hGammaPtBuffer->GetBinCenter(j);break;}
+     }
+     hGammaMeanPt->SetBinContent(i,hGammaPtBuffer->GetMean());
+     hGammaMeanPt->SetBinError(i,hGammaPtBuffer->GetMeanError());
+//     hGammaMeanPt->SetBinContent(i,median);
+//     hGammaMeanPt->SetBinError(i,0.0001);
+     }
+
+     hGammaMeanPt->SetStats(0);
+     gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite);hGammaMeanPt->GetXaxis()->SetTitle(invm1S.getTitle());hGammaMeanPt->GetYaxis()->SetTitle("#hat{p_{T#gamma}}");	hGammaMeanPt->Draw("E");
+     PhotonPtCanvas->Modified();
+     sprintf(saveName,"Figures/%s/GammaPtMean.pdf",FitID);
+     if(SaveAll) PhotonPtCanvas->SaveAs(saveName);
+
+
+
+
+     delete hGammaE_1P;
+     delete hGammaE_2P;
+     delete hGammaE_3P;
+     delete hGammaE_3P_1S;
+     delete hGammaE_1PSB2P;
+     delete hGammaE_2PSB3P;
+     delete hGammaPt_1P;
+     delete hGammaPt_2P;
+     delete hGammaPt_3P;
+     delete hGammaPt_3P_1S;
+     delete hGammaPt_1PSB2P;
+     delete hGammaPt_2PSB3P;
+     delete hChibPt_1P;
+     delete hChibPt_2P;
+
 
      hCut_1Psig->SetBinContent(inCut+1,rsigchib1P);
      if(rratchib1P<100) hCut_1PSB->SetBinContent(inCut+1,rratchib1P);
@@ -1554,15 +2765,13 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      hCut_2PS->SetBinContent(inCut+1,rchib2P);
      hCut_2PB->SetBinContent(inCut+1,rbgchib2P);
      hCut_sig->SetBinContent(inCut+1,(rsigchib1P+rsigchib2P)/2.);
-     hCut_covQual1->SetBinContent(inCut+1,covQual_BG1S);
+     hCut_covQual1->SetBinContent(inCut+1,covQualOptimization);
      hCut_1Pmean ->SetBinContent(inCut+1,fmchib1P);
      hCut_1Pwidth->SetBinContent(inCut+1,sigmaInd.getVal());
      hCut_1Pnevt ->SetBinContent(inCut+1,fnchib1P);
      hCut_2Pmean ->SetBinContent(inCut+1,fmchib2P);
      hCut_2Pwidth->SetBinContent(inCut+1,sigmaInd2P.getVal());
      hCut_2Pnevt ->SetBinContent(inCut+1,fnchib2P);
-     hCut_CBa    ->SetBinContent(inCut+1,alpha_3J.getVal());
-     hCut_CBn    ->SetBinContent(inCut+1,n_3J.getVal());
      hCut_BGnevt1S ->SetBinContent(inCut+1,fnbg1S);
      hCut_BGnevt2S ->SetBinContent(inCut+1,fnbg2S);
      hCut_Ntotal1S ->SetBinContent(inCut+1,data1S_masswindow->sumEntries());
@@ -1575,6 +2784,20 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      hCut_3PB->SetBinContent(inCut+1,rbgchib3P);
      hCut_3Pmass->SetBinContent(inCut+1,fmchib3P);
      hCut_3Pmass->SetBinError(inCut+1,err_fmchib3P);
+     hCut_3PMerr->SetBinContent(inCut+1,err_fmchib3P);
+
+     hCut_CBa    ->SetBinContent(inCut+1,alpha_3J.getVal());
+     hCut_CBa    ->SetBinError(inCut+1,alpha_3J.getError());
+     hCut_CBn    ->SetBinContent(inCut+1,n_3J.getVal());
+     hCut_CBn    ->SetBinError(inCut+1,n_3J.getError());
+     hCut_PhotonEnergyScale->SetBinContent(inCut+1,PhotonMassScale.getVal());
+     hCut_PhotonEnergyScale->SetBinError(inCut+1,PhotonMassScale.getError());
+     hCut_PhotonEnergyScale2P->SetBinContent(inCut+1,PhotonMassScale2P.getVal());
+     hCut_PhotonEnergyScale2P->SetBinError(inCut+1,PhotonMassScale2P.getError());
+     hCut_PhotonSigmaScale->SetBinContent(inCut+1,PhotonSigmaScale.getVal());
+     hCut_PhotonSigmaScale->SetBinError(inCut+1,PhotonSigmaScale.getError());
+     hCut_PhotonSigmaScale2P->SetBinContent(inCut+1,PhotonSigmaScale2P.getVal());
+     hCut_PhotonSigmaScale2P->SetBinError(inCut+1,PhotonSigmaScale2P.getError());
 
      hCut_3Psig_1S->SetBinContent(inCut+1,ThreePsig_1S);
      if(rratchib3P_1S<100) hCut_3PSB_1S->SetBinContent(inCut+1,rratchib3P_1S);
@@ -1583,8 +2806,6 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
      hCut_3PsigALL->SetBinContent(inCut+1,ThreePsigALL);
 
-     hCut_PhotonEnergyScale->SetBinContent(inCut+1,PhotonMassScale.getVal());
-     hCut_PhotonEnergyScale2P->SetBinContent(inCut+1,PhotonMassScale2P.getVal());
      hCut_1PsigLL->SetBinContent(inCut+1,OnePsig);
      hCut_2PsigLL->SetBinContent(inCut+1,TwoPsig);
 
@@ -1603,21 +2824,72 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      double chi21S;
      double chi22S;
      double binWidth=12.5;
-     int FrameBins1S=100./4.*64./binWidth;
+     if(MCsample) binWidth=5.;
+     int FrameBins1S=(invm_max1S-invm_min1S)*1000/binWidth;
      int FrameBins2Sin1S=100./4.*44./binWidth;
      int FrameBins2S=100./4.*64./binWidth;
      int FrameBins3Sin1S=100./4.*32./binWidth;
 
+     if(PlotStep2){
      n3PnJ_1S.setConstant(kFALSE);
      m_chib3P.setConstant(kFALSE);
+     }
+     if(!PlotStep2){
+     n3PnJ_1S.setConstant(kTRUE);
+     m_chib3P.setConstant(kTRUE);
+     }
 
+     if(PlotStep1){
      alpha_3J.setConstant(kFALSE);
-     n_3J.setConstant(kFALSE);
      PhotonMassScale2P.setConstant(kFALSE);
-     ratio_J2overJ1.setConstant(kFALSE);
      PhotonSigmaScale.setConstant(kFALSE);
      PhotonMassScale.setConstant(kFALSE);
+     PhotonSigmaScale2P.setConstant(kFALSE);
+     alpha1.setConstant(kFALSE);
+     beta1.setConstant(kFALSE);
+     q01S.setConstant(kFALSE);
+     background_nevt1S.setConstant(kFALSE);
+     n2PnJ.setConstant(kFALSE);
+     n1PnJ.setConstant(kFALSE);
+     gamma1.setConstant(kFALSE);
 
+     mX.setConstant(kFALSE);
+     nX.setConstant(kFALSE);
+    }
+     if(!PlotStep1){
+     alpha_3J.setConstant(kTRUE);
+     PhotonMassScale2P.setConstant(kTRUE);
+     PhotonSigmaScale.setConstant(kTRUE);
+     PhotonMassScale.setConstant(kTRUE);
+     PhotonSigmaScale2P.setConstant(kTRUE);
+     alpha1.setConstant(kTRUE);
+     beta1.setConstant(kTRUE);
+     q01S.setConstant(kTRUE);
+     background_nevt1S.setConstant(kTRUE);
+     n2PnJ.setConstant(kTRUE);
+     n1PnJ.setConstant(kTRUE);
+     gamma1.setConstant(kTRUE);
+     }
+     if(PlotStep1&&PlotStep2&&MCsample){
+     alpha_3J.setConstant(kFALSE);
+     PhotonMassScale2P.setConstant(kFALSE);
+     PhotonSigmaScale.setConstant(kFALSE);
+     PhotonMassScale.setConstant(kFALSE);
+     PhotonSigmaScale2P.setConstant(kFALSE);
+     alpha1.setConstant();
+     beta1.setConstant();
+     q01S.setConstant();
+     background_nevt1S.setConstant();
+     n2PnJ.setConstant(kFALSE);
+     n1PnJ.setConstant(kFALSE);
+     gamma1.setConstant();
+     n3PnJ_1S.setConstant(kTRUE);
+     m_chib3P.setConstant(kTRUE);
+     mX.setConstant();
+     nX.setConstant();
+  	 ratio_J2overJ1.setConstant(kFALSE);
+     n_3J.setConstant(kFALSE);
+    }
 
      char plotYtitle[200];
 
@@ -1629,81 +2901,141 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      n3PnJ_1S.setVal(1e-8);
      }
 
-    TCanvas* ChibCanvas1S = new TCanvas("#chi_{b} 1S invariant mass","#chi_{b} 1S invariant mass",2100, 800);
+     int CanvasSize=1900;
+//     if(!OneSPlotModel) CanvasSize=1330;
+    TCanvas* ChibCanvas1S = new TCanvas("#chi_{b} 1S invariant mass","#chi_{b} 1S invariant mass",CanvasSize, 800);
     ChibCanvas1S->Divide(1);
     ChibCanvas1S->SetFillColor(kWhite);
     ChibCanvas1S->cd(1);
-    gPad->SetRightMargin(0.3);/////
+    /*if(OneSPlotModel)*/ gPad->SetRightMargin(0.3);/////
     gPad->SetFillColor(kWhite);
 
     double FontSize=0.0325;
 
+
+
+    //    invm1S.setRange("SBregion31S",bb_thresh,invm_max1S);
+    //    invm1S.setRange("Chib1P2Pregion",invm_min1S,chib2Pmax);
+    //    invm1S.setRange("Chib3Pregion",chib2Pmax,bb_thresh);
+    //    PlotStep1
+
+
+    char PlotRangeSteps[200];
+    double totalEventsInFit1S_plot;
+    double PlotInt;
+
+    if(PlotStep1) sprintf(PlotRangeSteps,"Chib1P2Pregion,SBregion31S");
+    if(PlotStep2) sprintf(PlotRangeSteps,"Chib3Pregion");
+    if(PlotBothSteps) sprintf(PlotRangeSteps,"Y1SAll");
+
+    if(PlotStep1){
+        PlotInt = NormalizedIntegral(&modelPdf1S, invm1S, invm_min1S, chib2Pmax)+NormalizedIntegral(&modelPdf1S, invm1S, bb_thresh, invm_max1S);
+        totalEventsInFit1S_plot=totalEventsInFit1S*PlotInt/NormalizedIntegral(&modelPdf1S, invm1S, invm_min1S, invm_max1S);
+    }
+
+    if(PlotStep2){
+        PlotInt = NormalizedIntegral(&modelPdf1S, invm1S, chib2Pmax, bb_thresh);
+        totalEventsInFit1S_plot=totalEventsInFit1S*PlotInt/NormalizedIntegral(&modelPdf1S, invm1S, invm_min1S, invm_max1S);
+    }
+
+    if(PlotBothSteps) totalEventsInFit1S_plot=totalEventsInFit1S;
+    double totalEventsInFit2S_plot=totalEventsInFit2S;
+
+    cout<<"Plotting in Range "<<PlotRangeSteps<<endl;
+    cout<<"Normalizing to "<<totalEventsInFit1S_plot<<" Events , totalEventsInFit1S = "<<totalEventsInFit1S<<endl;
+
     RooPlot* frame1S= invm1S.frame(FrameBins1S);
     frame1S->SetTitle("#chi_{b} invariant mass, Y1S decay");
+    frame1S->GetXaxis()->SetLimits(invm_min1S,invm_max1S);
     data1S->plotOn(frame1S);
     sprintf(plotYtitle,"Events per %1.1f MeV",binWidth);
     frame1S->SetYTitle(plotYtitle);
-        modelPdf1S.plotOn(frame1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));;
+    frame1S->SetTitleOffset(1.15,"X");
+    frame1S->SetTitleOffset(0.825,"Y");
+    if(OneSPlotModel) modelPdf1S.plotOn(frame1S,Range(PlotRangeSteps),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));;
     chi21S = frame1S->chiSquare();
     /////////// Two CB adventure //////////////////
-    modelPdf1S.plotOn(frame1S, Components("chib1P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib1P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib2P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib2P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib3P1_1S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("chib3P2_1S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib1P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib1P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib2P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib2P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(frame1S, Components("chib3P1_1S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(frame1S, Components("chib3P2_1S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel) modelPdf1S.plotOn(frame1S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel) modelPdf1S.plotOn(frame1S,Range(PlotRangeSteps),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));
 
-    modelPdf1S.paramOn(frame1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+    bool plotParamOnPlot=true;
+    if(!OneSPlotModel) plotParamOnPlot=false;
+    if(PlotStep1&&PlotStep2&&finalPlots) plotParamOnPlot=false;
+    if(plotParamOnPlot) modelPdf1S.paramOn(frame1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
 
     frame1S->SetTitle(0);
     frame1S->SetMinimum(0);
+    if(MCsample) restrictMaximum=false;
+    if(Optimize) restrictMaximum=true;
+    if(restrictMaximum) frame1S->SetMaximum(550.);
     frame1S->Draw();
 
-    double xText=10.35;
+    double xText=10.45;
     double highestText=frame1S->GetMaximum();
     double deltaText=0.06;
+    if(MCsample) xText=9.55;
 
     char text[200];
 
     	cout<<"DRAW LATEX"<<endl;
-    sprintf(text,"S/B #chi_{b}(1P) = %1.0f / %1.0f, #chi_{b}(1P)_{sig.} = %1.3f",rchib1P,rbgchib1P,rsigchib1P);
-    TLatex text1 = TLatex(xText,highestText*(0.95-0*deltaText),text);
+    sprintf(text,"S/B #chi_{b}(1P) = %1.0f / %1.0f, #chi_{b}(1P)_{sig.} = %1.3f",rchib1P,rbgchib1P,OnePsig);
+    TLatex text1 = TLatex(xText,highestText*(0.95-1*deltaText),text);
     text1.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text1.Draw( "same" )                                                                                                                                                                                                                                                 ;
-    sprintf(text,"S/B #chi_{b}(2P) = %1.0f / %1.0f, #chi_{b}(2P)_{sig.} = %1.3f",rchib2P,rbgchib2P,rsigchib2P);
-    TLatex text2 = TLatex(xText,highestText*(0.95-1*deltaText),text);
+    if(DrawTextOnPlots&&PlotBothSteps&&!finalPlots&&!MCsample)text1.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"S/B #chi_{b}(2P) = %1.0f / %1.0f, #chi_{b}(2P)_{sig.} = %1.3f",rchib2P,rbgchib2P,TwoPsig);
+    TLatex text2 = TLatex(xText,highestText*(0.95-2*deltaText),text);
     text2.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text2.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    if(DrawTextOnPlots&&PlotBothSteps&&!finalPlots&&!MCsample)text2.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P_1S,rbgchib3P_1S,ThreePsig_1S);
-    TLatex text3 = TLatex(xText,highestText*(0.95-2*deltaText),text);
+    TLatex text3 = TLatex(xText,highestText*(0.95-3*deltaText),text);
     text3.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text3.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    if(DrawTextOnPlots&&PlotBothSteps&&!finalPlots&&!MCsample)text3.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"M_{#chi_{b}(3P)} =  %1.4f #pm %1.4f",fmchib3P_1S,err_fmchib3P_1S);
-    TLatex text0 = TLatex(xText,highestText*(0.95-3*deltaText),text)                                                                                                                            ;
+    TLatex text0 = TLatex(xText,highestText*(0.95-4*deltaText),text)                                                                                                                            ;
     text0.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text0.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    if(DrawTextOnPlots&&PlotBothSteps&&!finalPlots&&!MCsample)text0.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"N_{tot} = %1.0f",data1S_masswindow->sumEntries());
-    TLatex text4 = TLatex(xText,highestText*(0.95-4*deltaText),text);                                                                                                                                                                        ;
+    TLatex text4 = TLatex(xText,highestText*(0.95-5*deltaText),text);                                                                                                                                                                        ;
     text4.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
 //    if(DrawTextOnPlots)text4.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"#chi^{2}/ndf = %1.4f",chi21S);
-    TLatex text6 = TLatex(xText,highestText*(0.95-4*deltaText),text)                                                                                                                                                                                          ;
+    TLatex text6 = TLatex(xText+0.4,highestText*(0.95-0*deltaText),text)                                                                                                                                                                                          ;
     text6.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text6.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    if(DrawTextOnPlots&&OneSPlotModel)text6.Draw( "same" )                                                                                                                                                                                                                                                 ;
 
 //    ChibCanvas1S->Modified();
-        sprintf(cutName_,"vtxProb%d_ctCut%d_nYsig%d_cut_gammapt%d_cut_RconvMin%d_cut_RconvMax%d_cut_Ypt%d_vtxChi2ProbGamma%d_vtxChi2ProbGammaLog%d",int(1000000*cut_vtxProb),int(1000000*cut_ct),int(1000000*nYsig),int(1000000*cut_gammapt),int(1000000*cut_RconvMin),int(1000000*cut_RconvMax),int(1000000*cut_Ypt),int(100000000*cut_vtxChi2ProbGamma),-int(10000*cut_vtxChi2ProbGammaLog));
     sprintf(saveName,"Figures/%s/InvMass_Y1S_%s.pdf",FitID,cutName_);
     ChibCanvas1S->SaveAs(saveName);
 
 
 
 
+gamma2.setConstant(kFALSE);
+alpha2.setConstant(kFALSE);
+beta2.setConstant(kFALSE);
+q02S.setConstant(kFALSE);
+background_nevt2S.setConstant(kFALSE);
+alpha_3J.setConstant(kTRUE);
+PhotonMassScale2P.setConstant(kTRUE);
+PhotonSigmaScale.setConstant(kTRUE);
+PhotonMassScale.setConstant(kTRUE);
+PhotonSigmaScale2P.setConstant(kTRUE);
+alpha1.setConstant(kTRUE);
+beta1.setConstant(kTRUE);
+q01S.setConstant(kTRUE);
+background_nevt1S.setConstant(kTRUE);
+n2PnJ.setConstant(kTRUE);
+n1PnJ.setConstant(kTRUE);
+gamma1.setConstant(kTRUE);
 
 
-    TCanvas* ChibCanvas2S = new TCanvas("#chi_{b} 2S invariant mass","#chi_{b} 2S invariant mass",2100, 800);
+    TCanvas* ChibCanvas2S = new TCanvas("#chi_{b} 2S invariant mass","#chi_{b} 2S invariant mass",1900, 800);
     ChibCanvas2S->Divide(1);
     ChibCanvas2S->SetFillColor(kWhite);
     ChibCanvas2S->cd(1);
@@ -1712,8 +3044,11 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
     RooPlot* frame2S= invm2S.frame(invm_min1S,invm_max2S,FrameBins2S);
     frame2S->SetTitle("#chi_{b} invariant mass, Y2S decay");
+    frame2S->GetXaxis()->SetLimits(invm_min1S,invm_max1S);
     frame2S->SetYTitle(plotYtitle);
     data2S->plotOn(frame2S,MarkerStyle(24));
+    frame2S->SetTitleOffset(1.15,"X");
+    frame2S->SetTitleOffset(0.825,"Y");
 
 
     modelPdf2S.plotOn(frame2S,Range(invm_min2S,invm_max2S),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));;
@@ -1730,26 +3065,30 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
     frame2S->SetTitle(0);
     frame2S->SetMinimum(0);
+    if(MCsample) restrictMaximum=false;
+    if(Optimize) restrictMaximum=true;
+    if(restrictMaximum) frame2S->SetMaximum(160.);
+
     frame2S->Draw();
 
-    xText=9.6;
+    xText=10.45;
     highestText=frame2S->GetMaximum();
     deltaText=0.06;
 
     sprintf(text,"M_{#chi_{b}(3P)} =  %1.4f #pm %1.4f",fmchib3P,err_fmchib3P);
-    TLatex text5 = TLatex(xText,highestText*(0.95-0*deltaText),text)                                                                                                                            ;
+    TLatex text5 = TLatex(xText,highestText*(0.95-1*deltaText),text)                                                                                                                            ;
     text5.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text5.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    if(DrawTextOnPlots&&!finalPlots)text5.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P,rbgchib3P,ThreePsig);
-    TLatex text8 = TLatex(xText,highestText*(0.95-1*deltaText),text)                                                                                                                            ;
+    TLatex text8 = TLatex(xText,highestText*(0.95-2*deltaText),text)                                                                                                                            ;
     text8.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots)text8.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    if(DrawTextOnPlots&&!finalPlots)text8.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"N_{tot} = %1.0f",data2S_masswindow->sumEntries());
-    TLatex text9 = TLatex(xText,highestText*(0.95-2*deltaText),text);                                                                                                                                                                        ;
+    TLatex text9 = TLatex(xText,highestText*(0.95-3*deltaText),text);                                                                                                                                                                        ;
     text9.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
 //    if(DrawTextOnPlots)text9.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"#chi^{2}/ndf = %1.4f",chi22S);
-    TLatex text10 = TLatex(xText,highestText*(0.95-2*deltaText),text)                                                                                                                                                                                          ;
+    TLatex text10 = TLatex(xText+0.4,highestText*(0.95-0*deltaText),text)                                                                                                                                                                                          ;
     text10.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
     if(DrawTextOnPlots)text10.Draw( "same" )                                                                                                                                                                                                                                                 ;
 
@@ -1764,7 +3103,7 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
 
 
-    TCanvas* ChibCanvas1S2S = new TCanvas("#chi_{b} 1S2S invariant mass","#chi_{b} 1S2S invariant mass",2100,800);
+    TCanvas* ChibCanvas1S2S = new TCanvas("#chi_{b} 1S2S invariant mass","#chi_{b} 1S2S invariant mass",1900,800);
     ChibCanvas1S2S->Divide(1);
     ChibCanvas1S2S->SetFillColor(kWhite);
     ChibCanvas1S2S->cd(1);
@@ -1774,6 +3113,9 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     RooPlot* frame1S2S= invm1S.frame(FrameBins1S);
     frame1S2S->SetYTitle(plotYtitle);
     frame1S2S->SetTitle("#chi_{b} invariant mass, Y1S decay");
+    frame1S2S->SetTitleOffset(1.15,"X");
+    frame1S2S->SetTitleOffset(0.825,"Y");
+
     data1S->plotOn(frame1S2S);
 
     modelPdf1S.plotOn(frame1S2S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));;
@@ -1809,6 +3151,9 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     RooPlot* frame1S2S__= invm3S.frame(FrameBins3Sin1S);
     frame1S2S__->SetTitle("#chi_{b} invariant mass, Y3S decay");
     frame1S2S__->SetYTitle(plotYtitle);
+    frame1S2S__->SetTitleOffset(1.15,"X");
+    frame1S2S__->SetTitleOffset(0.825,"Y");
+
     data3S->plotOn(frame1S2S__,MarkerStyle(22));
 
     sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(nS)^{PDG}} [GeV]");
@@ -1816,6 +3161,10 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     frame1S2S->GetXaxis()->SetTitle(invmName);
     frame1S2S->SetTitle(0);
     frame1S2S->SetMinimum(0);
+    if(MCsample) restrictMaximum=false;
+    if(Optimize) restrictMaximum=true;
+    if(restrictMaximum) frame1S2S->SetMaximum(550.);
+
     frame1S2S->Draw();
     frame1S2S_->SetTitle(0);
     frame1S2S_->SetMinimum(0);
@@ -1852,16 +3201,535 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
 
 
+
+
+    alpha_3J.setConstant(kFALSE);
+    n_3J.setConstant(kFALSE);
+    n1PnJ.setConstant(kFALSE);
+    n2PnJ.setConstant();
+    PhotonMassScale2P.setConstant();
+    PhotonMassScale3P.setConstant();
+    ratio_J2overJ1.setConstant(kFALSE);
+    PhotonSigmaScale.setConstant(kFALSE);
+    PhotonMassScale.setConstant(kFALSE);
+    alpha_3J_2P.setConstant();
+    alpha_3J_3P.setConstant();
+    PhotonSigmaScale2P.setConstant();
+    PhotonSigmaScale3P.setConstant();
+    n3PnJ_1S.setConstant();
+    m_chib3P_1S.setConstant();
+    m_chib3P.setConstant();
+    n_3J_2P.setConstant();
+
+
+    bool DrawZoom=true;
+    if(DrawZoom){
+
+    	double ZoomPlotMin=9.75;
+    	double ZoomPlotMax=10.05;
+    	double ScaleZoomBinsTo=5.;
+        int FrameBins1SZoom=(ZoomPlotMax-ZoomPlotMin)*1000./ScaleZoomBinsTo;//400/binWidth
+
+
+    TH1F  *data1SZommHist = new TH1F("data1SZommHist","",FrameBins1SZoom,ZoomPlotMin,ZoomPlotMax);//9.7,10.1);
+
+    tree1S->Draw("invm1S>>data1SZommHist");
+
+    int nBinsReplace=10;//20;
+    int nRebin=2;//4;
+
+    double invm1SCentre[FrameBins1SZoom-nBinsReplace+nBinsReplace/nRebin];
+    double nEventsZoom[FrameBins1SZoom-nBinsReplace+nBinsReplace/nRebin];
+    double err_invm1SCentre[FrameBins1SZoom-nBinsReplace+nBinsReplace/nRebin];
+    double err_up_nEventsZoom[FrameBins1SZoom-nBinsReplace+nBinsReplace/nRebin];
+    double err_low_nEventsZoom[FrameBins1SZoom-nBinsReplace+nBinsReplace/nRebin];
+
+	  for(int invm1SBin=0;invm1SBin<FrameBins1SZoom-nBinsReplace;invm1SBin++){
+		  invm1SCentre[invm1SBin]=data1SZommHist->GetXaxis()->GetBinCenter(invm1SBin+1);
+		  nEventsZoom[invm1SBin] = data1SZommHist->GetBinContent(invm1SBin+1);
+		  err_invm1SCentre[invm1SBin] = data1SZommHist->GetBinWidth(invm1SBin+1)/2;
+		  err_up_nEventsZoom[invm1SBin] = data1SZommHist->GetBinError(invm1SBin+1);
+		  err_low_nEventsZoom[invm1SBin] = data1SZommHist->GetBinError(invm1SBin+1);
+//		  cout<<"invm1SBin "<<invm1SBin<<endl;
+//		  cout<<"invm1SCentre[invm1SBin] "<<invm1SCentre[invm1SBin]<<endl;
+//		  cout<<"nEventsZoom[invm1SBin] "<<nEventsZoom[invm1SBin]<<endl;
+	  }
+
+	  int nAdd=0;
+	  for(int invm1SBin=FrameBins1SZoom-nBinsReplace;invm1SBin<FrameBins1SZoom-nBinsReplace+nBinsReplace/nRebin;invm1SBin++){
+		  double invm1SCentreBuffer=0;
+		  double nEventsZoomBuffer=0;
+		  cout<<"invm1SBin "<<invm1SBin<<endl;
+		  for(int replace=0;replace<nRebin;replace++){
+			  invm1SCentreBuffer=invm1SCentreBuffer+data1SZommHist->GetXaxis()->GetBinCenter(invm1SBin+replace+nAdd+1);
+			  nEventsZoomBuffer=nEventsZoomBuffer+data1SZommHist->GetBinContent(invm1SBin+replace+nAdd+1);
+			  cout<<"invm1SCentreBuffer "<<invm1SCentreBuffer<<endl;
+			  cout<<"nEventsZoomBuffer "<<nEventsZoomBuffer<<endl;
+		  }
+		  invm1SCentre[invm1SBin]=invm1SCentreBuffer/nRebin;
+		  nEventsZoom[invm1SBin] = nEventsZoomBuffer/nRebin;
+		  err_invm1SCentre[invm1SBin] = data1SZommHist->GetBinWidth(invm1SBin+1)*nRebin/2;
+		  err_up_nEventsZoom[invm1SBin] = TMath::Sqrt(nEventsZoom[invm1SBin]);
+		  err_low_nEventsZoom[invm1SBin] = TMath::Sqrt(nEventsZoom[invm1SBin]);
+		  cout<<"invm1SCentre[invm1SBin] "<<invm1SCentre[invm1SBin]<<endl;
+		  cout<<"nEventsZoom[invm1SBin] "<<nEventsZoom[invm1SBin]<<endl;
+		  nAdd=nAdd+nRebin-1;
+	  }
+
+	  FrameBins1SZoom=(ZoomPlotMax-ZoomPlotMin)*1000./ScaleZoomBinsTo;
+
+	TGraphAsymmErrors *zoomGraphinvm1S = new TGraphAsymmErrors(FrameBins1SZoom-nBinsReplace+nBinsReplace/nRebin,invm1SCentre,nEventsZoom,err_invm1SCentre,err_invm1SCentre,err_up_nEventsZoom,err_low_nEventsZoom);
+	zoomGraphinvm1S->SetMarkerSize(1);
+	  zoomGraphinvm1S->SetMarkerStyle(20);
+	  zoomGraphinvm1S->SetMarkerColor(kBlack);
+
+
+    TCanvas* ZoomChibCanvas1S = new TCanvas("#chi_{b} 1S2S invariant mass zoom","#chi_{b} 1S2S invariant mass zoom",2100,800);
+    ZoomChibCanvas1S->Divide(1);
+    ZoomChibCanvas1S->SetFillColor(kWhite);
+    ZoomChibCanvas1S->cd(1);
+    gPad->SetRightMargin(0.3);/////
+    gPad->SetFillColor(kWhite);
+
+    RooPlot* Zoomframe1S= invm1S.frame(ZoomPlotMin,ZoomPlotMax,FrameBins1SZoom);
+    Zoomframe1S->SetTitle("#chi_{b} invariant mass, Y1S decay");
+    data1S->plotOn(Zoomframe1S);
+    sprintf(plotYtitle,"Events per %1.1f  MeV",ScaleZoomBinsTo);
+    Zoomframe1S->SetYTitle(plotYtitle);
+        modelPdf1S.plotOn(Zoomframe1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));;
+       double chi21Szoom = Zoomframe1S->chiSquare();
+    /////////// Two CB adventure //////////////////
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib3P1"), LineStyle(2),LineColor(kGreen+2),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib3P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib1P1"), LineStyle(2),LineColor(kGreen+2),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib1P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P1"), LineStyle(2),LineColor(kGreen+2),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P1_2Sin1S"), LineStyle(2),LineColor(kGreen+2),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P2_2Sin1S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(Zoomframe1S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(Zoomframe1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));
+
+//    modelPdf1S.paramOn(Zoomframe1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+
+    Zoomframe1S->SetTitle(0);
+    Zoomframe1S->SetMinimum(0);
+//    Zoomframe1S->SetMaximum(75.*ScaleZoomBinsTo/5.);
+    Zoomframe1S->Draw();
+
+//    zoomGraphinvm1S->Draw("P");
+
+    xText=9.925;
+    highestText=Zoomframe1S->GetMaximum();
+    deltaText=0.06;
+    FontSize=0.0425;
+
+
+    	cout<<"DRAW LATEX"<<endl;
+
+        sprintf(text,"CMS preliminary");
+        TLatex zoomtext4 = TLatex(xText,highestText*(0.95-1*deltaText),text);
+        zoomtext4.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)zoomtext4.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        sprintf(text,"L_{int} = 4.7 fb^{-1}");
+        TLatex zoomtext5 = TLatex(xText,highestText*(0.95-2*deltaText),text);
+        zoomtext5.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)zoomtext5.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        FontSize=0.0325;
+
+    sprintf(text,"#chi_{bj}(1P) width = %1.1f #pm %1.1f MeV",onePwidth*1000,onePwidtherr*1000);
+    TLatex zoomtext = TLatex(xText,highestText*(0.95-3*deltaText),text);
+    zoomtext.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+    if(DrawTextOnPlots)zoomtext.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"N_{#chi_{b2}(1P)} / N_{#chi_{b1}(1P)} = %1.3f #pm %1.3f",ratio_J2overJ1_1P.getVal(),ratio_J2overJ1_1P.getError());
+    TLatex zoomtext2 = TLatex(xText,highestText*(0.95-4*deltaText),text);
+    zoomtext2.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+    if(DrawTextOnPlots)zoomtext2.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"#chi^{2}/ndf = %1.4f",chi21Szoom);
+     TLatex zoomtext3 = TLatex(xText,highestText*(0.95-2*deltaText),text)                                                                                                                                                                                          ;
+     zoomtext3.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+//     if(DrawTextOnPlots)zoomtext3.Draw( "same" )                                                                                                                                                                                                                                                 ;
+
+    sprintf(saveName,"Figures/%s/InvMass_Zoom_Y1S_%s.pdf",FitID,cutName_);
+    ZoomChibCanvas1S->SaveAs(saveName);
+    delete ZoomChibCanvas1S;
+    delete zoomGraphinvm1S;
+    delete data1SZommHist;
+	delete Zoomframe1S;
+    }
+
+
+
+    bool DrawNonEqu=true;
+    if(DrawNonEqu){
+
+
+
+        int nBins_buff;
+        int nBins_buff2S;
+
+	double resolutionMin=0.01;
+    double nResolution=1.;
+    double BinBorders[1000];
+    BinBorders[0]=invm_min1S;
+    for(int iBin=1;iBin<1000;iBin++){
+    	BinBorders[iBin]=BinBorders[iBin-1]+nResolution*(BinBorders[iBin-1]-Ymass1S)*PhotonSigmaScale3P.getVal();
+    	if(BinBorders[iBin]-BinBorders[iBin-1]<resolutionMin){
+    		BinBorders[iBin]=BinBorders[iBin-1]+resolutionMin;
+    		cout<<"using min resolution = "<<resolutionMin<<" at "<<BinBorders[iBin]<<" GeV "<<endl;
+    	}
+    	if(BinBorders[iBin-1]>9.9&&BinBorders[iBin-1]<10.15){
+    		BinBorders[iBin]=BinBorders[iBin-1]+2.5*nResolution*(BinBorders[iBin-1]-Ymass1S)*PhotonSigmaScale3P.getVal();
+    	}
+    	if(BinBorders[iBin]>invm_max1S) {
+    		nBins_buff=iBin; BinBorders[iBin]=invm_max1S; break;
+    	}
+    }
+
+    resolutionMin=0.02;
+    double BinBorders2S[1000];
+    BinBorders2S[0]=invm_min2S;
+    BinBorders2S[1]=invm_min2S+0.01;
+    for(int iBin=2;iBin<1000;iBin++){
+    	BinBorders2S[iBin]=BinBorders2S[iBin-1]+nResolution*(BinBorders2S[iBin-1]-Ymass2S)*PhotonSigmaScale3P.getVal();
+    	if(BinBorders2S[iBin]-BinBorders2S[iBin-1]<resolutionMin){
+    		BinBorders2S[iBin]=BinBorders2S[iBin-1]+resolutionMin;
+    		cout<<"using min resolution = "<<resolutionMin<<" at "<<BinBorders2S[iBin]<<" GeV "<<endl;
+    	}
+    	if(BinBorders2S[iBin-1]>10.5999){
+    		BinBorders2S[iBin]=BinBorders2S[iBin-1]+0.1;
+    	}
+    	if(BinBorders2S[iBin]>invm_max2S) {
+    		nBins_buff2S=iBin; BinBorders2S[iBin]=invm_max2S; break;
+    	}
+    }
+
+    const int nBins=nBins_buff;
+    const int nBins2S=nBins_buff2S;
+    TH1F  *data1SNonEquHist = new TH1F("data1SNonEquHist","",nBins,invm_min1S,invm_max1S);//9.7,10.1);
+    TH1F  *data2SNonEquHist = new TH1F("data2SNonEquHist","",nBins2S,invm_min2S,invm_max2S);//9.7,10.1);
+
+    double xBins[nBins+1];
+    for(int iBin=0;iBin<nBins+1;iBin++){
+    	xBins[iBin]=BinBorders[iBin];
+    }
+
+    double xBins2S[nBins+1];
+    for(int iBin=0;iBin<nBins2S+1;iBin++){
+    	xBins2S[iBin]=BinBorders2S[iBin];
+    }
+
+    data1SNonEquHist->GetXaxis()->Set(nBins, xBins);
+    data2SNonEquHist->GetXaxis()->Set(nBins2S, xBins2S);
+
+
+    tree1S->Draw("invm1S>>data1SNonEquHist");
+    tree2S->Draw("invm2S>>data2SNonEquHist");
+
+        double ScaleBinsTo=10./1000.;
+        double ScaledContent;
+        for(int iBin=1;iBin<nBins+1;iBin++){
+        	ScaledContent=data1SNonEquHist->GetBinContent(iBin)*ScaleBinsTo/data1SNonEquHist->GetBinWidth(iBin);
+        	data1SNonEquHist->SetBinContent(iBin,ScaledContent);
+        }
+        double ScaleBinsTo2S=20./1000.;
+        for(int iBin=1;iBin<nBins2S+1;iBin++){
+        	ScaledContent=data2SNonEquHist->GetBinContent(iBin)*ScaleBinsTo2S/data2SNonEquHist->GetBinWidth(iBin);
+        	data2SNonEquHist->SetBinContent(iBin,ScaledContent);
+        }
+
+
+        data1SNonEquHist->SetMarkerSize(1);
+        data1SNonEquHist->SetMarkerStyle(20);
+        data1SNonEquHist->SetMarkerColor(kBlack);
+
+        data2SNonEquHist->SetMarkerSize(1);
+        data2SNonEquHist->SetMarkerStyle(24);
+        data2SNonEquHist->SetMarkerColor(kBlack);
+
+    	RooDataHist NonEquHist("NonEquHist", "NonEquHist",RooArgList(invm1S), data1SNonEquHist);
+    	RooDataHist NonEquHist2S("NonEquHist2S", "NonEquHist2S",RooArgList(invm2S), data2SNonEquHist);
+
+    TCanvas* NonEquChibCanvas1S = new TCanvas("#chi_{b} 1S2S invariant mass NonEqu","#chi_{b} 1S2S invariant mass NonEqu",1900,800);
+    NonEquChibCanvas1S->Divide(1);
+    NonEquChibCanvas1S->SetFillColor(kWhite);
+    NonEquChibCanvas1S->cd(1);
+    gPad->SetRightMargin(0.3);/////
+    gPad->SetFillColor(kWhite);
+
+	int FrameBins1SNonEqu=(invm_max1S-invm_min1S)/ScaleBinsTo;
+
+    RooPlot* NonEquframe1S= invm1S.frame(invm_min1S,invm_max1S,FrameBins1SNonEqu);
+    NonEquframe1S->SetTitle("#chi_{b} invariant mass, Y1S decay");
+    sprintf(plotYtitle,"Events per %1.1f MeV",ScaleBinsTo*1000.);
+    NonEquframe1S->SetYTitle(plotYtitle);
+    NonEquframe1S->SetTitleOffset(1.15,"X");
+    NonEquframe1S->SetTitleOffset(0.825,"Y");
+//    data1S->plotOn(NonEquframe1S);
+//    NonEquHist.plotOn(NonEquframe1S);
+        modelPdf1S.plotOn(NonEquframe1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));;
+       double chi21SNonEqu = NonEquframe1S->chiSquare();
+    /////////// Two CB adventure //////////////////
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib1P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib1P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib2P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib2P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(NonEquframe1S, Components("chib3P1_1S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(NonEquframe1S, Components("chib3P2_1S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+//       data1SNonEquHist->Draw("same,E");
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S,Range(PlotRangeSteps),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));
+
+//       if(OneSPlotModel) modelPdf1S.paramOn(NonEquframe1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+
+//    modelPdf1S.paramOn(NonEquframe1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+
+    NonEquframe1S->SetTitle(0);
+    NonEquframe1S->SetMinimum(0);
+    if(MCsample) restrictMaximum=false;
+    if(Optimize) restrictMaximum=true;
+    if(restrictMaximum) NonEquframe1S->SetMaximum(75);
+    NonEquframe1S->Draw();
+
+    data1SNonEquHist->Draw("same,E");
+
+    NonEquframe1S->Draw("same");
+
+//    NonEquGraphinvm1S->Draw("P");
+//    data1SNonEquHist->Draw("same,E");
+    xText=10.7;
+    highestText=NonEquframe1S->GetMaximum();
+    deltaText=0.06;
+    FontSize=0.0425;
+
+
+    	cout<<"DRAW LATEX"<<endl;
+
+        sprintf(text,"CMS preliminary");
+        TLatex NonEqutext4 = TLatex(xText,highestText*(0.95-1*deltaText),text);
+        NonEqutext4.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)NonEqutext4.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        sprintf(text,"L_{int} = 4.7 fb^{-1}");
+        TLatex NonEqutext5 = TLatex(xText,highestText*(0.95-2*deltaText),text);
+        NonEqutext5.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)NonEqutext5.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        FontSize=0.0325;
+
+    sprintf(text,"#chi_{bj}(1P) width = %1.1f MeV",onePwidth*1000);
+    TLatex NonEqutext = TLatex(xText,highestText*(0.95-3*deltaText),text);
+    NonEqutext.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+//    if(DrawTextOnPlots)NonEqutext.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"N_{#chi_{b2}(1P)} / N_{#chi_{b1}(1P)} = %1.3f #pm %1.3f",ratio_J2overJ1.getVal(),ratio_J2overJ1.getError());
+    TLatex NonEqutext2 = TLatex(xText,highestText*(0.95-4*deltaText),text);
+    NonEqutext2.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+//    if(DrawTextOnPlots)NonEqutext2.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"#chi^{2}/ndf = %1.4f",chi21SNonEqu);
+     TLatex NonEqutext3 = TLatex(xText,highestText*(0.95-3*deltaText),text)                                                                                                                                                                                          ;
+     NonEqutext3.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+//     if(DrawTextOnPlots)NonEqutext3.Draw( "same" )                                                                                                                                                                                                                                                 ;
+
+    sprintf(saveName,"Figures/%s/InvMass_NonEqu_Y1S_%s.pdf",FitID,cutName_);
+    NonEquChibCanvas1S->SaveAs(saveName);
+
+
+
+    delete NonEquChibCanvas1S;
+    delete data1SNonEquHist;
+	delete NonEquframe1S;
+
+
+
+    TCanvas* NonEquChibCanvas2S = new TCanvas("#chi_{b} 2S2S invariant mass NonEqu","#chi_{b} 2S2S invariant mass NonEqu",1900,800);
+    NonEquChibCanvas2S->Divide(1);
+    NonEquChibCanvas2S->SetFillColor(kWhite);
+    NonEquChibCanvas2S->cd(1);
+    gPad->SetRightMargin(0.3);/////
+    gPad->SetFillColor(kWhite);
+
+	int FrameBins2SNonEqu=(invm_max2S-invm_min1S)/ScaleBinsTo2S;
+
+    RooPlot* NonEquframe2S= invm2S.frame(invm_min1S,invm_max2S,FrameBins2SNonEqu);
+    NonEquframe2S->SetTitle("#chi_{b} invariant mass, Y2S decay");
+    sprintf(plotYtitle,"Events per %1.1f MeV",ScaleBinsTo2S*1000.);
+    NonEquframe2S->SetYTitle(plotYtitle);
+    NonEquframe2S->SetTitleOffset(1.15,"X");
+    NonEquframe2S->SetTitleOffset(0.825,"Y");
+//    data2S->plotOn(NonEquframe2S);
+//    NonEquHist.plotOn(NonEquframe2S);
+        modelPdf2S.plotOn(NonEquframe2S,Range(invm_min2S,invm_max2S),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));;
+       double chi22SNonEqu = NonEquframe2S->chiSquare();
+    /////////// Two CB adventure //////////////////
+       modelPdf2S.plotOn(NonEquframe2S, Components("chib2P1_2S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("chib2P2_2S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("chib3P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("chib3P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("background2S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S,Range(invm_min2S,invm_max2S),LineColor(kGreen+2),LineWidth(linewidth),Normalization(totalEventsInFit2S_plot,2));
+
+//       if(OneSPlotModel) modelPdf2S.paramOn(NonEquframe2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+
+//    modelPdf2S.paramOn(NonEquframe2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+
+    NonEquframe2S->SetTitle(0);
+    NonEquframe2S->SetMinimum(0);
+    if(MCsample) restrictMaximum=false;
+    if(Optimize) restrictMaximum=true;
+//    if(restrictMaximum)
+    NonEquframe2S->SetMaximum(NonEquframe2S->GetMaximum()*2);
+    NonEquframe2S->Draw();
+
+    data2SNonEquHist->Draw("same,E");
+
+    NonEquframe2S->Draw("same");
+
+//    NonEquGraphinvm2S->Draw("P");
+//    data2SNonEquHist->Draw("same,E");
+    xText=10.7;
+    highestText=NonEquframe2S->GetMaximum();
+    deltaText=0.06;
+    FontSize=0.0425;
+
+
+    	cout<<"DRAW LATEX"<<endl;
+
+        sprintf(text,"CMS preliminary");
+        TLatex NonEqutext42S = TLatex(xText,highestText*(0.95-1*deltaText),text);
+        NonEqutext42S.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)NonEqutext42S.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        sprintf(text,"L_{int} = 4.7 fb^{-1}");
+        TLatex NonEqutext52S = TLatex(xText,highestText*(0.95-2*deltaText),text);
+        NonEqutext52S.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)NonEqutext52S.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        FontSize=0.0325;
+
+    sprintf(saveName,"Figures/%s/InvMass_NonEqu_Y2S_%s.pdf",FitID,cutName_);
+    NonEquChibCanvas2S->SaveAs(saveName);
+
+
+
+    delete NonEquChibCanvas2S;
+    delete data2SNonEquHist;
+	delete NonEquframe2S;
+
+	    }
+
+
+
+
+
+
+
+
+
+
+
+    bool PlotPull=true;
+	if(PlotPull){
+
+
+		  TH1 * ModelHist =  modelPdf1S.createHistogram("invm1S",FrameBins1S) ;
+		  TH1F  *DataHist = new TH1F("DataHist","",FrameBins1S,invm_min1S,invm_max1S);
+		  tree1S->Draw("invm1S>>DataHist");
+
+		  cout<<"ModelHist entries "<<ModelHist->GetSumOfWeights()<<endl;
+		  ModelHist->Scale(totalEventsInFit1S/ModelHist->GetSumOfWeights());
+		  cout<<"ModelHist entries "<<ModelHist->GetSumOfWeights()<<endl;
+
+		  double deltaPull[FrameBins1S];
+		  double errdeltaPull[FrameBins1S];
+		  double FitValue;
+		  double invmCenter[FrameBins1S];
+		  double errinvmCenter[FrameBins1S];
+
+		  for(int BinRun = 1; BinRun < FrameBins1S+1; ++BinRun) {
+
+			  FitValue=ModelHist->GetBinContent(BinRun);
+
+			  if(DataHist->GetBinError(BinRun)==0) deltaPull[BinRun-1]=100000;
+			  else deltaPull[BinRun-1]=((DataHist->GetBinContent(BinRun)-FitValue)/DataHist->GetBinError(BinRun));
+//			  cout<<deltaPull[BinRun-1]<<endl;
+
+			  errdeltaPull[BinRun-1]=0;
+			  invmCenter[BinRun-1]=DataHist->GetBinCenter(BinRun);
+			  errinvmCenter[BinRun-1]=0;
+
+		  }
+
+
+			 TCanvas *PullCanvas = new TCanvas("PullCanvas","",1330,800);
+			 PullCanvas->SetFillColor(kWhite);
+			 PullCanvas->cd(1);
+//			 PullCanvas->SetLeftMargin(0.2);
+			 gPad->SetFillColor(kWhite);
+//			 gPad->SetRightMargin(0.3);/////
+
+
+					TH1F *PullHisto = new TH1F;
+					PullHisto = PullCanvas->DrawFrame(invm_min1S,-4,invm_max1S,4);
+					PullHisto->SetXTitle(invm1S.GetTitle());
+					PullHisto->SetYTitle("( Data - Model ) / #sigma_{Data}");
+					PullHisto->GetYaxis()->SetTitleOffset(1.1);
+
+					  TLine* refLine[5];
+					  double refLinePosition[5]={-2.,-1.,0.,1.,2.};
+					  double refLineWidth[5]={0.5,1.,2.,1.,0.5};
+					  for(int iLine=0;iLine<5;iLine++){
+					  refLine[iLine] = new TLine( invm_min1S, refLinePosition[iLine], invm_max1S, refLinePosition[iLine] );
+					  refLine[iLine]->SetLineWidth( refLineWidth[iLine] );
+					  refLine[iLine]->SetLineStyle( 2 );
+					  refLine[iLine]->SetLineColor( kBlack );
+					  refLine[iLine]->Draw( "same" );
+					  }
+
+			  TGraphErrors *PullGraph = new TGraphErrors(FrameBins1S,invmCenter,deltaPull,errinvmCenter,errdeltaPull);
+			  PullGraph->SetMarkerColor(kGreen+2);
+			  PullGraph->SetMarkerStyle(20);
+			  PullGraph->SetTitle(0);
+			  PullGraph->Draw("P");
+
+		    sprintf(saveName,"Figures/%s/InvMass_Pull_Y1S_%s.pdf",FitID,cutName_);
+		    PullCanvas->SaveAs(saveName);
+   		    PullCanvas->Close();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
     cout<<"deleting pointers"<<endl;
 
-    delete data_______;
+    delete dataAfterBasicCuts;
+    delete data_;
+    delete nll1S_1P2P;
+    delete nll1S_1P2P_;
+    delete nll1S_BB;
+    delete nll2S_2P;
+    delete nll2S_BB;
+    delete nll1S;
+    delete nll2S;
+    if(BkgMixerBool&&!useExistingMixFile){
+    delete data1SExceptGammaPtCut;
+    delete data2SExceptGammaPtCut;
+    delete dataAfterBasicCutsExceptGammaPtCut;
+    }
+
+/*    delete data_______;
     delete data__;
     delete data___;
     delete data____;
     delete data_____;
     delete data______;
     delete data______vtx;
-
+*/
     delete data1S;
     delete data2S;
     delete data3S;
@@ -1870,6 +3738,7 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 
     delete minuit;
     delete PhotonEnergyCanvas;
+    delete PhotonPtCanvas;
     delete fQ;
 
 	delete frame1S;
@@ -1880,6 +3749,9 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     delete ChibCanvas2S;
     delete ChibCanvas1S2S;
 
+    delete RooBkgToySet;
+    delete RooBkgToyHist1S;
+    delete RooBkgToyHist2S;
 
     cout<<"deleted pointers"<<endl;
     }
@@ -1892,16 +3764,20 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 	if(vtxProbCut)sprintf(XTitle,"Dimuon vertex probability cut");
 	if(ctSigCut  )sprintf(XTitle,"c#tau significance cut, n#sigma");
 	if(gammaptCut)sprintf(XTitle,"#gamma - p_{T} cut, GeV");
+	if(gammaptDCut)sprintf(XTitle,"Param. D of Q-dep. #gamma - p_{T} cut, GeV");
 	if(ctCut     )sprintf(XTitle,"c#tau cut, cm");
 	if(RConvUpperCut  )sprintf(XTitle,"RConvMax cut");
 	if(RConvLowerCut  )sprintf(XTitle,"RConvMin cut");
 	if(pTCut  )sprintf(XTitle,"lower p_{T}^{Y} cut, GeV");
 	if(vtxChi2ProbGammaCut  )sprintf(XTitle,"vertexChi2ProbGamma cut");
 	if(vtxChi2ProbGammaLogCut  )sprintf(XTitle,"log10(vertexChi2ProbGamma) cut");
+	if(Pi0Cut  )sprintf(XTitle,"rejected #pi^{0} mass window: |0.134 - m_{#gamma#gamma}| < x GeV");
+	if(dzSigCut  )sprintf(XTitle,"dz/#sigma_{dz} cut");
+	if(dzCut  )sprintf(XTitle,"dz cut");
 
 	if(n_Cut>1.5){
 
-	double yOffset=1.7;
+	double yOffset=1.3;
 
     TCanvas* SummaryCanvas = new TCanvas("SummaryCanvas","SummaryCanvas",1600, 4224);
     SummaryCanvas->Divide(2,11);
@@ -2040,12 +3916,12 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     sprintf(saveName,"Figures/%s/2Pnevt.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
 
-    hCut_CBa->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_CBa->SetStats(0);hCut_CBa->GetYaxis()->SetTitle("#alpha_{CB}");	hCut_CBa->GetXaxis()->SetTitle(XTitle);	hCut_CBa->Draw();
+    hCut_CBa->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_CBa->SetStats(0);hCut_CBa->GetYaxis()->SetTitle("#alpha");	hCut_CBa->GetXaxis()->SetTitle(XTitle);	hCut_CBa->Draw("E1");
     IndividualCanvas->Modified();
     sprintf(saveName,"Figures/%s/CBa.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
 
-    hCut_CBn->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_CBn->SetStats(0);hCut_CBn->GetYaxis()->SetTitle("n_{CB}");	hCut_CBn->GetXaxis()->SetTitle(XTitle);	hCut_CBn->Draw();
+    hCut_CBn->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_CBn->SetStats(0);hCut_CBn->GetYaxis()->SetTitle("n");	hCut_CBn->GetXaxis()->SetTitle(XTitle);	hCut_CBn->Draw("E1");
     IndividualCanvas->Modified();
     sprintf(saveName,"Figures/%s/CBn.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
@@ -2129,12 +4005,12 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     sprintf(saveName,"Figures/%s/3Pmass.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
 
-    hCut_PhotonEnergyScale->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_PhotonEnergyScale->SetStats(0);hCut_PhotonEnergyScale->GetYaxis()->SetTitle("Photon Energy Scale");	hCut_PhotonEnergyScale->GetXaxis()->SetTitle(XTitle);	hCut_PhotonEnergyScale->Draw();
+    hCut_PhotonEnergyScale->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_PhotonEnergyScale->SetStats(0);hCut_PhotonEnergyScale->GetYaxis()->SetTitle("Photon Energy Scale");	hCut_PhotonEnergyScale->GetXaxis()->SetTitle(XTitle);	hCut_PhotonEnergyScale->Draw("E1");
     IndividualCanvas->Modified();
     sprintf(saveName,"Figures/%s/PhotonEnergyScale.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
 
-    hCut_PhotonEnergyScale2P->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_PhotonEnergyScale2P->SetStats(0);hCut_PhotonEnergyScale2P->GetYaxis()->SetTitle("Photon Energy Scale 2P");	hCut_PhotonEnergyScale2P->GetXaxis()->SetTitle(XTitle);	hCut_PhotonEnergyScale2P->Draw();
+    hCut_PhotonEnergyScale2P->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_PhotonEnergyScale2P->SetStats(0);hCut_PhotonEnergyScale2P->GetYaxis()->SetTitle("Photon Energy Scale 2P");	hCut_PhotonEnergyScale2P->GetXaxis()->SetTitle(XTitle);	hCut_PhotonEnergyScale2P->Draw("E1");
     IndividualCanvas->Modified();
     sprintf(saveName,"Figures/%s/PhotonEnergyScale2P.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
@@ -2149,7 +4025,7 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     sprintf(saveName,"Figures/%s/1PsigLL.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
 
-    hCut_sigLL->GetYaxis()->SetTitleOffset(yOffset);gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_sigLL->SetStats(0);hCut_sigLL->GetYaxis()->SetTitle("combined LLratio-significance of #chi_{b}(1P) and #chi_{b}(2P)");	hCut_sigLL->GetXaxis()->SetTitle(XTitle);	hCut_sigLL->Draw();
+    hCut_sigLL->GetYaxis()->SetTitleOffset(yOffset);gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_sigLL->SetStats(0);hCut_sigLL->GetYaxis()->SetTitle("comb. LLratio-significance of #chi_{b}(1P) and #chi_{b}(2P)");	hCut_sigLL->GetXaxis()->SetTitle(XTitle);	hCut_sigLL->Draw();
     IndividualCanvas->Modified();
     sprintf(saveName,"Figures/%s/CombsigLL.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
@@ -2175,7 +4051,20 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
     sprintf(saveName,"Figures/%s/2Pnevt_2S.pdf",FitID);
     IndividualCanvas->SaveAs(saveName);
 
+    hCut_PhotonSigmaScale->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_PhotonSigmaScale->SetStats(0);hCut_PhotonSigmaScale->GetYaxis()->SetTitle("#sigma/Q");	hCut_PhotonSigmaScale->GetXaxis()->SetTitle(XTitle);	hCut_PhotonSigmaScale->Draw("E1");
+    IndividualCanvas->Modified();
+    sprintf(saveName,"Figures/%s/PhotonSigmaScale.pdf",FitID);
+    IndividualCanvas->SaveAs(saveName);
 
+    hCut_PhotonSigmaScale2P->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_PhotonSigmaScale2P->SetStats(0);hCut_PhotonSigmaScale2P->GetYaxis()->SetTitle("#sigma/Q, 2P");	hCut_PhotonSigmaScale2P->GetXaxis()->SetTitle(XTitle);	hCut_PhotonSigmaScale2P->Draw("E1");
+    IndividualCanvas->Modified();
+    sprintf(saveName,"Figures/%s/PhotonSigmaScale2P.pdf",FitID);
+    IndividualCanvas->SaveAs(saveName);
+
+    hCut_3PMerr->GetYaxis()->SetTitleOffset(yOffset); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCut_3PMerr->SetStats(0);hCut_3PMerr->GetYaxis()->SetTitle("Stat uncertainty on 3P mass meas.");	hCut_3PMerr->GetXaxis()->SetTitle(XTitle);	hCut_3PMerr->Draw();
+    IndividualCanvas->Modified();
+    sprintf(saveName,"Figures/%s/3PmassErr.pdf",FitID);
+    IndividualCanvas->SaveAs(saveName);
 
 	}
 
@@ -2222,6 +4111,8 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 	hCut_3PB_1S->Write();
 	hCut_PhotonEnergyScale->Write();
 	hCut_PhotonEnergyScale2P->Write();
+	hCut_PhotonSigmaScale->Write();
+	hCut_PhotonSigmaScale2P->Write();
 	hCut_1PsigLL->Write();
 	hCut_1PsigLL->Write();
 
@@ -2230,6 +4121,8 @@ cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
 	hCut_2Psig_2S->Write();
 	hCut_sigLLhalf->Write();
 	hCut_3PsigLLhalf->Write();
+
+	hCut_3PMerr->Write();
 
 	CutHistos_file->Write();
     CutHistos_file->Close();
