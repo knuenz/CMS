@@ -2,7 +2,7 @@
 
 ########## INPUTS ##########
 
-JobID=May20Centrals_noUpperpTcut #May20Centrals #HighCtau3_BGratioTest #MCclosure #FinalData_CtauSig2 #_NoCtauCut #
+JobID=May20Centrals
 
 for FidCuts in 11;do 				#defines the set of cuts to be used, see macros/polFit/effsAndCuts.h
 
@@ -23,13 +23,13 @@ DoCPUconsumingPlots=1 ###set1 for centrals
 adjustOverlapBorders=1 ###set1 for centrals
 
 #following flags decide if the step is executed (1) or not (0):
-execute_runData=0					#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
-execute_runMassFit=0				#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
+execute_runData=1					#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
+execute_runMassFit=1				#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
 execute_runCopyTreeEntries=1		#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
-execute_PlotCosThetaPhiBG=0  		#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
-execute_runTrimEventContent=0		#For each set of cuts, you can choose different values for FracLSB and nSigma
-execute_PlotCosThetaPhiDistribution=0	#For each set of cuts, you can choose different values for FracLSB and nSigma
-execute_runMeanPt=0					#Optional; This macro calculates the mean pT for the plotting (one has to manually copy the contents of meanPt.txt to ToyMC.h, different mean-pT of the three Y states are not yet implemented)
+execute_PlotCosThetaPhiBG=1  		#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
+execute_runTrimEventContent=1		#For each set of cuts, you can choose different values for FracLSB and nSigma
+execute_PlotCosThetaPhiDistribution=1	#For each set of cuts, you can choose different values for FracLSB and nSigma
+execute_runMeanPt=1					#Optional; This macro calculates the mean pT for the plotting (one has to manually copy the contents of meanPt.txt to ToyMC.h, different mean-pT of the three Y states are not yet implemented)
 
 inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Upsi_Onia2MuMu_v20_PromptReco_v4.root
 inputTree2=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Upsi_Onia2MuMu_v20_PromptReco_v5.root

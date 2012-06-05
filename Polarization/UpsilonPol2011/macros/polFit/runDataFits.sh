@@ -13,7 +13,7 @@ datadir_Start=${basedir}/macros/DataFiles
 #fracL=0 #in percent
 nSigma=1.00 #needed in 2 decimal accuracy (x.yz)
 
-for nState in 1 2 2;do
+for nState in 1 2 3;do
 
 JobID=Data_TheGreatRun_10B_May20_NewestCentrals #Please define nSigma and fracL yourself in the JobID, if needed
 
