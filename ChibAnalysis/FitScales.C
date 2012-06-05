@@ -44,6 +44,7 @@ void FitScales(){
 	   gStyle->SetTitleOffset(1.4, "y");
 	   gStyle->SetTitleFillColor(kWhite);
 
+	   gStyle->SetFrameBorderMode(0);
 
 	   double M_chic1=3.51066;
 	   double M_chic2=3.55620;
@@ -67,11 +68,42 @@ void FitScales(){
 
 	  sprintf(graphName,"PESgraph");
 
-	  double PES_Q[4]={0.98494,0.9841,0.9856,0.9835};
-	  double err_PES_Q[4]={0.00058,0.0033,0.0014,0.003};
+//	  double PES_Q[4]={0.98494,0.9841,0.9856,0.9835};
+//	  double err_PES_Q[4]={0.00058,0.0033,0.0014,0.003};
 
-	  double PWS_Q[4]={1.629,1.70,1.74,1.71};
-	  double err_PWS_Q[4]={0.058,0.27,0.11,0.32};
+//	  double PWS_Q[4]={1.629,1.70,1.74,1.71};
+//	  double err_PWS_Q[4]={0.058,0.27,0.11,0.32};
+
+//	  double PES_Q[4]={0.9839,0.9817,0.9845,0.9785};
+//	  double err_PES_Q[4]={0.0007,0.0035,0.0016,0.003};
+
+//	  double PWS_Q[4]={1.678,1.63,1.962,1.63};
+//	  double err_PWS_Q[4]={0.045,0.26,0.079,0.39};
+
+//	  double PES_Q[4]={0.98446,0.9857,0.98369,0.9834};
+//	  double err_PES_Q[4]={0.00048,0.0027,0.00091,0.0038};
+
+//	  double PWS_Q[4]={1.715,1.52,2.0,1.44};
+//	  double err_PWS_Q[4]={0.059,0.19,0.11,0.34};
+
+//	  double PES_Q[4]={0.98394,0.9858,0.9834,0.9856};
+//	  double err_PES_Q[4]={0.00063,0.0021,0.0012,0.0033};
+
+//April5:
+
+//	  double PWS_Q[4]={1.682,1.62,1.95,1.57};
+//	  double err_PWS_Q[4]={0.070,0.21,0.12,0.31};
+
+//	  double PES_Q[4]={0.98448,0.9861,0.9837,0.9864};
+//	  double err_PES_Q[4]={0.00074,0.0022,0.0014,0.0030};
+
+//April19:
+
+	  double PWS_Q[4]={1.511,1.70,1.67,1.83};
+	  double err_PWS_Q[4]={0.064,0.24,0.13,0.32};
+
+	  double PES_Q[4]={0.98557,0.9893,0.9878,0.9829};
+	  double err_PES_Q[4]={0.00074,0.002,0.0017,0.0034};
 
 	   Q[0]=(M_chic1-M_Jpsi)*PES_Q[0];
 	   Q[1]=(M_chib1P1*fracJ1+M_chib1P2*(1-fracJ1)-M_Y1S)*PES_Q[1];
@@ -123,6 +155,8 @@ void FitScales(){
 
 		  TGraphErrors *PESgraph = new TGraphErrors(4,Q,PES_Q,0,err_PES_Q);
 		  TGraphErrors *PWSgraph = new TGraphErrors(4,Q,PWS_Q,0,err_PWS_Q);
+
+		  TGraphErrors *PWSgraphOnlyChic2 = new TGraphErrors(4,Q,PWS_Q,0,err_PWS_Q);
 
 
 		  /////////////////////
@@ -211,13 +245,19 @@ void FitScales(){
 
 
 
-
+	      bool RejectChic2=false;
 
 			plotHisto = ScaleCanvas->DrawFrame(plotQmin,plotPWSmin,plotQmax,plotPWSmax);
 			plotHisto->SetXTitle("Q [GeV]");
 			plotHisto->SetYTitle("Q resolution #sigma_{Q}/Q [%]");
 			plotHisto->GetYaxis()->SetTitleOffset(2);
 
+			if(RejectChic2) {
+				PWSgraph->RemovePoint(2);
+				PWSgraphOnlyChic2->RemovePoint(0);
+				PWSgraphOnlyChic2->RemovePoint(0);
+				PWSgraphOnlyChic2->RemovePoint(1);
+			}
 
 		  PWSgraph->SetMarkerColor(kGreen-2);
 		  PWSgraph->SetMarkerStyle(21);
@@ -241,6 +281,8 @@ void FitScales(){
 	      double PWS_NDF=f1PWS->GetNDF();
 	      double PWS_BIC=PWS_chi2+2*TMath::Log(4);
 
+	      if(RejectChic2) PWS_BIC=PWS_chi2+2*TMath::Log(3);
+
 	      highest=plotPWSmax-(plotPWSmax-plotPWSmin)*0.05;
 
 	      sprintf(text,"#color[2]{Fitting pol1:} p0 = %1.4f #pm %1.4f, p1 = %1.4f #pm %1.4f, #chi^{2}/ndf = %1.4f / %d, BIC = %1.3f", PWS_p0, err_PWS_p0, PWS_p1, err_PWS_p1,PWS_chi2,PWS_NDF,PWS_BIC);
@@ -260,6 +302,8 @@ void FitScales(){
 	      double PWS_const_chi2=f1PWSconst->GetChisquare();
 	      double PWS_const_NDF=f1PWSconst->GetNDF();
 	      double PWS_const_BIC=PWS_const_chi2+1*TMath::Log(4);
+
+	      if(RejectChic2) PWS_const_BIC=PWS_const_chi2+1*TMath::Log(3);
 
 	      TF1* f1PWS_m = new TF1("f1PWS_m","pol0",plotQmin,plotQmax);
 	      f1PWS_m->SetParameter(0,PWS_const_p0+err_PWS_const_p0);
@@ -287,6 +331,14 @@ void FitScales(){
 	      highest=plotPWSmax-(plotPWSmax-plotPWSmin)*0.9; TLatex textPWSchi4 = TLatex(Q[3]-0.025,highest,"#chi_{b}(2P)"); textPWSchi4.SetTextSize(FontSize); textPWSchi4.Draw( "same" );
 
 		  PWSgraph->Draw("P");
+
+		  PWSgraphOnlyChic2->SetMarkerColor(kRed);
+		  PWSgraphOnlyChic2->SetMarkerStyle(21);
+		  PWSgraphOnlyChic2->SetLineStyle(kDashed);
+		  PWSgraphOnlyChic2->SetTitle(0);
+		  if(RejectChic2) PWSgraphOnlyChic2->Draw("P");
+
+
 	      ScaleCanvas->SaveAs("ScalePlots/PWSfit.pdf");
 
 

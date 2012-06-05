@@ -6,8 +6,8 @@ for cutVar in Reference;do
 
 FitID=${cutVar}
 
-Additionals=Apr21_chic_Step1_
-fileName=ChicApr19
+Additionals=June2_chic_ErnestCutsMay30_FirstTry_
+fileName=ChicMay03_Qcut
 SaveAll=true
 
 #BACKGROUND MODEL CHOICE:

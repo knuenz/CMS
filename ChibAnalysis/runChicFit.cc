@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
     double Ymass1S;
     double Ymass2S;
     Ymass1S=3.096916;
-    Ymass2S=10.02326;
+    Ymass2S=3.68609;
 
     double invm_min1S;
     double invm_max1S;
@@ -199,6 +199,7 @@ int main(int argc, char** argv) {
     RooRealVar gammapy   = RooRealVar("gammapy", "gammapy",-100,100);
     RooRealVar gammapz   = RooRealVar("gammapz", "gammapz",-100,100);
     RooRealVar Q   = RooRealVar("Q", "Q",0,100);
+    RooRealVar Pi0Mass   = RooRealVar("Pi0Mass", "Pi0Mass",0,5);
 
     RooRealVar vtxNsigmadz   = RooRealVar("vtxNsigmadz", "vtxNsigmadz",-15,15);
     RooRealVar vtxdz   = RooRealVar("vtxdz", "vtxdz",-15,15);
@@ -318,6 +319,31 @@ int main(int argc, char** argv) {
     double cut_dzSig=15.;
     double cut_dz=0.5;//1.
 
+
+
+    //Ernest Cuts
+        nYsig=2.5;
+        cut_Ypt=9.5;
+        cut_gammaeta=1.4;
+        cut_rap=1.25;
+        gammaptD=-1000;
+        gammaptK=0;
+        cut_dzSig=5.;
+        cut_dz=1.35;
+        cut_ctSig=1000.;
+        cut_vtxProb=0.01;
+        Pi0_mean=0.137;
+
+
+        cut_Pi0=0.018;
+        cut_gammapt=0.;
+
+        double GammaEtaBorder=0.9;
+        double cut_Pi0_Midrap=0.;//0.0154413;
+        double cut_Pi0_Forward=0.;//0.0204159;
+        double cut_gammapt_Midrap=0.;//0.392851;
+        double cut_gammapt_Forward=0.;//0.320923;
+
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
@@ -350,8 +376,9 @@ int main(int argc, char** argv) {
 */
     char DScutChar[1000];
 //    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && TMath::Abs(0.5*TMath::Log((sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)+gammapz)/(sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)-gammapz)))<%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,cut_gammaeta);
-    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut,cut_dzSig, cut_dz, cut_ctSig);
-   RooDataSet* dataAfterBasicCuts=(RooDataSet*)data_->reduce(SelectVars(RooArgSet(invm1S,invm2S,invm3S,Y1Smass_nSigma,Y2Smass_nSigma,Y3Smass_nSigma,jpsimass)),Cut(DScutChar));
+//    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut,cut_dzSig, cut_dz, cut_ctSig);
+    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(Pi0Mass-%f)>%f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f && TMath::Abs(gammaeta)<%f && (TMath::Abs(gammaeta)<%f && TMath::Abs(Pi0Mass-%f)>%f || TMath::Abs(gammaeta)>%f && TMath::Abs(Pi0Mass-%f)>%f) && (TMath::Abs(gammaeta)<%f && gammapt>%f || TMath::Abs(gammaeta)>%f && gammapt>%f )",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut,cut_dzSig, Pi0_mean, cut_Pi0, cut_dz, cut_ctSig, cut_gammaeta, GammaEtaBorder, Pi0_mean, cut_Pi0_Midrap, GammaEtaBorder, Pi0_mean, cut_Pi0_Forward, GammaEtaBorder, cut_gammapt_Midrap, GammaEtaBorder, cut_gammapt_Forward);
+   RooDataSet* dataAfterBasicCuts=(RooDataSet*)data_->reduce(Cut(DScutChar));
     cout<<DScutChar<<endl;cout<<endl;
     dataAfterBasicCuts->Print();
 
@@ -713,7 +740,8 @@ int main(int argc, char** argv) {
      	    nBinsCosAlphaTry=2500;
      	    sprintf(ExcludeSignal,"invm1S<%f || invm1S>%f",chib1Pmin,bb_thresh);
      	    sprintf(MixerInputTree,"BkgMixTree/tree_Jpsi_Pt0____________________________.root");
-     	    BkgMixer(MixerInputTree,tree1S,nStateToMix,invm_min1S,invm_max1S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass1S,nBinsCosAlphaTry);
+//     	    BkgMixer(MixerInputTree,tree1S,nStateToMix,invm_min1S,invm_max1S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass1S,nBinsCosAlphaTry);
+     	    BkgMixer(tree1S,nStateToMix,invm_min1S,invm_max1S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass1S,nBinsCosAlphaTry,GammaEtaBorder, cut_gammapt_Midrap, cut_gammapt_Forward , cut_Ypt, cut_gammaeta);
      	    TH1F *hInvM1S=(TH1F*)hInvMnS->Clone("hInvM1S");
      	    hInvMnS->Print();
      	    hInvM1S->Print();
@@ -821,7 +849,7 @@ int main(int argc, char** argv) {
     RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,w_chib1P2float,alpha_3J_J2,n_3J_J1);
 
     double n1PnJ_START=12000;
-    RooRealVar n1PnJ= RooRealVar("N_{#chi_{cJ}}","#Sigma_{J}(#chi_{cJ})",n1PnJ_START,1000,20000);
+    RooRealVar n1PnJ= RooRealVar("N_{#chi_{cJ}}","#Sigma_{J}(#chi_{cJ})",n1PnJ_START,1000,50000);
     n1PnJ.setVal(n1PnJ_START);
 
     RooAddPdf chib1P_sigInd= RooAddPdf("chib1P_sigInd","chib1P_sigInd",RooArgList(chib1P0,chib1P1,chib1P2),RooArgList(fractionJ0,fractionJ1));
@@ -836,8 +864,8 @@ int main(int argc, char** argv) {
 ////////////////////////////////////////////////////////
 
 
-    RooRealVar background_nevt1S = RooRealVar("N_{bkg}1S","N_{bkg}1S",1500,0,20000);
-    RooRealVar background_nevtSB1S = RooRealVar("background_nevtSB1S","background_nevtSB1S",1500,0,10000);
+    RooRealVar background_nevt1S = RooRealVar("N_{bkg}1S","N_{bkg}1S",1500,0,50000);
+    RooRealVar background_nevtSB1S = RooRealVar("background_nevtSB1S","background_nevtSB1S",1500,0,50000);
     RooAddPdf backgroundSB1S= RooAddPdf("backgroundSB1S","backgroundSB1S",RooArgList(*background1S),RooArgList(background_nevtSB1S));
     RooAddPdf backgroundE1S= RooAddPdf("backgroundE1S","backgroundE1S",RooArgList(*background1S),RooArgList(background_nevt1S));
 

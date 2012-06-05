@@ -107,6 +107,8 @@ int main(int argc, char** argv) {
     bool NarrowOptimization=false;
     bool gammaptDCut=false;
     bool determine3PparametersDuringStep1=false;
+    bool BkgToy1SBkgMixer2S=false;
+    bool useNewExistingMixFile=false;
 
 	  for( int i=0;i < argc; ++i ) {
 		    if(std::string(argv[i]).find("FitID") != std::string::npos) {char* FitIDchar = argv[i]; char* FitIDchar2 = strtok (FitIDchar, "="); FitID = FitIDchar2; cout<<"FitID = "<<FitID<<endl;}
@@ -151,6 +153,8 @@ int main(int argc, char** argv) {
 		    if(std::string(argv[i]).find("BkgToy=true") != std::string::npos) {BkgToy=true; cout<<"BkgToy"<<endl;}
 		    if(std::string(argv[i]).find("useExistingMixFile=true") != std::string::npos) {useExistingMixFile=true; cout<<"useExistingMixFile"<<endl;}
 		    if(std::string(argv[i]).find("OneSPlotModel=false") != std::string::npos) {OneSPlotModel=false; cout<<"OneSPlotModel"<<endl;}
+		    if(std::string(argv[i]).find("BkgToy1SBkgMixer2S=true") != std::string::npos) {BkgToy1SBkgMixer2S=true; cout<<"BkgToy1SBkgMixer2S"<<endl;}
+		    if(std::string(argv[i]).find("useNewExistingMixFile=true") != std::string::npos) {useNewExistingMixFile=true; cout<<"useNewExistingMixFile"<<endl;}
 
 	  }
 
@@ -165,6 +169,27 @@ int main(int argc, char** argv) {
 	  bool PlotBothSteps=false;
 	  if(PlotStep1&&PlotStep2) PlotBothSteps=true;
 
+// Plotting settings
+
+	  int MarkerStyle_nS[4]={0,20,25,24}; // for each [nS] state
+	  int MarkerColor_nS[4] = {0,600,418,632};// for each [nS] state
+	  int LineColor_nS[4] = {0,600,418,632};// for each [nS] state
+	  double MarkerSize_nS[4]={0,1.,1.,1.};// for each [nS] state
+
+	  int LineColor_nJ[4] = {616,416,632,1};// for each [nj] state 0,1,2 and 3 for background
+	  int LineColor_nP[4] = {0,410,808,869};// for each [nP] state 1,2, 3 and 0 for 2P->2S, reflected in 1S
+
+	  double restrictMaximum_nPlots[8]={400,110,60,400,320,88,48,320};//0=1S, 1=2S, 2=3S, 3=1S2S3S, 4=1SNE, 5=2SNE, 6=3SNE, 7=1S2S3SNE
+
+	  //Non-Equ-Plots:
+	  double ScalePlot1S_NE=10.;
+	  double ScalePlot2S_NE=10.;
+	  double ScalePlot3S_NE=10.;
+
+	  //Normal Plots:
+	  double binWidth=12.5;
+
+	  double PlotMinimum=0.1;
 
 //load RooFit library
 	using namespace RooFit;
@@ -186,8 +211,14 @@ int main(int argc, char** argv) {
 
     double Ymass1S;
     double Ymass2S;
+    double Ymass3S;
     Ymass1S=9.4603;
     Ymass2S=10.02326;
+    Ymass3S=10.3552;
+	double M_PDG_chib1_1P=9.89278;
+	double M_PDG_chib2_1P=9.91221;
+	double M_PDG_chib1_2P=10.25546;
+	double M_PDG_chib2_2P=10.26865;
 
     double invm_min1S;
     double invm_max1S;
@@ -196,12 +227,13 @@ int main(int argc, char** argv) {
     double invm_min3S;
     double invm_max3S;
 
-    invm_min1S=9.5; invm_max1S=11.1;
-    invm_min2S=10; invm_max2S=11.1;
-    invm_min3S=10.3; invm_max3S=11.1;
+    invm_min1S=9.5; invm_max1S=11.;
+    invm_min2S=10; invm_max2S=11.;
+    invm_min3S=10.3; invm_max3S=11.;
 
     if(MCsample) invm_min1S=9.7;
     if(MCsample) invm_max1S=10.35;
+
 
     sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(1S)^{PDG}} [GeV]");
     RooRealVar invm1S("invm1S",invmName,invm_min1S,invm_max1S);
@@ -254,6 +286,45 @@ int main(int argc, char** argv) {
 	RooRealVar RunNb     = RooRealVar("RunNb", "RunNb",0,1e9);
 	RooRealVar EventNb     = RooRealVar("EventNb", "EventNb",0,1e15);
 
+    RooArgSet* FullArgSet=new RooArgSet();
+    FullArgSet->add(invm1S);
+    FullArgSet->add(invm2S);
+    FullArgSet->add(invm3S);
+    FullArgSet->add(jpsipt);
+    FullArgSet->add(jpsimass);
+    FullArgSet->add(gammapt);
+    FullArgSet->add(deltaRChiJpsi);
+    FullArgSet->add(deltaRJpsig);
+    FullArgSet->add(jpsieta);
+    FullArgSet->add(ctpv);
+    FullArgSet->add(ctpverr);
+    FullArgSet->add(ctbs);
+    FullArgSet->add(ctbserr);
+    FullArgSet->add(ctpvsig);
+    FullArgSet->add(ctbssig);
+    FullArgSet->add(weight);
+    FullArgSet->add(Rconv);
+    FullArgSet->add(jpsiVprob);
+    FullArgSet->add(Y1Smass_nSigma);
+    FullArgSet->add(Y2Smass_nSigma);
+    FullArgSet->add(Y3Smass_nSigma);
+    FullArgSet->add(vertexChi2ProbGamma);
+    FullArgSet->add(jpsipx );
+    FullArgSet->add(jpsipy );
+    FullArgSet->add(jpsipz );
+    FullArgSet->add(gammapx);
+    FullArgSet->add(gammapy);
+    FullArgSet->add(gammapz);
+    FullArgSet->add(gammaeta);
+    FullArgSet->add(Q);
+    FullArgSet->add(Pi0Mass);
+    FullArgSet->add(vtxNsigmadz);
+    FullArgSet->add(vtxdz);
+    FullArgSet->add(vtxerrdz);
+    FullArgSet->add(UpsIndex);
+    FullArgSet->add(GammaIndex);
+    FullArgSet->add(RunNb);
+    FullArgSet->add(EventNb);
 
     int n_Cut=1;
     double n_Cut_0;
@@ -493,6 +564,7 @@ int main(int argc, char** argv) {
     gammaptK=0;
     cut_dz=1000;
     cut_ctSig=1000;
+    cut_vtxProb=0.01;
 */
 /*//2S extreme cuts
      nYsig=2;
@@ -505,7 +577,32 @@ int main(int argc, char** argv) {
     gammaptK=0;
     cut_dz=1000;
     cut_ctSig=1000;
+    cut_vtxProb=0.01;
 */
+    //Ernest Cuts
+    double GammaEtaBorder=0.9;
+    double cut_Pi0_Midrap=0.;//0.0154413;
+    double cut_Pi0_Forward=0.;//0.0204159;
+    double cut_gammapt_Midrap=0.;//0.392851;
+    double cut_gammapt_Forward=0.;//0.320923;
+
+		cut_rap=1.25;
+        gammaptD=-1000;
+        gammaptK=0;
+
+        cut_dzSig=5.;
+        cut_dz=1.35;
+        cut_ctSig=1000.;
+        cut_vtxProb=0.01;
+
+        nYsig=2.5;
+        cut_Ypt=9.5;
+        cut_gammaeta=1.4;
+        Pi0_mean=0.137;
+        cut_Pi0=0.018;
+        cut_gammapt=0.;//0.4;
+
+
 
 
 ///////////////////////////////////////////////
@@ -551,21 +648,31 @@ int main(int argc, char** argv) {
 	 CutVars.add(gammaeta);
 	 CutVars.add(Rconv);
 
+	    TTree* treeBeforeAllCuts=new TTree();
+	    if(SaveAll){
+	    	treeBeforeAllCuts=(TTree*)data_->tree();
+	    }
+
 //    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && (TMath::Sign(-1.,Q-1.65)+1)/2.*0.8+(TMath::Sign(-1.,1.65-Q)+1)/2.*(gammapt>%f*Q+%f) && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut);
 
-    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(Pi0Mass-%f)>%f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f && TMath::Abs(gammaeta)<%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut,cut_dzSig, Pi0_mean, cut_Pi0, cut_dz, cut_ctSig, cut_gammaeta);
+	    char FinalCutChar[2000];
+
+	 cout<<"dataAfterBasicCuts"<<endl;
+    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(Pi0Mass-%f)>%f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f && TMath::Abs(gammaeta)<%f && (TMath::Abs(gammaeta)<%f && TMath::Abs(Pi0Mass-%f)>%f || TMath::Abs(gammaeta)>%f && TMath::Abs(Pi0Mass-%f)>%f) && (TMath::Abs(gammaeta)<%f && gammapt>%f || TMath::Abs(gammaeta)>%f && gammapt>%f )",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut,cut_dzSig, Pi0_mean, cut_Pi0, cut_dz, cut_ctSig, cut_gammaeta, GammaEtaBorder, Pi0_mean, cut_Pi0_Midrap, GammaEtaBorder, Pi0_mean, cut_Pi0_Forward, GammaEtaBorder, cut_gammapt_Midrap, GammaEtaBorder, cut_gammapt_Forward);
 //    sprintf(DScutChar,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut);
     RooDataSet* dataAfterBasicCuts=(RooDataSet*)data_->reduce(Cut(DScutChar));
     cout<<DScutChar<<endl;cout<<endl;
     dataAfterBasicCuts->Print();
 
     sprintf(cutName_,"vtxY%d_ct%d_ctSig%d_nYsig%d_gampt%d_gammaptD%d_RMin%d_RMax%d_Ypt%d_vtxgam%d_vtxgamLog%d_Pi0%d_dzSig%d_dz%d",int(1000000*cut_vtxProb),int(1000000*cut_ct),int(1000000*cut_ctSig),int(1000000*nYsig),int(1000000*cut_gammapt),int(1000000*gammaptD),int(1000000*cut_RconvMin),int(1000000*cut_RconvMax),int(1000000*cut_Ypt),int(100000000*cut_vtxChi2ProbGamma),-int(10000*cut_vtxChi2ProbGammaLog),int(100000*cut_Pi0),int(100000*cut_dzSig),int(100000*cut_dz));
-
+    sprintf(FinalCutChar,"%s",DScutChar);
 
     RooDataSet* dataAfterBasicCutsExceptGammaPtCut;
     if(BkgMixerBool&&!useExistingMixFile){
+   	 cout<<"dataAfterBasicCutsExceptGammaPtCut"<<endl;
     	char DScutCharNoGammaPtCut[2000];
-        sprintf(DScutCharNoGammaPtCut,"jpsipt>%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(Pi0Mass-%f)>%f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f",cut_Ypt,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,MINcosalphaCut,cut_dzSig, Pi0_mean, cut_Pi0, cut_dz, cut_ctSig);
+//        sprintf(DScutCharNoGammaPtCut,"Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(Pi0Mass-%f)>%f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f",cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,MINcosalphaCut,cut_dzSig, Pi0_mean, cut_Pi0, cut_dz, cut_ctSig);
+        sprintf(DScutCharNoGammaPtCut,"jpsipt>%f && gammapt>%f && gammapt<%f && Rconv > %f && Rconv < %f && jpsieta < %f && jpsieta > %f && ctpv < %f &&  ctpv > %f && vertexChi2ProbGamma > %f && log10(vertexChi2ProbGamma) > %f && jpsiVprob > %f && gammapt>%f*Q+%f && (gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>%f && TMath::Abs(vtxNsigmadz) < %f &&TMath::Abs(Pi0Mass-%f)>%f &&TMath::Abs(vtxdz)<%f &&TMath::Abs(ctpvsig)<%f && TMath::Abs(gammaeta)<%f && (TMath::Abs(gammaeta)<%f && TMath::Abs(Pi0Mass-%f)>%f || TMath::Abs(gammaeta)>%f && TMath::Abs(Pi0Mass-%f)>%f) && (TMath::Abs(gammaeta)<%f && gammapt>%f || TMath::Abs(gammaeta)>%f && gammapt>%f )",cut_Ypt,cut_gammapt,cut_gammapt_max,cut_RconvMin,cut_RconvMax,cut_rap,-cut_rap,cut_ct,-cut_ct,cut_vtxChi2ProbGamma,cut_vtxChi2ProbGammaLog,cut_vtxProb,gammaptK,gammaptD,MINcosalphaCut,cut_dzSig, Pi0_mean, cut_Pi0, cut_dz, cut_ctSig, cut_gammaeta, GammaEtaBorder, Pi0_mean, cut_Pi0_Midrap, GammaEtaBorder, Pi0_mean, cut_Pi0_Forward, GammaEtaBorder, cut_gammapt_Midrap, GammaEtaBorder, cut_gammapt_Forward);
         dataAfterBasicCutsExceptGammaPtCut=(RooDataSet*)data_->reduce(Cut(DScutCharNoGammaPtCut));
         cout<<"without gammapt cut:"<<endl;
         dataAfterBasicCutsExceptGammaPtCut->Print();
@@ -620,11 +727,13 @@ int main(int argc, char** argv) {
         	UpperSBmax2S=10.85;
         }
 
+      	 cout<<"dataSB1S"<<endl;
     sprintf(DScutChar,"jpsimass > %f && Y1Smass_nSigma < %f || jpsimass < %f && Y2Smass_nSigma > %f",LowerSBmin,nSigSBlow,UpperSBmax,nSigSBhigh);
     cout<<DScutChar<<endl;
     RooDataSet* dataSB1S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
     dataSB1S->Print();
 
+ 	 cout<<"dataSB2S"<<endl;
     sprintf(DScutChar,"jpsimass > %f && Y1Smass_nSigma < %f || jpsimass < %f && Y2Smass_nSigma > %f",LowerSBmin2S,nSigSBlow2S,UpperSBmax2S,nSigSBhigh2S);
     cout<<DScutChar<<endl;
     RooDataSet* dataSB2S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
@@ -632,6 +741,7 @@ int main(int argc, char** argv) {
 
 
 /////// Producing Signal dataset
+	 cout<<"data1S"<<endl;
     sprintf(DScutChar,"Y1Smass_nSigma > %f && Y1Smass_nSigma < %f && Y2Smass_nSigma < %f",-nYsig,nYsig,10000.);
     cout<<DScutChar<<endl;
     RooDataSet* data1S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
@@ -639,68 +749,90 @@ int main(int argc, char** argv) {
 
     RooDataSet* data1SExceptGammaPtCut;
     if(BkgMixerBool&&!useExistingMixFile){
+   	 cout<<"data1SExceptGammaPtCut"<<endl;
         data1SExceptGammaPtCut=(RooDataSet*)dataAfterBasicCutsExceptGammaPtCut->reduce(Cut(DScutChar));
         cout<<"without gammapt cut:"<<endl;
         data1SExceptGammaPtCut->Print();
     }
 
-    sprintf(DScutChar,"Y2Smass_nSigma > %f && Y2Smass_nSigma < %f ",-nYsig,nYsig);
+  	 cout<<"data2S"<<endl;
+    sprintf(DScutChar,"Y2Smass_nSigma > %f && Y2Smass_nSigma < %f ",-nYsig*Ymass2S/Ymass1S,nYsig*Ymass2S/Ymass1S);
     cout<<DScutChar<<endl;
     RooDataSet* data2S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
     data2S->Print();
 
     RooDataSet* data2SExceptGammaPtCut;
     if(BkgMixerBool&&!useExistingMixFile){
+     	 cout<<"data2SExceptGammaPtCut"<<endl;
         data2SExceptGammaPtCut=(RooDataSet*)dataAfterBasicCutsExceptGammaPtCut->reduce(Cut(DScutChar));
         cout<<"without gammapt cut:"<<endl;
         data2SExceptGammaPtCut->Print();
     }
 
-    sprintf(DScutChar,"Y3Smass_nSigma > %f && Y3Smass_nSigma < %f && Y2Smass_nSigma > %f",-nYsig,nYsig,-10000.);
+	 cout<<"data3S"<<endl;
+    sprintf(DScutChar,"Y3Smass_nSigma > %f && Y3Smass_nSigma < %f && Y2Smass_nSigma > %f",-nYsig*Ymass3S/Ymass2S,nYsig*Ymass3S/Ymass2S,-10000.);
     cout<<DScutChar<<endl;
     RooDataSet* data3S=(RooDataSet*)dataAfterBasicCuts->reduce(Cut(DScutChar));
     data3S->Print();
 
+    RooDataSet* data3SExceptGammaPtCut;
+    if(BkgMixerBool&&!useExistingMixFile){
+     	 cout<<"data3SExceptGammaPtCut"<<endl;
+     	data3SExceptGammaPtCut=(RooDataSet*)dataAfterBasicCutsExceptGammaPtCut->reduce(Cut(DScutChar));
+        cout<<"without gammapt cut:"<<endl;
+        data3SExceptGammaPtCut->Print();
+    }
 
     if(SetSignalToZero&&useSBforBKGmodel){
     	data1S=dataSB1S;
     	data2S=dataSB2S;
+    	data3S=dataSB2S;
     }
     TTree* tree1S=new TTree();
     TTree* tree2S=new TTree();
+    TTree* tree3S=new TTree();
     TTree* treeAllCuts=new TTree();
 
     TTree* tree1SExceptGammaPtCut=new TTree();
     TTree* tree2SExceptGammaPtCut=new TTree();
+    TTree* tree3SExceptGammaPtCut=new TTree();
     if(BkgMixerBool&&!useExistingMixFile){
     	tree1SExceptGammaPtCut=(TTree*)data1SExceptGammaPtCut->tree();
     	tree2SExceptGammaPtCut=(TTree*)data2SExceptGammaPtCut->tree();
+    	tree3SExceptGammaPtCut=(TTree*)data3SExceptGammaPtCut->tree();
     }
 
     tree1S=(TTree*)data1S->tree();
     tree2S=(TTree*)data2S->tree();
+    tree3S=(TTree*)data3S->tree();
     treeAllCuts=(TTree*)dataAfterBasicCuts->tree();
 
     if(useSBforBKGmodel){
     	tree1S=(TTree*)dataSB1S->tree();
     	tree2S=(TTree*)dataSB2S->tree();
+    	tree3S=(TTree*)dataSB2S->tree();
     }
 
     if(SetSignalToZero){
     	data1S=dataSB1S;
     	data2S=dataSB2S;
+    	data3S=dataSB2S;
     }
 
     if(MCsample){
         tree2S=(TTree*)data1S->tree();
+        tree3S=(TTree*)data1S->tree();
     	data2S=data1S;
+    	data3S=data1S;
     }
 
     char treeName[200];
     sprintf(treeName,"Figures/%s/tree_Y1S.root",FitID);
     if(SaveAll) tree1S->SaveAs(treeName);
     sprintf(treeName,"Figures/%s/tree_Y2S.root",FitID);
-    if(SaveAll) tree2S->SaveAs(treeName);
+     if(SaveAll) tree2S->SaveAs(treeName);
+     sprintf(treeName,"Figures/%s/tree_Y3S.root",FitID);
+      if(SaveAll) tree3S->SaveAs(treeName);
     sprintf(treeName,"Figures/%s/treeAllCuts.root",FitID);
     if(SaveAll) treeAllCuts->SaveAs(treeName);
     sprintf(treeName,"Figures/%s/tree1SExceptGammaPtCut.root",FitID);
@@ -765,10 +897,480 @@ int main(int argc, char** argv) {
     treeAllCuts->Draw("jpsieta>>UpsRapHistoInvmCut",InvmCutChar);
     treeAllCuts->Draw("Rconv>>RConvHistoInvmCut",InvmCutChar);
 
-    TCanvas* PlotCanvas = new TCanvas("PlotCanvas","PlotCanvas",1600, 800);
+
+    TH1F  *AN_MassHisto = new TH1F("AN_MassHisto","",112,8.6,11.4);//25MeV
+    TH1F  *AN_UpsPtHisto = new TH1F("AN_UpsPtHisto","",100,0,50);//500MeV
+    TH1F  *AN_UpsRapHisto = new TH1F("AN_UpsRapHisto","",100,-1.75,1.75);
+    TH1F  *AN_DimuonVertexProbHisto = new TH1F("AN_DimuonVertexProbHisto","",100,0,100);
+
+    TH1F  *AN_1S_GammaVertexProbHisto = new TH1F("AN_1S_GammaVertexProbHisto","",100,0,100);
+    TH1F  *AN_1S_dzsigHisto = new TH1F("AN_1S_dzsigHisto","",100,-5,5);
+    TH1F  *AN_1S_dzHisto = new TH1F("AN_1S_dzHisto","",100,-5,5);
+    TH1F  *AN_1S_GammaEtaHisto = new TH1F("AN_1S_GammaEtaHisto","",100,-2.5,2.5);
+    TH1F  *AN_1S_GammaPtHisto = new TH1F("AN_1S_GammaPtHisto","",67,0,10.05);//150MeV
+    TH1F  *AN_1S_Pi0MassHistoBroad = new TH1F("AN_1S_Pi0MassHistoBroad","",100,0,1);//10MeV
+    TH1F  *AN_1S_Pi0MassHistoNarrow = new TH1F("AN_1S_Pi0MassHistoNarrow","",100,0.035,0.235);//2MeV
+    TH1F  *AN_1S_RConvHisto = new TH1F("AN_1S_RConvHisto","",150,0,75);//0.5cm
+
+    TH1F  *AN_2S_GammaVertexProbHisto = new TH1F("AN_2S_GammaVertexProbHisto","",100,0,100);
+    TH1F  *AN_2S_dzsigHisto = new TH1F("AN_2S_dzsigHisto","",100,-5,5);
+    TH1F  *AN_2S_dzHisto = new TH1F("AN_2S_dzHisto","",100,-5,5);
+    TH1F  *AN_2S_GammaEtaHisto = new TH1F("AN_2S_GammaEtaHisto","",100,-2.5,2.5);
+    TH1F  *AN_2S_GammaPtHisto = new TH1F("AN_2S_GammaPtHisto","",67,0,10.05);//150MeV
+    TH1F  *AN_2S_Pi0MassHistoBroad = new TH1F("AN_2S_Pi0MassHistoBroad","",100,0,1);//10MeV
+    TH1F  *AN_2S_Pi0MassHistoNarrow = new TH1F("AN_2S_Pi0MassHistoNarrow","",100,0.035,0.235);//2MeV
+    TH1F  *AN_2S_RConvHisto = new TH1F("AN_2S_RConvHisto","",150,0,75);//0.5cm
+
+    TH1F  *AN_3S_GammaVertexProbHisto = new TH1F("AN_3S_GammaVertexProbHisto","",100,0,100);
+    TH1F  *AN_3S_dzsigHisto = new TH1F("AN_3S_dzsigHisto","",100,-5,5);
+    TH1F  *AN_3S_dzHisto = new TH1F("AN_3S_dzHisto","",100,-5,5);
+    TH1F  *AN_3S_GammaEtaHisto = new TH1F("AN_3S_GammaEtaHisto","",100,-2.5,2.5);
+    TH1F  *AN_3S_GammaPtHisto = new TH1F("AN_3S_GammaPtHisto","",67,0,10.05);//150MeV
+    TH1F  *AN_3S_Pi0MassHistoBroad = new TH1F("AN_3S_Pi0MassHistoBroad","",100,0,1);//10MeV
+    TH1F  *AN_3S_Pi0MassHistoNarrow = new TH1F("AN_3S_Pi0MassHistoNarrow","",100,0.035,0.235);//2MeV
+    TH1F  *AN_3S_RConvHisto = new TH1F("AN_3S_RConvHisto","",150,0,75);//0.5cm
+
+
+    char PlotCutChar[1000];
+    char PlotCutChar1S[1000];
+    char PlotCutChar2S[1000];
+    char PlotCutChar3S[1000];
+
+    sprintf(PlotCutChar,"");
+    treeBeforeAllCuts->Draw("jpsimass>>AN_MassHisto",PlotCutChar);
+    treeBeforeAllCuts->Draw("jpsipt>>AN_UpsPtHisto",PlotCutChar);
+    treeBeforeAllCuts->Draw("jpsieta>>AN_UpsRapHisto",PlotCutChar);
+    treeBeforeAllCuts->Draw("100*jpsiVprob>>AN_DimuonVertexProbHisto",PlotCutChar);
+
+    sprintf(PlotCutChar1S,"TMath::Abs(Y1Smass_nSigma)<%f && jpsipt>%f && jpsiVprob>%f && TMath::Abs(jpsieta)<%f", nYsig, cut_Ypt, cut_vtxProb, cut_rap);
+    treeBeforeAllCuts->Draw("100*vertexChi2ProbGamma>>AN_1S_GammaVertexProbHisto",PlotCutChar1S);
+    treeBeforeAllCuts->Draw("vtxNsigmadz>>AN_1S_dzsigHisto",PlotCutChar1S);
+    treeBeforeAllCuts->Draw("vtxdz>>AN_1S_dzHisto",PlotCutChar1S);
+    treeBeforeAllCuts->Draw("Rconv>>AN_1S_RConvHisto",PlotCutChar1S);
+
+    sprintf(PlotCutChar1S,"%s && TMath::Abs(vtxNsigmadz)<%f && TMath::Abs(vtxdz)<%f && invm1S<%f", PlotCutChar1S, cut_dzSig, cut_dz,invm_max1S);
+    treeBeforeAllCuts->Draw("Pi0Mass>>AN_1S_Pi0MassHistoBroad",PlotCutChar1S);
+    treeBeforeAllCuts->Draw("Pi0Mass>>AN_1S_Pi0MassHistoNarrow",PlotCutChar1S);
+
+    sprintf(PlotCutChar1S,"%s && TMath::Abs(Pi0Mass-%f)>%f", PlotCutChar1S, Pi0_mean, cut_Pi0);
+    treeBeforeAllCuts->Draw("gammapt>>AN_1S_GammaPtHisto",PlotCutChar1S);
+
+    sprintf(PlotCutChar1S,"%s && gammapt>%f", PlotCutChar1S, cut_gammapt);
+    treeBeforeAllCuts->Draw("gammaeta>>AN_1S_GammaEtaHisto",PlotCutChar1S);
+
+
+    sprintf(PlotCutChar2S,"TMath::Abs(Y2Smass_nSigma)<%f && jpsipt>%f && jpsiVprob>%f && TMath::Abs(jpsieta)<%f", nYsig*Ymass2S/Ymass1S, cut_Ypt, cut_vtxProb, cut_rap);
+    treeBeforeAllCuts->Draw("100*vertexChi2ProbGamma>>AN_2S_GammaVertexProbHisto",PlotCutChar2S);
+    treeBeforeAllCuts->Draw("vtxNsigmadz>>AN_2S_dzsigHisto",PlotCutChar2S);
+    treeBeforeAllCuts->Draw("vtxdz>>AN_2S_dzHisto",PlotCutChar2S);
+    treeBeforeAllCuts->Draw("Rconv>>AN_2S_RConvHisto",PlotCutChar2S);
+
+    sprintf(PlotCutChar2S,"%s && TMath::Abs(vtxNsigmadz)<%f && TMath::Abs(vtxdz)<%f && invm2S<%f", PlotCutChar2S, cut_dzSig, cut_dz,invm_max2S);
+    treeBeforeAllCuts->Draw("Pi0Mass>>AN_2S_Pi0MassHistoBroad",PlotCutChar2S);
+    treeBeforeAllCuts->Draw("Pi0Mass>>AN_2S_Pi0MassHistoNarrow",PlotCutChar2S);
+
+    sprintf(PlotCutChar2S,"%s && TMath::Abs(Pi0Mass-%f)>%f", PlotCutChar2S, Pi0_mean, cut_Pi0);
+    treeBeforeAllCuts->Draw("gammapt>>AN_2S_GammaPtHisto",PlotCutChar2S);
+
+    sprintf(PlotCutChar2S,"%s && gammapt>%f", PlotCutChar2S, cut_gammapt);
+    treeBeforeAllCuts->Draw("gammaeta>>AN_2S_GammaEtaHisto",PlotCutChar2S);
+
+
+
+    sprintf(PlotCutChar3S,"TMath::Abs(Y3Smass_nSigma)<%f && jpsipt>%f && jpsiVprob>%f && TMath::Abs(jpsieta)<%f", nYsig*Ymass3S/Ymass2S, cut_Ypt, cut_vtxProb, cut_rap);
+    treeBeforeAllCuts->Draw("100*vertexChi2ProbGamma>>AN_3S_GammaVertexProbHisto",PlotCutChar3S);
+    treeBeforeAllCuts->Draw("vtxNsigmadz>>AN_3S_dzsigHisto",PlotCutChar3S);
+    treeBeforeAllCuts->Draw("vtxdz>>AN_3S_dzHisto",PlotCutChar3S);
+    treeBeforeAllCuts->Draw("Rconv>>AN_3S_RConvHisto",PlotCutChar3S);
+
+    sprintf(PlotCutChar3S,"%s && TMath::Abs(vtxNsigmadz)<%f && TMath::Abs(vtxdz)<%f && invm3S<%f", PlotCutChar3S, cut_dzSig, cut_dz,invm_max3S);
+    treeBeforeAllCuts->Draw("Pi0Mass>>AN_3S_Pi0MassHistoBroad",PlotCutChar3S);
+    treeBeforeAllCuts->Draw("Pi0Mass>>AN_3S_Pi0MassHistoNarrow",PlotCutChar3S);
+
+    sprintf(PlotCutChar3S,"%s && TMath::Abs(Pi0Mass-%f)>%f", PlotCutChar3S, Pi0_mean, cut_Pi0);
+    treeBeforeAllCuts->Draw("gammapt>>AN_3S_GammaPtHisto",PlotCutChar3S);
+
+    sprintf(PlotCutChar3S,"%s && gammapt>%f", PlotCutChar3S, cut_gammapt);
+    treeBeforeAllCuts->Draw("gammaeta>>AN_3S_GammaEtaHisto",PlotCutChar3S);
+
+
+
+
+/*    nYsig=2.5;
+    cut_Ypt=9.5;
+    cut_gammaeta=1.4;
+    cut_rap=1000;
+    gammaptD=-1000;
+    gammaptK=0;
+    cut_dzSig=5.;
+    cut_dz=1.35;
+    cut_ctSig=1000000.;
+    cut_vtxProb=0.01;
+    Pi0_mean=0.134;
+    cut_Pi0=0.017;
+    cut_gammapt=0.4;//0.4;
+*/
+
+    TCanvas* PlotCanvas = new TCanvas("PlotCanvas","PlotCanvas",1600, 1200);
     PlotCanvas->SetFillColor(kWhite);
-    gPad->SetLeftMargin(0.15);
+    gPad->SetLeftMargin(0.125);
+    gPad->SetRightMargin(0.05);
+    gPad->SetTopMargin(0.05);
+//    gPad->SetBottomMargin(0.1);
     gPad->SetFillColor(kWhite);
+
+
+
+	  TLine* cutLine;
+	  cutLine = new TLine( 0,0,0,0 );
+	  cutLine->SetLineWidth( 1 );
+	  cutLine->SetLineStyle( 2 );
+	  cutLine->SetLineColor( kGreen+2 );
+	  cutLine->SetY1(0);
+	  TLine* cutLine2;
+	  cutLine2 = new TLine( 0,0,0,0 );
+	  cutLine2->SetLineWidth( 1 );
+	  cutLine2->SetLineStyle( 2 );
+	  cutLine2->SetLineColor( kGreen+2 );
+	  cutLine2->SetY1(0);
+
+	  double MaxFact=1.2;
+	  yOff=1.5;
+	  double PlotMinDist=1.;
+
+	  AN_MassHisto->SetMinimum(PlotMinDist); AN_MassHisto->SetMaximum(AN_MassHisto->GetMaximum()*MaxFact);
+	  AN_UpsPtHisto->SetMinimum(PlotMinDist); AN_UpsPtHisto->SetMaximum(AN_UpsPtHisto->GetMaximum()*MaxFact);
+	  AN_UpsRapHisto->SetMinimum(PlotMinDist); AN_UpsRapHisto->SetMaximum(AN_UpsRapHisto->GetMaximum()*MaxFact);
+	  AN_DimuonVertexProbHisto->SetMinimum(PlotMinDist); AN_DimuonVertexProbHisto->SetMaximum(AN_DimuonVertexProbHisto->GetMaximum()*MaxFact);
+
+	  AN_1S_GammaVertexProbHisto->SetMinimum(PlotMinDist*100); AN_1S_GammaVertexProbHisto->SetMaximum(AN_1S_GammaVertexProbHisto->GetMaximum()*MaxFact);
+	  AN_1S_dzsigHisto->SetMinimum(PlotMinDist*10); AN_1S_dzsigHisto->SetMaximum(AN_1S_dzsigHisto->GetMaximum()*MaxFact);
+	  AN_1S_dzHisto->SetMinimum(PlotMinDist); AN_1S_dzHisto->SetMaximum(AN_1S_dzHisto->GetMaximum()*MaxFact);
+	  AN_1S_GammaEtaHisto->SetMinimum(PlotMinDist); AN_1S_GammaEtaHisto->SetMaximum(AN_1S_GammaEtaHisto->GetMaximum()*MaxFact);
+	  AN_1S_GammaPtHisto->SetMinimum(PlotMinDist); AN_1S_GammaPtHisto->SetMaximum(AN_1S_GammaPtHisto->GetMaximum()*MaxFact);
+	  AN_1S_Pi0MassHistoBroad->SetMinimum(PlotMinDist); AN_1S_Pi0MassHistoBroad->SetMaximum(AN_1S_Pi0MassHistoBroad->GetMaximum()*MaxFact);
+	  AN_1S_Pi0MassHistoNarrow->SetMinimum(PlotMinDist); AN_1S_Pi0MassHistoNarrow->SetMaximum(AN_1S_Pi0MassHistoNarrow->GetMaximum()*MaxFact);
+	  AN_1S_RConvHisto->SetMinimum(PlotMinDist); AN_1S_RConvHisto->SetMaximum(AN_1S_RConvHisto->GetMaximum()*MaxFact);
+
+/*	  AN_2S_GammaVertexProbHisto->SetMinimum(PlotMinDist*100); AN_2S_GammaVertexProbHisto->SetMaximum(AN_2S_GammaVertexProbHisto->GetMaximum()*MaxFact);
+	  AN_2S_dzsigHisto->SetMinimum(PlotMinDist*100); AN_2S_dzsigHisto->SetMaximum(AN_2S_dzsigHisto->GetMaximum()*MaxFact);
+	  AN_2S_dzHisto->SetMinimum(PlotMinDist); AN_2S_dzHisto->SetMaximum(AN_2S_dzHisto->GetMaximum()*MaxFact);
+	  AN_2S_GammaEtaHisto->SetMinimum(PlotMinDist); AN_2S_GammaEtaHisto->SetMaximum(AN_2S_GammaEtaHisto->GetMaximum()*MaxFact);
+	  AN_2S_GammaPtHisto->SetMinimum(PlotMinDist); AN_2S_GammaPtHisto->SetMaximum(AN_2S_GammaPtHisto->GetMaximum()*MaxFact);
+	  AN_2S_Pi0MassHistoBroad->SetMinimum(PlotMinDist); AN_2S_Pi0MassHistoBroad->SetMaximum(AN_2S_Pi0MassHistoBroad->GetMaximum()*MaxFact);
+	  AN_2S_Pi0MassHistoNarrow->SetMinimum(PlotMinDist); AN_2S_Pi0MassHistoNarrow->SetMaximum(AN_2S_Pi0MassHistoNarrow->GetMaximum()*MaxFact);
+	  AN_2S_RConvHisto->SetMinimum(PlotMinDist); AN_2S_RConvHisto->SetMaximum(AN_2S_RConvHisto->GetMaximum()*MaxFact);
+
+	  AN_3S_GammaVertexProbHisto->SetMinimum(PlotMinDist*100); AN_3S_GammaVertexProbHisto->SetMaximum(AN_3S_GammaVertexProbHisto->GetMaximum()*MaxFact);
+	  AN_3S_dzsigHisto->SetMinimum(PlotMinDist*100); AN_3S_dzsigHisto->SetMaximum(AN_3S_dzsigHisto->GetMaximum()*MaxFact);
+	  AN_3S_dzHisto->SetMinimum(PlotMinDist); AN_3S_dzHisto->SetMaximum(AN_3S_dzHisto->GetMaximum()*MaxFact);
+	  AN_3S_GammaEtaHisto->SetMinimum(PlotMinDist); AN_3S_GammaEtaHisto->SetMaximum(AN_3S_GammaEtaHisto->GetMaximum()*MaxFact);
+	  AN_3S_GammaPtHisto->SetMinimum(PlotMinDist); AN_3S_GammaPtHisto->SetMaximum(AN_3S_GammaPtHisto->GetMaximum()*MaxFact);
+	  AN_3S_Pi0MassHistoBroad->SetMinimum(PlotMinDist); AN_3S_Pi0MassHistoBroad->SetMaximum(AN_3S_Pi0MassHistoBroad->GetMaximum()*MaxFact);
+	  AN_3S_Pi0MassHistoNarrow->SetMinimum(PlotMinDist); AN_3S_Pi0MassHistoNarrow->SetMaximum(AN_3S_Pi0MassHistoNarrow->GetMaximum()*MaxFact);
+	  AN_3S_RConvHisto->SetMinimum(PlotMinDist); AN_3S_RConvHisto->SetMaximum(AN_3S_RConvHisto->GetMaximum()*MaxFact);
+*/
+
+	  MaxFact=1.;
+
+
+
+    AN_MassHisto->GetYaxis()->SetTitleOffset(yOff); AN_MassHisto->SetStats(0);AN_MassHisto->GetXaxis()->SetTitle("m_{#mu#mu} [GeV]");	AN_MassHisto->GetYaxis()->SetTitle("Counts per 25 MeV"); AN_MassHisto->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/AN_MassHisto.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_UpsPtHisto->GetYaxis()->SetTitleOffset(yOff); AN_UpsPtHisto->SetStats(0);AN_UpsPtHisto->GetXaxis()->SetTitle("p_{T}^{#mu#mu} [GeV]");	AN_UpsPtHisto->GetYaxis()->SetTitle("Counts per 500 MeV"); AN_UpsPtHisto->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+    sprintf(saveMass,"Figures/%s/AN_UpsPtHisto.pdf",FitID);
+	cutLine->SetX1(cut_Ypt); cutLine->SetX2(cut_Ypt); cutLine->SetY2(AN_UpsPtHisto->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_UpsRapHisto->GetYaxis()->SetTitleOffset(yOff); AN_UpsRapHisto->SetStats(0);AN_UpsRapHisto->GetXaxis()->SetTitle("y_{#mu#mu}");	AN_UpsRapHisto->GetYaxis()->SetTitle("Counts"); AN_UpsRapHisto->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+	cutLine->SetX1(-cut_rap); cutLine->SetX2(-cut_rap); cutLine->SetY2(AN_UpsRapHisto->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+	cutLine2->SetX1(cut_rap); cutLine2->SetX2(cut_rap); cutLine2->SetY2(AN_UpsRapHisto->GetMaximum()*MaxFact); cutLine2->Draw( "same" );
+    sprintf(saveMass,"Figures/%s/AN_UpsRapHisto.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_DimuonVertexProbHisto->GetYaxis()->SetTitleOffset(yOff); AN_DimuonVertexProbHisto->SetStats(0);AN_DimuonVertexProbHisto->GetXaxis()->SetTitle("#mu#mu-vertex #chi^{2} prob. [%]");	AN_DimuonVertexProbHisto->GetYaxis()->SetTitle("Counts"); AN_DimuonVertexProbHisto->Draw("E");
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+    sprintf(saveMass,"Figures/%s/AN_DimuonVertexProbHisto.pdf",FitID);
+	cutLine->SetX1(cut_vtxProb*100); cutLine->SetX2(cut_vtxProb*100); cutLine->SetY2(AN_DimuonVertexProbHisto->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+    PlotCanvas->SaveAs(saveMass);
+
+
+
+
+
+    AN_1S_GammaVertexProbHisto->GetYaxis()->SetTitleOffset(yOff); AN_1S_GammaVertexProbHisto->SetStats(0);AN_1S_GammaVertexProbHisto->GetXaxis()->SetTitle("conv.-vertex #chi^{2} prob. [%]");	AN_1S_GammaVertexProbHisto->GetYaxis()->SetTitle("Counts"); AN_1S_GammaVertexProbHisto->Draw("E");
+    AN_1S_GammaVertexProbHisto->SetStats(0);
+    AN_1S_GammaVertexProbHisto->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_GammaVertexProbHisto->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_GammaVertexProbHisto->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_GammaVertexProbHisto->Draw("E");
+    AN_2S_GammaVertexProbHisto->SetStats(0);
+    AN_2S_GammaVertexProbHisto->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_GammaVertexProbHisto->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_GammaVertexProbHisto->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_GammaVertexProbHisto->Draw("same,E");
+	AN_3S_GammaVertexProbHisto->SetStats(0);
+	AN_3S_GammaVertexProbHisto->SetMarkerColor(MarkerColor_nS[3]);
+	AN_3S_GammaVertexProbHisto->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_GammaVertexProbHisto->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_GammaVertexProbHisto->Draw("same,E");
+
+	TLegend* plotcompLegend=new TLegend(0.8,0.725,0.875,0.925);
+	plotcompLegend->SetFillColor(0);
+	plotcompLegend->SetTextFont(72);
+	plotcompLegend->SetTextSize(0.04);
+	plotcompLegend->SetBorderSize(0);
+	char complegendentry[200];
+	sprintf(complegendentry,"#Upsilon(1S)");
+	plotcompLegend->AddEntry(AN_1S_GammaVertexProbHisto,complegendentry,"elp");
+	sprintf(complegendentry,"#Upsilon(2S)");
+	if(nState>1.5) plotcompLegend->AddEntry(AN_2S_GammaVertexProbHisto,complegendentry,"elp");
+	sprintf(complegendentry,"#Upsilon(3S)");
+	if(nState>2.5) plotcompLegend->AddEntry(AN_3S_GammaVertexProbHisto,complegendentry,"elp");
+
+	if(nState>1.5) plotcompLegend->Draw();
+	PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+    sprintf(saveMass,"Figures/%s/AN_GammaVertexProbHisto.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_1S_dzsigHisto->GetYaxis()->SetTitleOffset(yOff); AN_1S_dzsigHisto->SetStats(0);AN_1S_dzsigHisto->GetXaxis()->SetTitle("dz/#sigma_{dz}");	AN_1S_dzsigHisto->GetYaxis()->SetTitle("Counts"); AN_1S_dzsigHisto->Draw("E");
+    AN_1S_dzsigHisto->SetStats(0);
+    AN_1S_dzsigHisto->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_dzsigHisto->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_dzsigHisto->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_dzsigHisto->Draw("E");
+    AN_2S_dzsigHisto->SetStats(0);
+    AN_2S_dzsigHisto->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_dzsigHisto->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_dzsigHisto->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_dzsigHisto->Draw("same,E");
+	AN_3S_dzsigHisto->SetStats(0);
+	AN_3S_dzsigHisto->SetMarkerColor(MarkerColor_nS[3]);
+	AN_3S_dzsigHisto->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_dzsigHisto->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_dzsigHisto->Draw("same,E");
+	if(nState>1.5) plotcompLegend->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+	cutLine->SetX1(-cut_dzSig); cutLine->SetX2(-cut_dzSig); cutLine->SetY2(AN_1S_dzsigHisto->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+	cutLine2->SetX1(cut_dzSig); cutLine2->SetX2(cut_dzSig); cutLine2->SetY2(AN_1S_dzsigHisto->GetMaximum()*MaxFact); cutLine2->Draw( "same" );
+    sprintf(saveMass,"Figures/%s/AN_dzsigHisto.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_1S_dzHisto->GetYaxis()->SetTitleOffset(yOff); AN_1S_dzHisto->SetStats(0);AN_1S_dzHisto->GetXaxis()->SetTitle("dz [cm]");	AN_1S_dzHisto->GetYaxis()->SetTitle("Counts"); AN_1S_dzHisto->Draw("E");
+    AN_1S_dzHisto->SetStats(0);
+    AN_1S_dzHisto->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_dzHisto->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_dzHisto->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_dzHisto->Draw("E");
+    AN_2S_dzHisto->SetStats(0);
+    AN_2S_dzHisto->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_dzHisto->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_dzHisto->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_dzHisto->Draw("same,E");
+	AN_3S_dzHisto->SetStats(0);
+	AN_3S_dzHisto->SetMarkerColor(MarkerColor_nS[3]);
+	AN_3S_dzHisto->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_dzHisto->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_dzHisto->Draw("same,E");
+	if(nState>1.5) plotcompLegend->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+	cutLine->SetX1(-cut_dz); cutLine->SetX2(-cut_dz); cutLine->SetY2(AN_1S_dzHisto->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+	cutLine2->SetX1(cut_dz); cutLine2->SetX2(cut_dz); cutLine2->SetY2(AN_1S_dzHisto->GetMaximum()*MaxFact); cutLine2->Draw( "same" );
+    sprintf(saveMass,"Figures/%s/AN_dzHisto.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_1S_GammaEtaHisto->GetYaxis()->SetTitleOffset(yOff); AN_1S_GammaEtaHisto->SetStats(0);AN_1S_GammaEtaHisto->GetXaxis()->SetTitle("#eta_{#gamma}");	AN_1S_GammaEtaHisto->GetYaxis()->SetTitle("Counts"); AN_1S_GammaEtaHisto->Draw("E");
+    AN_1S_GammaEtaHisto->SetStats(0);
+    AN_1S_GammaEtaHisto->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_GammaEtaHisto->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_GammaEtaHisto->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_GammaEtaHisto->Draw("E");
+    AN_2S_GammaEtaHisto->SetStats(0);
+    AN_2S_GammaEtaHisto->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_GammaEtaHisto->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_GammaEtaHisto->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_GammaEtaHisto->Draw("same,E");
+	AN_3S_GammaEtaHisto->SetStats(0);
+	AN_3S_GammaEtaHisto->SetMarkerColor(MarkerColor_nS[3]);
+	AN_3S_GammaEtaHisto->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_GammaEtaHisto->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_GammaEtaHisto->Draw("same,E");
+	if(nState>1.5) plotcompLegend->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+	cutLine->SetX1(-cut_gammaeta); cutLine->SetX2(-cut_gammaeta); cutLine->SetY2(AN_1S_GammaEtaHisto->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+	cutLine2->SetX1(cut_gammaeta); cutLine2->SetX2(cut_gammaeta); cutLine2->SetY2(AN_1S_GammaEtaHisto->GetMaximum()*MaxFact); cutLine2->Draw( "same" );
+    sprintf(saveMass,"Figures/%s/AN_GammaEtaHisto.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_1S_GammaPtHisto->GetYaxis()->SetTitleOffset(yOff); AN_1S_GammaPtHisto->SetStats(0);AN_1S_GammaPtHisto->GetXaxis()->SetTitle("p_{T}^{#gamma} [GeV]");	AN_1S_GammaPtHisto->GetYaxis()->SetTitle("Counts per 150 MeV"); AN_1S_GammaPtHisto->Draw("E");
+    AN_1S_GammaPtHisto->SetStats(0);
+    AN_1S_GammaPtHisto->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_GammaPtHisto->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_GammaPtHisto->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_GammaPtHisto->Draw("E");
+    AN_2S_GammaPtHisto->SetStats(0);
+    AN_2S_GammaPtHisto->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_GammaPtHisto->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_GammaPtHisto->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_GammaPtHisto->Draw("same,E");
+	AN_3S_GammaPtHisto->SetStats(0);
+	AN_3S_GammaPtHisto->SetMarkerColor(MarkerColor_nS[3]);
+	AN_3S_GammaPtHisto->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_GammaPtHisto->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_GammaPtHisto->Draw("same,E");
+	if(nState>1.5) plotcompLegend->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(true);
+	cutLine->SetX1(cut_gammapt); cutLine->SetX2(cut_gammapt); cutLine->SetY2(AN_1S_GammaPtHisto->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+    sprintf(saveMass,"Figures/%s/AN_GammaPtHisto.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_1S_Pi0MassHistoBroad->GetYaxis()->SetTitleOffset(yOff); AN_1S_Pi0MassHistoBroad->SetStats(0);AN_1S_Pi0MassHistoBroad->GetXaxis()->SetTitle("m_{#gamma#gamma} [GeV]");	AN_1S_Pi0MassHistoBroad->GetYaxis()->SetTitle("Counts per 10 MeV"); AN_1S_Pi0MassHistoBroad->Draw("E");
+    AN_1S_Pi0MassHistoBroad->SetStats(0);
+    AN_1S_Pi0MassHistoBroad->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_Pi0MassHistoBroad->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_Pi0MassHistoBroad->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_Pi0MassHistoBroad->Draw("E");
+    AN_2S_Pi0MassHistoBroad->SetStats(0);
+    AN_2S_Pi0MassHistoBroad->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_Pi0MassHistoBroad->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_Pi0MassHistoBroad->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_Pi0MassHistoBroad->Draw("same,E");
+	AN_3S_Pi0MassHistoBroad->SetStats(0);
+	AN_3S_Pi0MassHistoBroad->SetMarkerColor(MarkerColor_nS[3]);
+	AN_3S_Pi0MassHistoBroad->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_Pi0MassHistoBroad->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_Pi0MassHistoBroad->Draw("same,E");
+	if(nState>1.5) plotcompLegend->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+	cutLine->SetX1(Pi0_mean-cut_Pi0); cutLine->SetX2(Pi0_mean-cut_Pi0); cutLine->SetY2(AN_1S_Pi0MassHistoBroad->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+	cutLine2->SetX1(Pi0_mean+cut_Pi0); cutLine2->SetX2(Pi0_mean+cut_Pi0); cutLine2->SetY2(AN_1S_Pi0MassHistoBroad->GetMaximum()*MaxFact); cutLine2->Draw( "same" );
+    sprintf(saveMass,"Figures/%s/AN_Pi0MassHistoBroad.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_1S_Pi0MassHistoNarrow->GetYaxis()->SetTitleOffset(yOff); AN_1S_Pi0MassHistoNarrow->SetStats(0);AN_1S_Pi0MassHistoNarrow->GetXaxis()->SetTitle("m_{#gamma#gamma} [GeV]");	AN_1S_Pi0MassHistoNarrow->GetYaxis()->SetTitle("Counts per 2 MeV"); AN_1S_Pi0MassHistoNarrow->Draw("E");
+    AN_1S_Pi0MassHistoNarrow->SetStats(0);
+    AN_1S_Pi0MassHistoNarrow->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_Pi0MassHistoNarrow->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_Pi0MassHistoNarrow->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_Pi0MassHistoNarrow->Draw("E");
+    AN_2S_Pi0MassHistoNarrow->SetStats(0);
+    AN_2S_Pi0MassHistoNarrow->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_Pi0MassHistoNarrow->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_Pi0MassHistoNarrow->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_Pi0MassHistoNarrow->Draw("same,E");
+	AN_3S_Pi0MassHistoNarrow->SetStats(0);
+	AN_3S_Pi0MassHistoNarrow->SetMarkerColor(MarkerColor_nS[3]);
+	AN_3S_Pi0MassHistoNarrow->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_Pi0MassHistoNarrow->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_Pi0MassHistoNarrow->Draw("same,E");
+	if(nState>1.5) plotcompLegend->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+	cutLine->SetX1(Pi0_mean-cut_Pi0); cutLine->SetX2(Pi0_mean-cut_Pi0); cutLine->SetY2(AN_1S_Pi0MassHistoNarrow->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+	cutLine2->SetX1(Pi0_mean+cut_Pi0); cutLine2->SetX2(Pi0_mean+cut_Pi0); cutLine2->SetY2(AN_1S_Pi0MassHistoNarrow->GetMaximum()*MaxFact); cutLine2->Draw( "same" );
+    sprintf(saveMass,"Figures/%s/AN_Pi0MassHistoNarrow.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+
+    TF1* Pi0Gauss = new TF1("Pi0Gauss","gaus",0.134-0.012,0.134+0.012);
+    Pi0Gauss->SetParameter(0,AN_1S_Pi0MassHistoNarrow->GetEntries());
+    Pi0Gauss->SetParameter(1,Pi0_mean);
+    Pi0Gauss->SetParameter(2,cut_Pi0);
+    AN_1S_Pi0MassHistoNarrow->Fit("Pi0Gauss","EFNR");
+    Pi0Gauss->SetLineWidth(0.4);
+    Pi0Gauss->SetLineColor(kRed);
+    Pi0Gauss->SetLineStyle(1);
+
+    double Pi0Gauss_p0 = Pi0Gauss->GetParameter(1);
+    double err_Pi0Gauss_p0 = Pi0Gauss->GetParError(1);
+    double Pi0Gauss_p1 = Pi0Gauss->GetParameter(2);
+    double err_Pi0Gauss_p1 = Pi0Gauss->GetParError(2);
+    double Pi0Gauss_chi2=Pi0Gauss->GetChisquare();
+    double Pi0Gauss_NDF=Pi0Gauss->GetNDF();
+
+    double highest=AN_1S_Pi0MassHistoNarrow->GetMaximum()*0.97;
+
+    char text[500];
+    sprintf(text,"#color[2]{Fitting Gauss:} #mu = %1.4f #pm %1.4f, #sigma = %1.4f #pm %1.4f, #chi^{2}/ndf = %1.4f / %d", Pi0Gauss_p0, err_Pi0Gauss_p0, Pi0Gauss_p1, err_Pi0Gauss_p1,Pi0Gauss_chi2,int(Pi0Gauss_NDF));
+    TLatex textPi0Gauss1 = TLatex(0.045,highest,text);
+    textPi0Gauss1.SetTextSize(0.03)                                                                                                                                                                                                                                             ;
+
+
+    AN_1S_Pi0MassHistoNarrow->GetYaxis()->SetTitleOffset(yOff); AN_1S_Pi0MassHistoNarrow->SetStats(0);AN_1S_Pi0MassHistoNarrow->GetXaxis()->SetTitle("m_{#gamma#gamma} [GeV]");	AN_1S_Pi0MassHistoNarrow->GetYaxis()->SetTitle("Counts per 2 MeV"); AN_1S_Pi0MassHistoNarrow->Draw("E");
+    AN_1S_Pi0MassHistoNarrow->SetStats(0);
+    AN_1S_Pi0MassHistoNarrow->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_Pi0MassHistoNarrow->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_Pi0MassHistoNarrow->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_Pi0MassHistoNarrow->Draw("E");
+    AN_2S_Pi0MassHistoNarrow->SetStats(0);
+    AN_2S_Pi0MassHistoNarrow->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_Pi0MassHistoNarrow->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_Pi0MassHistoNarrow->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_Pi0MassHistoNarrow->Draw("same,E");
+	AN_3S_Pi0MassHistoNarrow->SetStats(0);
+	AN_3S_Pi0MassHistoNarrow->SetMarkerColor(MarkerColor_nS[3]);
+	AN_3S_Pi0MassHistoNarrow->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_Pi0MassHistoNarrow->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_Pi0MassHistoNarrow->Draw("same,E");
+	if(nState>1.5) plotcompLegend->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+	cutLine->SetX1(Pi0_mean-cut_Pi0); cutLine->SetX2(Pi0_mean-cut_Pi0); cutLine->SetY2(AN_1S_Pi0MassHistoNarrow->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+	cutLine2->SetX1(Pi0_mean+cut_Pi0); cutLine2->SetX2(Pi0_mean+cut_Pi0); cutLine2->SetY2(AN_1S_Pi0MassHistoNarrow->GetMaximum()*MaxFact); cutLine2->Draw( "same" );
+	Pi0Gauss->Draw("same");
+    textPi0Gauss1.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(saveMass,"Figures/%s/AN_Pi0MassHistoNarrow_WithFit.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+    AN_1S_RConvHisto->GetYaxis()->SetTitleOffset(yOff); AN_1S_RConvHisto->SetStats(0);AN_1S_RConvHisto->GetXaxis()->SetTitle("#rho_{conv.} [cm]");	AN_1S_RConvHisto->GetYaxis()->SetTitle("Counts per 5 mm"); AN_1S_RConvHisto->Draw();
+    AN_1S_RConvHisto->SetStats(0);
+    AN_1S_RConvHisto->SetMarkerColor(MarkerColor_nS[1]);
+    AN_1S_RConvHisto->SetLineColor(MarkerColor_nS[1]);
+    AN_1S_RConvHisto->SetMarkerStyle(MarkerStyle_nS[1]);
+    AN_1S_RConvHisto->SetMarkerSize(MarkerSize_nS[1]);
+    AN_1S_RConvHisto->Draw("E");
+    AN_2S_RConvHisto->SetStats(0);
+    AN_2S_RConvHisto->SetMarkerColor(MarkerColor_nS[2]);
+    AN_2S_RConvHisto->SetLineColor(MarkerColor_nS[2]);
+    AN_2S_RConvHisto->SetMarkerStyle(MarkerStyle_nS[2]);
+    AN_2S_RConvHisto->SetMarkerSize(MarkerSize_nS[2]);
+	if(nState>1.5) AN_2S_RConvHisto->Draw("same,E");
+	AN_3S_RConvHisto->SetStats(0);
+	AN_3S_RConvHisto->SetMarkerColor(MarkerColor_nS[3]);
+    AN_3S_RConvHisto->SetLineColor(MarkerColor_nS[3]);
+	AN_3S_RConvHisto->SetMarkerStyle(MarkerStyle_nS[3]);
+	AN_3S_RConvHisto->SetMarkerSize(MarkerSize_nS[3]);
+	if(nState>2.5) AN_3S_RConvHisto->Draw("same,E");
+	if(nState>1.5) plotcompLegend->Draw();
+    PlotCanvas->Modified();
+    PlotCanvas->SetLogy(false);
+	cutLine->SetX1(cut_RconvMin); cutLine->SetX2(cut_RconvMin); cutLine->SetY2(AN_1S_RConvHisto->GetMaximum()*MaxFact); cutLine->Draw( "same" );
+    sprintf(saveMass,"Figures/%s/AN_RConvHisto.pdf",FitID);
+    PlotCanvas->SaveAs(saveMass);
+
+
+
+
+
+
+
+
+
 
     GammaPtHisto->GetYaxis()->SetTitleOffset(yOff); GammaPtHisto->SetStats(0);GammaPtHisto->GetXaxis()->SetTitle("p_{T#gamma} [GeV]");	GammaPtHisto->GetYaxis()->SetTitle("Events per 150 MeV"); GammaPtHisto->Draw("E");
     PlotCanvas->Modified();
@@ -867,6 +1469,7 @@ int main(int argc, char** argv) {
 
     RooAbsPdf* background1S;
     RooAbsPdf* background2S;
+    RooAbsPdf* background3S;
 
 
     // Ernest's ToyMC for background estimation:
@@ -876,47 +1479,82 @@ int main(int argc, char** argv) {
     double chib1Pmax=9.95;
     double chib2Pmin=10.15;
     double chib2Pmax=10.325;
+    double chib3Pmin=10.4;
+    double chib3Pmax=10.55;
 
 
         int nHistBins=100;
         float m_gamma = 0.;
         char DrawChar[500];
+        char DrawChar1S[500];
+        char DrawChar2S[500];
+        char DrawChar3S[500];
 
-        sprintf(DrawChar,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f &&invm1S<10.4|invm1S>10.55",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax);
-        if(useSBforBKGmodel) sprintf(DrawChar,"invm1S<10000");
+        sprintf(DrawChar1S,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f &&invm1S<%f|invm1S>%f",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax,chib3Pmin,chib3Pmax);
+        sprintf(DrawChar2S,"invm2S<%f|invm2S>%f &&invm2S<%f|invm2S>%f",chib2Pmin,chib2Pmax,chib3Pmin,chib3Pmax);
+        sprintf(DrawChar3S,"invm3S<%f|invm3S>%f",chib3Pmin,chib3Pmax);
+        if(useSBforBKGmodel){
+        	sprintf(DrawChar1S,"invm1S<10000");
+        	sprintf(DrawChar2S,"invm2S<10000");
+        	sprintf(DrawChar3S,"invm3S<10000");
+        }
 
         TH1F  *hYmass1S = new TH1F("hYmass1S","",nHistBins,8.7,11.4);
         TH1F  *hYmass_check1S = new TH1F("hYmass_check1S","",nHistBins,8.7,11.4);
         TH1F  *hYmass2S = new TH1F("hYmass2S","",nHistBins,8.7,11.4);
         TH1F  *hYmass_check2S = new TH1F("hYmass_check2S","",nHistBins,8.7,11.4);
+        TH1F  *hYmass3S = new TH1F("hYmass3S","",nHistBins,8.7,11.4);
+        TH1F  *hYmass_check3S = new TH1F("hYmass_check3S","",nHistBins,8.7,11.4);
 
-        tree1S->Draw("jpsimass>>hYmass1S",DrawChar);
-        tree2S->Draw("jpsimass>>hYmass2S");
+        tree1S->Draw("jpsimass>>hYmass1S",DrawChar1S);
+        tree2S->Draw("jpsimass>>hYmass2S",DrawChar2S);
+        tree3S->Draw("jpsimass>>hYmass3S",DrawChar3S);
 
         TH1F  *hGammaP1S = new TH1F("hGammaP1S","",10*nHistBins,0,150);
         TH1F  *hGammaP_check1S = new TH1F("hGammaP_check1S","",10*nHistBins,0,100);
         TH1F  *hGammaP2S = new TH1F("hGammaP2S","",10*nHistBins,0,100);
         TH1F  *hGammaP_check2S = new TH1F("hGammaP_check2S","",10*nHistBins,0,100);
+        TH1F  *hGammaP3S = new TH1F("hGammaP3S","",10*nHistBins,0,100);
+        TH1F  *hGammaP_check3S = new TH1F("hGammaP_check3S","",10*nHistBins,0,100);
 
-        tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaP1S",DrawChar);
-        tree2S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaP2S");
+        tree1S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaP1S",DrawChar1S);
+        tree2S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaP2S",DrawChar2S);
+        tree3S->Draw("sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)>>hGammaP3S",DrawChar3S);
 
         TH1F  *hUpsP1S = new TH1F("hUpsP1S","",3*nHistBins,0,100);
         TH1F  *hUpsP_check1S = new TH1F("hUpsP_check1S","",3*nHistBins,0,100);
         TH1F  *hUpsP2S = new TH1F("hUpsP2S","",1.5*nHistBins,0,100);
         TH1F  *hUpsP_check2S = new TH1F("hUpsP_check2S","",1.5*nHistBins,0,100);
+        TH1F  *hUpsP3S = new TH1F("hUpsP3S","",1.5*nHistBins,0,100);
+        TH1F  *hUpsP_check3S = new TH1F("hUpsP_check3S","",1.5*nHistBins,0,100);
 
-        tree1S->Draw("sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hUpsP1S",DrawChar);
-        tree2S->Draw("sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hUpsP2S");
+        tree1S->Draw("sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hUpsP1S",DrawChar1S);
+        tree2S->Draw("sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hUpsP2S",DrawChar2S);
+        tree3S->Draw("sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hUpsP3S",DrawChar3S);
 
         TH1F  *hCosAlphaP1S = new TH1F("hCosAlphaP1S","",1.5*nHistBins,-1,1);
         TH1F  *hCosAlphaP_check1S = new TH1F("hCosAlphaP_check1S","",1.5*nHistBins,-1,1);
         TH1F  *hCosAlphaP2S = new TH1F("hCosAlphaP2S","",nHistBins,-1,1);
         TH1F  *hCosAlphaP_check2S = new TH1F("hCosAlphaP_check2S","",nHistBins,-1,1);
+        TH1F  *hCosAlphaP3S = new TH1F("hCosAlphaP3S","",nHistBins,-1,1);
+        TH1F  *hCosAlphaP_check3S = new TH1F("hCosAlphaP_check3S","",nHistBins,-1,1);
 
-        tree1S->Draw("(gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hCosAlphaP1S",DrawChar);
-        tree2S->Draw("(gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hCosAlphaP2S");
+        tree1S->Draw("(gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hCosAlphaP1S",DrawChar1S);
+        tree2S->Draw("(gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hCosAlphaP2S",DrawChar2S);
+        tree3S->Draw("(gammapx*jpsipx+gammapy*jpsipy+gammapz*jpsipz)/sqrt(gammapx*gammapx+gammapy*gammapy+gammapz*gammapz)/sqrt(jpsipx*jpsipx+jpsipy*jpsipy+jpsipz*jpsipz)>>hCosAlphaP3S",DrawChar3S);
 
+        hYmass1S->Print();
+        hGammaP1S->Print();
+        hUpsP1S->Print();
+        hCosAlphaP1S->Print();
+        hYmass2S->Print();
+        hGammaP2S->Print();
+        hUpsP2S->Print();
+        hCosAlphaP2S->Print();
+        hYmass3S->Print();
+        hGammaP3S->Print();
+        hUpsP3S->Print();
+        hCosAlphaP3S->Print();
 
         bool saveBkgToy=false;
 
@@ -948,13 +1586,18 @@ int main(int argc, char** argv) {
         hGammaP2S->Write();
         hUpsP2S->Write();
         hCosAlphaP2S->Write();
+        hYmass3S->Write();
+        hGammaP3S->Write();
+        hUpsP3S->Write();
+        hCosAlphaP3S->Write();
 
 
-        float Q1S,Q2S;
-        float M1S,M2S;
+        float Q1S,Q2S,Q3S;
+        float M1S,M2S,M3S;
 
         tQ->Branch("invm1S",&M1S,"invm1S/F");
         tQ->Branch("invm2S",&M2S,"invm2S/F");
+        tQ->Branch("invm3S",&M3S,"invm3S/F");
 
         TRandom3 *randOM = new TRandom3();
 
@@ -998,11 +1641,31 @@ int main(int argc, char** argv) {
           hYmass_check2S->Fill(Ymass_2S);
           hCosAlphaP_check2S->Fill(cosAlpha2S);
 
-          if (M1S<11.4 && M2S<11.4) {
+          float Ymass_3S = hYmass3S->GetRandom();
+          float p_gamma3S = hGammaP3S->GetRandom();
+          float p_Ups3S = hUpsP3S->GetRandom();
+
+          if(!alteredToy) Ymass_3S=Ymass3S;
+
+//          float cosAlpha3S = 2*randOM->Uniform()-1;
+          float cosAlpha3S = hCosAlphaP3S->GetRandom();
+          float e_gamma3S = sqrt(m_gamma*m_gamma+p_gamma3S*p_gamma3S);
+          float e_Ups3S = sqrt(Ymass_3S*Ymass_3S+p_Ups3S*p_Ups3S);
+
+          M3S = sqrt(m_gamma*m_gamma + Ymass_3S*Ymass_3S + 2*e_gamma3S*e_Ups3S - 2*p_gamma3S*p_Ups3S*cosAlpha3S)-Ymass_3S+Ymass3S;
+
+       	  hUpsP_check3S->Fill(p_Ups3S);
+          hGammaP_check3S->Fill(p_gamma3S);
+          hYmass_check3S->Fill(Ymass_3S);
+          hCosAlphaP_check3S->Fill(cosAlpha3S);
+
+          if (M1S<11.4 && M2S<11.4 && M3S<11.4) {
         	  tQ->Fill();
+           	if (i%10000==9999) cout << i+1 << endl;
           }
 
           else i--;
+
 
         }
 
@@ -1016,6 +1679,10 @@ int main(int argc, char** argv) {
         hUpsP_check2S->Write();
         hGammaP_check2S->Write();
         hYmass_check2S->Write();
+        hCosAlphaP_check3S->Write();
+        hUpsP_check3S->Write();
+        hGammaP_check3S->Write();
+        hYmass_check3S->Write();
 
         tQ->Write();
     	cout<<"finalising bkg-toyMC file"<<endl;
@@ -1099,6 +1766,39 @@ int main(int argc, char** argv) {
                  sprintf(saveBkgToy,"Figures/%s/hGammaP_check2S.pdf",FitID);
                  BkgToyCanvas->SaveAs(saveBkgToy);
 
+                 BkgToyCanvas->SetFillColor(kWhite);
+                 hCosAlphaP3S->GetYaxis()->SetTitleOffset(1.7); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCosAlphaP3S->SetStats(0);hCosAlphaP3S->GetXaxis()->SetTitle("cos#alpha");	hCosAlphaP3S->Draw();
+                 BkgToyCanvas->Modified();
+                 sprintf(saveBkgToy,"Figures/%s/hCosAlphaP3S.pdf",FitID);
+                 BkgToyCanvas->SaveAs(saveBkgToy);
+                 BkgToyCanvas->SetFillColor(kWhite);
+                 hCosAlphaP_check3S->GetYaxis()->SetTitleOffset(1.7); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hCosAlphaP_check3S->SetStats(0);hCosAlphaP_check3S->GetXaxis()->SetTitle("cos#alpha");	hCosAlphaP_check3S->Draw();
+                 BkgToyCanvas->Modified();
+                 sprintf(saveBkgToy,"Figures/%s/hCosAlphaP_check3S.pdf",FitID);
+                 BkgToyCanvas->SaveAs(saveBkgToy);
+
+                 BkgToyCanvas->SetFillColor(kWhite);
+                 hUpsP3S->GetYaxis()->SetTitleOffset(1.7); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hUpsP3S->SetStats(0);hUpsP3S->GetXaxis()->SetTitle("p_{Y(3S)}");	hUpsP3S->Draw();
+                 BkgToyCanvas->Modified();
+                 sprintf(saveBkgToy,"Figures/%s/hUpsP3S.pdf",FitID);
+                 BkgToyCanvas->SaveAs(saveBkgToy);
+                 BkgToyCanvas->SetFillColor(kWhite);
+                 hUpsP_check3S->GetYaxis()->SetTitleOffset(1.7); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hUpsP_check3S->SetStats(0);hUpsP_check3S->GetXaxis()->SetTitle("p_{Y(3S)}");	hUpsP_check3S->Draw();
+                 BkgToyCanvas->Modified();
+                 sprintf(saveBkgToy,"Figures/%s/hUpsP_check3S.pdf",FitID);
+                 BkgToyCanvas->SaveAs(saveBkgToy);
+
+                 BkgToyCanvas->SetFillColor(kWhite);
+                 hGammaP3S->GetYaxis()->SetTitleOffset(1.7); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hGammaP3S->SetStats(0);hGammaP3S->GetXaxis()->SetTitle("p_{#gamma}");	hGammaP3S->Draw();
+                 BkgToyCanvas->Modified();
+                 sprintf(saveBkgToy,"Figures/%s/hGammaP3S.pdf",FitID);
+                 BkgToyCanvas->SaveAs(saveBkgToy);
+                 BkgToyCanvas->SetFillColor(kWhite);
+                 hGammaP_check3S->GetYaxis()->SetTitleOffset(1.7); gPad->SetLeftMargin(0.2); gPad->SetFillColor(kWhite); hGammaP_check3S->SetStats(0);hGammaP_check3S->GetXaxis()->SetTitle("p_{#gamma}");	hGammaP_check3S->Draw();
+                 BkgToyCanvas->Modified();
+                 sprintf(saveBkgToy,"Figures/%s/hGammaP_check3S.pdf",FitID);
+                 BkgToyCanvas->SaveAs(saveBkgToy);
+
         }
 
 
@@ -1109,12 +1809,15 @@ int main(int argc, char** argv) {
         tQ->Draw("invm1S>>BkgToyHist1S");
         TH1F  *BkgToyHist2S = new TH1F("BkgToyHist2S","",100,9.5,12);
         tQ->Draw("invm2S>>BkgToyHist2S");
+        TH1F  *BkgToyHist3S = new TH1F("BkgToyHist3S","",100,9.5,12);
+        tQ->Draw("invm3S>>BkgToyHist3S");
 
 
         invm1S.setBins(50);
         invm2S.setBins(50);
+        invm3S.setBins(50);
 
-        RooDataSet* RooBkgToySet = new RooDataSet("RooBkgToySet","RooBkgToySet",tQ,RooArgList(invm1S,invm2S));
+        RooDataSet* RooBkgToySet = new RooDataSet("RooBkgToySet","RooBkgToySet",tQ,RooArgList(invm1S,invm2S,invm3S));
         RooBkgToySet->Print();
         RooDataHist* RooBkgToyHist1S = new RooDataHist("RooBkgToyHist1S","RooBkgToyHist1S",RooArgList(invm1S),*RooBkgToySet);
         RooBkgToyHist1S->Print();
@@ -1124,6 +1827,10 @@ int main(int argc, char** argv) {
         RooBkgToyHist2S->Print();
         if(BkgToy) background2S = new RooHistPdf("background2S","background2S",RooArgSet(invm2S),*RooBkgToyHist2S,1);
         BkgToyHist2S->Write();
+        RooDataHist* RooBkgToyHist3S = new RooDataHist("RooBkgToyHist3S","RooBkgToyHist3S",RooArgList(invm3S),*RooBkgToySet);
+        RooBkgToyHist3S->Print();
+        if(BkgToy) background3S = new RooHistPdf("background3S","background3S",RooArgSet(invm3S),*RooBkgToyHist3S,1);
+        BkgToyHist3S->Write();
 
         fQ->Write();
         fQ->Close();
@@ -1147,11 +1854,20 @@ int main(int argc, char** argv) {
         delete hGammaP_check2S;
         delete hYmass_check2S;
 
+        delete hYmass3S;
+        delete hGammaP3S;
+        delete hUpsP3S;
+        delete hCosAlphaP3S;
+
+        delete hCosAlphaP_check3S;
+        delete hUpsP_check3S;
+        delete hGammaP_check3S;
+        delete hYmass_check3S;
 
 
 ////////////////// New Bkg mixer /////////////////
 
-        if(BkgMixerBool){
+        if(BkgMixerBool&&!useNewExistingMixFile){
         	cout<<"Using BkgMixer tool to build background shape"<<endl;
      	    gROOT->ProcessLine(".L BkgMixer.C++");
      	    gROOT->ProcessLine(".L BkgMixer.C++");
@@ -1161,18 +1877,18 @@ int main(int argc, char** argv) {
      	    char ExcludeSignal[200];
      	    int nBinsCosAlphaTry;
 
+     	    //useExistingMixFile=true;///
      	    nStateToMix=1;
      	    nBinsCosAlphaTry=1000;
-     	    sprintf(ExcludeSignal,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f &&invm1S<10.4|invm1S>10.55",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax);
-     	    sprintf(MixerInputTree,"BkgMixTree/tree_Y1S_Apr18_dz5mm_.root");
-     	    BkgMixer(MixerInputTree,tree1SExceptGammaPtCut,nStateToMix,invm_min1S,invm_max1S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass1S,nBinsCosAlphaTry);
+     	    sprintf(ExcludeSignal,"invm1S<%f | invm1S>%f&&invm1S<%f|invm1S>%f &&invm1S<%f|invm1S>%f",chib1Pmin,chib1Pmax,chib2Pmin,chib2Pmax,chib3Pmin,chib3Pmax);
+     	    BkgMixer(tree1SExceptGammaPtCut,nStateToMix,invm_min1S,invm_max1S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass1S,nBinsCosAlphaTry,GammaEtaBorder, cut_gammapt_Midrap, cut_gammapt_Forward , cut_Ypt, cut_gammaeta);
      	    TH1F *hInvM1S=(TH1F*)hInvMnS->Clone("hInvM1S");
      	    hInvMnS->Print();
      	    hInvM1S->Print();
 
           RooDataHist* RooBkgToyHist1S_Mixer = new RooDataHist("RooBkgToyHist1S_Mixer","RooBkgToyHist1S_Mixer",RooArgList(invm1S),hInvM1S);
           RooBkgToyHist1S_Mixer->Print();
-          background1S = new  RooHistPdf("background1S","background1S",RooArgSet(invm1S),*RooBkgToyHist1S_Mixer,1);
+          if(!BkgToy1SBkgMixer2S) background1S = new  RooHistPdf("background1S","background1S",RooArgSet(invm1S),*RooBkgToyHist1S_Mixer,1);
 
           char copyFrom[200];
           char copyTo[200];
@@ -1183,15 +1899,19 @@ int main(int argc, char** argv) {
         	  gSystem->CopyFile(copyFrom,copyTo,kTRUE);
           }
 
+          fMix->Close();
           cout<<"Finished Bkg mixing for 1S..."<<endl;
 
+          if(nState<1.5) background2S=background1S;
+          if(nState<2.5) background3S=background1S;
+
           TH1F *hInvM2S;
-          if(nState==2){
+          if(nState>1.5){
+          //useExistingMixFile=true;///
           nStateToMix=2;
    	      nBinsCosAlphaTry=1000;
-		  sprintf(ExcludeSignal,"invm2S>%f",chib2Pmax);
-          sprintf(MixerInputTree,"BkgMixTree/tree_Y2S_Apr18_dz5mm_.root");
-          BkgMixer(MixerInputTree,tree2SExceptGammaPtCut,nStateToMix,invm_min2S,invm_max2S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass2S,nBinsCosAlphaTry);
+		  sprintf(ExcludeSignal,"invm2S>%f && invm2S<%f|invm2S>%f",chib2Pmax,chib3Pmin,chib3Pmax);
+          BkgMixer(tree2SExceptGammaPtCut,nStateToMix,invm_min2S,invm_max2S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass2S,nBinsCosAlphaTry, GammaEtaBorder, cut_gammapt_Midrap, cut_gammapt_Forward , cut_Ypt, cut_gammaeta);
           hInvM2S=(TH1F*)hInvMnS->Clone("hInvM2S");
           hInvMnS->Print();
           hInvM2S->Print();
@@ -1203,16 +1923,80 @@ int main(int argc, char** argv) {
         	  gSystem->CopyFile(copyFrom,copyTo,kTRUE);
           }
           cout<<"Finished Bkg mixing for 2S..."<<endl;
-          }
 
-          if(nState==1) hInvM2S=(TH1F*)hInvMnS->Clone("hInvM2S");
+          hInvM2S=(TH1F*)hInvMnS->Clone("hInvM2S");
           RooDataHist* RooBkgToyHist2S_Mixer = new RooDataHist("RooBkgToyHist2S_Mixer","RooBkgToyHist2S_Mixer",RooArgList(invm2S),hInvM2S);
           RooBkgToyHist2S_Mixer->Print();
           background2S = new  RooHistPdf("background2S","background2S",RooArgSet(invm2S),*RooBkgToyHist2S_Mixer,1);
-
           fMix->Close();
 
+          }
+
+
+          TH1F *hInvM3S;
+          if(nState>2.5){
+          //useExistingMixFile=false;///
+          nStateToMix=3;
+   	      nBinsCosAlphaTry=1000;
+		  sprintf(ExcludeSignal,"invm3S<%f|invm3S>%f",chib3Pmin,chib3Pmax);
+          BkgMixer(tree3SExceptGammaPtCut,nStateToMix,invm_min3S,invm_max3S,useExistingMixFile,nMix,dirstruct,ExcludeSignal,cut_gammapt,gammaptK,gammaptD,Ymass3S,nBinsCosAlphaTry, GammaEtaBorder, cut_gammapt_Midrap, cut_gammapt_Forward , cut_Ypt, cut_gammaeta);
+          hInvM3S=(TH1F*)hInvMnS->Clone("hInvM3S");
+          hInvMnS->Print();
+          hInvM3S->Print();
+
+          if(Optimize){
+              cout<<"Saving eventMixer file for 2S background..."<<endl;
+        	  sprintf(copyFrom,"%s/eventMixer3S.root",dirstruct);
+        	  sprintf(copyTo,"%s/eventMixer3S_Cut%d.root",dirstruct,inCut);
+        	  gSystem->CopyFile(copyFrom,copyTo,kTRUE);
+          }
+          cout<<"Finished Bkg mixing for 3S..."<<endl;
+          hInvM3S=(TH1F*)hInvMnS->Clone("hInvM3S");
+          RooDataHist* RooBkgToyHist3S_Mixer = new RooDataHist("RooBkgToyHist3S_Mixer","RooBkgToyHist3S_Mixer",RooArgList(invm3S),hInvM3S);
+          RooBkgToyHist3S_Mixer->Print();
+          background3S = new  RooHistPdf("background3S","background3S",RooArgSet(invm3S),*RooBkgToyHist3S_Mixer,1);
+
+          fMix->Close();
+          }
+
+
         }
+
+	      if(useNewExistingMixFile){
+	 	        TFile *NewBkgMixerFile;
+	 	        NewBkgMixerFile= new TFile("bkgMixer.root","READ");
+
+		          TH1F *hInvM1S;
+		          TH1F *hInvM2S;
+		          TH1F *hInvM3S;
+
+	    	hInvM1S=(TH1F*)NewBkgMixerFile->Get("hInvM1S");
+	    	hInvM1S->Print();
+	        RooDataHist* RooBkgToyHist1S_Mixer = new RooDataHist("RooBkgToyHist1S_Mixer","RooBkgToyHist1S_Mixer",RooArgList(invm1S),hInvM1S);
+	        RooBkgToyHist1S_Mixer->Print();
+	        background1S = new  RooHistPdf("background1S","background1S",RooArgSet(invm1S),*RooBkgToyHist1S_Mixer,1);
+
+	        if(nState<1.5) background2S=background1S;
+	        if(nState<2.5) background3S=background1S;
+
+	        if(nState>1.5){
+		    	hInvM2S=(TH1F*)NewBkgMixerFile->Get("hInvM2S");
+		    	hInvM2S->Print();
+		        RooDataHist* RooBkgToyHist2S_Mixer = new RooDataHist("RooBkgToyHist2S_Mixer","RooBkgToyHist2S_Mixer",RooArgList(invm2S),hInvM2S);
+		        RooBkgToyHist2S_Mixer->Print();
+		        background2S = new  RooHistPdf("background2S","background2S",RooArgSet(invm2S),*RooBkgToyHist2S_Mixer,1);
+	        }
+
+	        if(nState>2.5){
+		    	hInvM3S=(TH1F*)NewBkgMixerFile->Get("hInvM3S");
+		    	hInvM3S->Print();
+		        RooDataHist* RooBkgToyHist3S_Mixer = new RooDataHist("RooBkgToyHist3S_Mixer","RooBkgToyHist3S_Mixer",RooArgList(invm3S),hInvM3S);
+		        RooBkgToyHist3S_Mixer->Print();
+		        background3S = new  RooHistPdf("background3S","background3S",RooArgSet(invm3S),*RooBkgToyHist3S_Mixer,1);
+	        }
+
+	        NewBkgMixerFile->Close();
+	    }
 
         cout<<"Fully finished Bkg mixing..."<<endl;
 
@@ -1451,7 +2235,7 @@ int main(int argc, char** argv) {
         RooFormulaVar signum2("signum2","(TMath::Sign(-1.,@0-@1)+1)/2.",RooArgList(invm2S,q02S));
         RooFormulaVar signum2_2("signum2_2","(TMath::Sign(-1.,@4*pow(@0,@1)*exp(@2)+@3)+1)/2.",RooArgList(a2,alpha2,b2,c2,signum2));
 
-        if(useAnalyticalBKG) background2S = new RooGenericPdf("background2S","(signum2*pow(a2,alpha2)*exp(b2)+c2)*signum2_2",RooArgSet(signum2,a2,alpha2,b2,c2,signum2_2));
+        if(useAnalyticalBKG) background2S = new RooGenericPdf("background2S","signum2*pow(a2,alpha2)*exp(b2)",RooArgSet(signum2,a2,alpha2,b2));
 
 //declare fit variables
 
@@ -1469,12 +2253,15 @@ int main(int argc, char** argv) {
 
     double m_chib3P_START=10.51;
     double m_chib3P_1S_START=10.51;
+    double m_chib3P_3S_START=10.51;
 
     RooRealVar m_chib3P= RooRealVar("M_{#chi_{b}(3P)}","Mean #chi_{b}(3P)",m_chib3P_START,10.325,10.56);
     RooRealVar m_chib3P_1S= RooRealVar("M_{#chi_{b}(3P),1S}","Mean #chi_{b}(3P) in 1S sample",m_chib3P_1S_START,10.325,10.56);
+    RooRealVar m_chib3P_3S= RooRealVar("M_{#chi_{b}(3P),3S}","Mean #chi_{b}(3P) in 3S sample",m_chib3P_3S_START,10.325,10.56);
 
     m_chib3P.setVal(m_chib3P_START);
     m_chib3P_1S.setVal(m_chib3P_1S_START);
+    m_chib3P_3S.setVal(m_chib3P_3S_START);
 
 
 
@@ -1519,18 +2306,22 @@ int main(int argc, char** argv) {
     RooRealVar sigmaInd3P  = RooRealVar("sigmaInd3P","sigmaInd3P",sigmaInd3P_START,0.003,0.025);
     RooRealVar sigmaInd3P_1S  = RooRealVar("sigmaInd3P_1S","sigmaInd3P_1S",sigmaInd3P_1S_START,0.003,0.04);
     RooRealVar alpha_3J  = RooRealVar("#alpha","#alpha_3J",alpha_3J_START,0.,3.);//0.2,1.);
-    RooRealVar alpha_3J_2P  = RooRealVar("#alpha_{2P}","#alpha_3J",alpha_3J_START,0.,3.);
+    RooRealVar alpha_3J_2P  = RooRealVar("#alpha_{1P}","#alpha_3J",alpha_3J_START,0.,3.);
     RooRealVar alpha_3J_3P  = RooRealVar("#alpha_{3P}","#alpha_3J",alpha_3J_START,0.,3.);
     RooRealVar n_3J      = RooRealVar("n","n_3J",n_3J_START,.5,15.);
     RooRealVar n_3J_2P      = RooRealVar("n_3J_2P","n_3J_2P",n_3J_START,.5,15.);
-    RooRealVar PhotonMassScale= RooRealVar("PES","PhotonMassScale",PhotonMassScale_START,0.95,1.05);//0.97,0.99);
-    RooRealVar PhotonMassScale2P= RooRealVar("PES_{2P}","PhotonMassScale2P",PhotonMassScale2P_START,0.95,1.05);
-    RooRealVar PhotonMassScale3P= RooRealVar("PES_{3P}","PhotonMassScale3P",PhotonMassScale3P_START,0.95,1.05);
+    RooRealVar PhotonMassScale= RooRealVar("PES_{1P#rightarrow 1S+#gamma}","PhotonMassScale",PhotonMassScale_START,0.95,1.05);//0.97,0.99);
+    RooRealVar PhotonMassScale2P= RooRealVar("PES_{2P#rightarrow 1S+#gamma}","PhotonMassScale2P",PhotonMassScale2P_START,0.95,1.05);
+    RooRealVar PhotonMassScale3P= RooRealVar("PES_{3P#rightarrow nS+#gamma}","PhotonMassScale3P",PhotonMassScale3P_START,0.95,1.05);
     RooRealVar PhotonMassScaleX= RooRealVar("PES_{X}","PhotonMassScaleX",PhotonMassScale3P_START,0.95,1.05);
-    RooRealVar PhotonSigmaScale= RooRealVar("#sigma_{Q}/Q","PhotonSigmaScale",PhotonSigmaScale_START,0.005,0.04);//0.012,0.02);
-    RooRealVar PhotonSigmaScale2P= RooRealVar("#sigma_{Q}/Q, 2P","PhotonSigmaScale",PhotonSigmaScale2P_START,0.005,0.04);
-    RooRealVar PhotonSigmaScale3P= RooRealVar("#sigma_{Q}/Q, 3P","PhotonSigmaScale",PhotonSigmaScale3P_START,0.01,0.025);
-    RooRealVar PhotonSigmaScaleX= RooRealVar("#sigma_{Q}/Q, X","PhotonSigmaScale",PhotonSigmaScale3P_START,0.01,0.05);
+    RooRealVar PhotonSigmaScale= RooRealVar("#sigma_{Q}/Q_{1P#rightarrow 1S+#gamma}","PhotonSigmaScale",PhotonSigmaScale_START,0.005,0.04);//0.012,0.02);
+    RooRealVar PhotonSigmaScale2P= RooRealVar("#sigma_{Q}/Q_{2P#rightarrow 1S+#gamma}","PhotonSigmaScale",PhotonSigmaScale2P_START,0.005,0.04);
+    RooRealVar PhotonSigmaScale3P= RooRealVar("#sigma_{Q}/Q_{3P#rightarrow nS+#gamma}","PhotonSigmaScale",PhotonSigmaScale3P_START,0.01,0.025);
+    RooRealVar PhotonSigmaScaleX= RooRealVar("#sigma_{Q}/Q_{X}","PhotonSigmaScale",PhotonSigmaScale3P_START,0.01,0.05);
+    RooRealVar PhotonMassScale2P_2Sin1S= RooRealVar("PES_{2P#rightarrow 1S+X+#gamma}","PhotonMassScale2P_2Sin1S",PhotonMassScale3P_START,0.95,1.05);
+    RooRealVar PhotonMassScale2P_2S= RooRealVar("PES_{2P#rightarrow 2S+#gamma}","PhotonMassScale2P_1S",PhotonMassScale3P_START,0.95,1.05);
+    RooRealVar PhotonSigmaScale2P_2Sin1S= RooRealVar("#sigma_{Q}/Q_{2P#rightarrow 1S+X+#gamma}","PhotonSigmaScale",PhotonSigmaScale3P_START,0.01,0.05);
+    RooRealVar PhotonSigmaScale2P_2S= RooRealVar("#sigma_{Q}/Q_{2P#rightarrow 2S+#gamma}","PhotonSigmaScale",PhotonSigmaScale3P_START,0.01,0.05);
 
     sigmaInd.setVal(sigmaInd_START);
     sigmaInd2P.setVal(sigmaInd2P_START);
@@ -1547,6 +2338,10 @@ int main(int argc, char** argv) {
     PhotonSigmaScale.setVal(PhotonSigmaScale_START);
     PhotonSigmaScale2P.setVal(PhotonSigmaScale2P_START);
     PhotonSigmaScale3P.setVal(PhotonSigmaScale3P_START);
+    PhotonMassScale2P_2Sin1S.setVal(PhotonSigmaScale3P_START);
+    PhotonSigmaScale2P_2Sin1S.setVal(PhotonSigmaScale3P_START);
+    PhotonMassScale2P_2S.setVal(PhotonSigmaScale3P_START);
+    PhotonSigmaScale2P_2S.setVal(PhotonSigmaScale3P_START);
 
     if(FixStuffForStep2){
         PhotonMassScale3P.setVal(0.9862);
@@ -1570,10 +2365,11 @@ int main(int argc, char** argv) {
 	RooFormulaVar fracJ1_1P("fracJ1_1P", "1./(1.+@0)", RooArgList(ratio_J2overJ1_1P));
 
 
-    RooRealVar fracJ1_2P= RooRealVar("fracJ1_2P","fracJ1_2P",0.666);
 
-    RooRealVar m_chib1P1fix= RooRealVar("m_chib1P1fix","m_chib1P1fix",9.89278);
-    RooRealVar m_chib1P2fix= RooRealVar("m_chib1P2fix","m_chib1P2fix",9.91221);//mean~9.9, Q=0.44
+	RooRealVar fracJ1_2P= RooRealVar("fracJ1_2P","fracJ1_2P",0.666);
+
+    RooRealVar m_chib1P1fix= RooRealVar("m_chib1P1fix","m_chib1P1fix",M_PDG_chib1_1P);
+    RooRealVar m_chib1P2fix= RooRealVar("m_chib1P2fix","m_chib1P2fix",M_PDG_chib2_1P);//mean~9.9, Q=0.44
 
     sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass1S,Ymass1S);
     sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass1S);
@@ -1587,13 +2383,13 @@ int main(int argc, char** argv) {
 
     //	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,sigmaInd,alpha_3J,n_3J);
 //    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,sigmaInd,alpha_3J,n_3J);
-	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,w_chib1P1float,alpha_3J_2P,n_3J);
-    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,w_chib1P2float,alpha_3J_2P,n_3J);
+	RooCBShape chib1P1      = RooCBShape ("chib1P1","chib1P1",invm1S,m_chib1P1float,w_chib1P1float,alpha_3J,n_3J);
+    RooCBShape chib1P2      = RooCBShape ("chib1P2","chib1P2",invm1S,m_chib1P2float,w_chib1P2float,alpha_3J,n_3J);
 
     double n1PnJ_Max=6000;
     if(MCsample) n1PnJ_Max=6000;
     double n1PnJ_START=400;
-    RooRealVar n1PnJ= RooRealVar("N_{#chi_{b}(1P)}","n1PJ",n1PnJ_START,100,n1PnJ_Max);
+    RooRealVar n1PnJ= RooRealVar("N_{1P#rightarrow 1S+#gamma}","n1PJ",n1PnJ_START,100,n1PnJ_Max);
     n1PnJ.setVal(n1PnJ_START);
     RooAddPdf chib1P_sigInd= RooAddPdf("chib1P_sigInd","chib1P_sigInd",RooArgList(chib1P1,chib1P2),RooArgList(fracJ1_1P));
 
@@ -1602,8 +2398,8 @@ int main(int argc, char** argv) {
 
 
 
-    RooRealVar m_chib2P1fix= RooRealVar("m_chib2P1fix","m_chib2P1fix",10.25546);
-    RooRealVar m_chib2P2fix= RooRealVar("m_chib2P2fix","m_chib2P2fix",10.26865);//mean~10.260, Q=0.8
+    RooRealVar m_chib2P1fix= RooRealVar("m_chib2P1fix","m_chib2P1fix",M_PDG_chib1_2P);
+    RooRealVar m_chib2P2fix= RooRealVar("m_chib2P2fix","m_chib2P2fix",M_PDG_chib2_2P);//mean~10.260, Q=0.8
 
 	RooFormulaVar m_chib2P1float("m_chib2P1float", MassScaleFormula, RooArgList(m_chib2P1fix, PhotonMassScale2P));
 	RooFormulaVar m_chib2P2float("m_chib2P2float", MassScaleFormula, RooArgList(m_chib2P2fix, PhotonMassScale2P));
@@ -1619,7 +2415,7 @@ int main(int argc, char** argv) {
     double n2PnJ_Max=3000;
     if(MCsample) n2PnJ_Max=15000;
     double n2PnJ_START=260;
-    RooRealVar n2PnJ= RooRealVar("N_{#chi_{b}(2P),1S}","n2PJ",n2PnJ_START,100,n2PnJ_Max);
+    RooRealVar n2PnJ= RooRealVar("N_{2P#rightarrow 1S+#gamma}","n2PJ",n2PnJ_START,100,n2PnJ_Max);
     n2PnJ.setVal(n2PnJ_START);
     RooAddPdf chib2P_sigInd= RooAddPdf("chib2P_sigInd","chib2P_sigInd",RooArgList(chib2P1,chib2P2),RooArgList(fracJ1));
 
@@ -1630,11 +2426,11 @@ int main(int argc, char** argv) {
     sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass2S,Ymass2S);
     sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass2S);
 
-	RooFormulaVar m_chib2P1float_2S("m_chib2P1float_2S", MassScaleFormula, RooArgList(m_chib2P1fix, PhotonMassScale));
-	RooFormulaVar m_chib2P2float_2S("m_chib2P2float_2S", MassScaleFormula, RooArgList(m_chib2P2fix, PhotonMassScale));
+	RooFormulaVar m_chib2P1float_2S("m_chib2P1float_2S", MassScaleFormula, RooArgList(m_chib2P1fix, PhotonMassScale2P_2S));
+	RooFormulaVar m_chib2P2float_2S("m_chib2P2float_2S", MassScaleFormula, RooArgList(m_chib2P2fix, PhotonMassScale2P_2S));
 
-    RooFormulaVar w_chib2P1float_2S("w_chib2P1float_2S", SigmaScaleFormula, RooArgList(m_chib2P1float_2S, PhotonSigmaScale));
-    RooFormulaVar w_chib2P2float_2S("w_chib2P2float_2S", SigmaScaleFormula, RooArgList(m_chib2P2float_2S, PhotonSigmaScale));
+    RooFormulaVar w_chib2P1float_2S("w_chib2P1float_2S", SigmaScaleFormula, RooArgList(m_chib2P1float_2S, PhotonSigmaScale2P_2S));
+    RooFormulaVar w_chib2P2float_2S("w_chib2P2float_2S", SigmaScaleFormula, RooArgList(m_chib2P2float_2S, PhotonSigmaScale2P_2S));
 
 //	RooCBShape chib2P1_2S      = RooCBShape ("chib2P1_2S","chib2P1_2S",invm2S,m_chib2P1float_2S,sigmaInd2P_2S,alpha_3J,n_3J);
 //    RooCBShape chib2P2_2S      = RooCBShape ("chib2P2_2S","chib2P2_2S",invm2S,m_chib2P2float_2S,sigmaInd2P_2S,alpha_3J,n_3J);
@@ -1642,7 +2438,7 @@ int main(int argc, char** argv) {
     RooCBShape chib2P2_2S      = RooCBShape ("chib2P2_2S","chib2P2_2S",invm2S,m_chib2P2float_2S,w_chib2P2float_2S,alpha_3J,n_3J);
 
     double n2PnJ_2S_START=8;
-    RooRealVar n2PnJ_2S= RooRealVar("N_{#chi_{b}(2P),2S}","n2PnJ_2S",n2PnJ_2S_START,0,300);
+    RooRealVar n2PnJ_2S= RooRealVar("N_{2P#rightarrow 2S+#gamma}","n2PnJ_2S",n2PnJ_2S_START,0,300);
     n2PnJ_2S.setVal(n2PnJ_2S_START);
     RooAddPdf chib2P_sigInd_2S= RooAddPdf("chib2P_sigInd_2S","chib2P_sigInd_2S",RooArgList(chib2P1_2S,chib2P2_2S),RooArgList(fracJ1));
 
@@ -1664,7 +2460,7 @@ int main(int argc, char** argv) {
     RooCBShape chib3P2      = RooCBShape ("chib3P2","chib3P2",invm2S,m_chib3P2float,w_chib3P1float,alpha_3J,n_3J);
 
     double n3PnJ_START=8;
-    RooRealVar n3PnJ= RooRealVar("N_{#chi_{b}(3P)},2S","n3PnJ",n3PnJ_START,0,300);
+    RooRealVar n3PnJ= RooRealVar("N_{3P#rightarrow 2S+#gamma},2S","n3PnJ",n3PnJ_START,0,300);
     n3PnJ.setVal(n3PnJ_START);
     RooAddPdf chib3P_sigInd= RooAddPdf("chib3P_sigInd","chib3P_sigInd",RooArgList(chib3P1,chib3P2),RooArgList(fracJ1));
 
@@ -1690,12 +2486,39 @@ int main(int argc, char** argv) {
     RooCBShape chib3P2_1S     = RooCBShape ("chib3P2_1S","chib3P2_1S",invm1S,m_chib3P2float_1S,w_chib3P2float_1S,alpha_3J,n_3J);
 
     double n3PnJ_1S_START=100;
-    RooRealVar n3PnJ_1S= RooRealVar("N_{#chi_{b}(3P),1S}","n3PnJ_1S",n3PnJ_1S_START,0,1000);
+    RooRealVar n3PnJ_1S= RooRealVar("N_{3P#rightarrow 1S+#gamma}","n3PnJ_1S",n3PnJ_1S_START,0,1000);
     n3PnJ_1S.setVal(n3PnJ_1S_START);
     RooAddPdf chib3P_sigInd_1S= RooAddPdf("chib3P_sigInd_1S","chib3P_sigInd_1S",RooArgList(chib3P1_1S,chib3P2_1S),RooArgList(fracJ1));
 
     RooFormulaVar chib3P_nevt_1S("chib3P_nevt_1S", "@1*@0+(1-@1)*@0", RooArgList(n3PnJ_1S,fracJ1));
     RooAddPdf chib3P_sig_1S= RooAddPdf("chib3P_sig_1S","chib3P_sig_1S",RooArgList(chib3P_sigInd_1S),RooArgList(chib3P_nevt_1S));
+
+
+
+
+    sprintf(MassScaleFormula,"(@0-%f-0.012*(1-@2))*@1+%f",Ymass3S,Ymass3S);
+	RooFormulaVar m_chib3P1float_3S("m_chib3P1float_3S", MassScaleFormula, RooArgList(m_chib3P, PhotonMassScale3P, fracJ1));
+    sprintf(MassScaleFormula,"(@0-%f+0.012*@2)*@1+%f",Ymass3S,Ymass3S);
+	RooFormulaVar m_chib3P2float_3S("m_chib3P2float_3S", MassScaleFormula, RooArgList(m_chib3P, PhotonMassScale3P, fracJ1));
+
+    sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass3S);
+    RooFormulaVar w_chib3P1float_3S("w_chib3P1float_3S", SigmaScaleFormula, RooArgList(m_chib3P1float_3S, PhotonSigmaScale3P));
+    RooFormulaVar w_chib3P2float_3S("w_chib3P2float_3S", SigmaScaleFormula, RooArgList(m_chib3P2float_3S, PhotonSigmaScale3P));
+
+//    RooCBShape chib3P1_3S      = RooCBShape ("chib3P1_3S","chib3P1_3S",invm3S,m_chib3P1float_3S,sigmaInd3P_3S,alpha_3J,n_3J);
+//    RooCBShape chib3P2_3S     = RooCBShape ("chib3P2_3S","chib3P2_3S",invm3S,m_chib3P2float_3S,sigmaInd3P_3S,alpha_3J,n_3J);
+    RooCBShape chib3P1_3S      = RooCBShape ("chib3P1_3S","chib3P1_3S",invm3S,m_chib3P1float_3S,w_chib3P1float_3S,alpha_3J,n_3J);
+    RooCBShape chib3P2_3S     = RooCBShape ("chib3P2_3S","chib3P2_3S",invm3S,m_chib3P2float_3S,w_chib3P2float_3S,alpha_3J,n_3J);
+
+    double n3PnJ_3S_START=100;
+    RooRealVar n3PnJ_3S= RooRealVar("N_{3P#rightarrow 3S+#gamma}","n3PnJ_3S",n3PnJ_3S_START,0,1000);
+    n3PnJ_3S.setVal(n3PnJ_3S_START);
+    RooAddPdf chib3P_sigInd_3S= RooAddPdf("chib3P_sigInd_3S","chib3P_sigInd_3S",RooArgList(chib3P1_3S,chib3P2_3S),RooArgList(fracJ1));
+
+    RooFormulaVar chib3P_nevt_3S("chib3P_nevt_3S", "@1*@0+(1-@1)*@0", RooArgList(n3PnJ_3S,fracJ1));
+    RooAddPdf chib3P_sig_3S= RooAddPdf("chib3P_sig_3S","chib3P_sig_3S",RooArgList(chib3P_sigInd_3S),RooArgList(chib3P_nevt_3S));
+
+
 
 
     RooRealVar mX= RooRealVar("mX","mX",9.69,9.66,9.72);
@@ -1711,21 +2534,30 @@ int main(int argc, char** argv) {
 
 
 
-    sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass2S,Ymass1S);
+
+    double Mass2P1_2Sin1S=m_chib2P1fix.getVal()+Ymass1S-Ymass2S;
+    double Mass2P2_2Sin1S=m_chib2P2fix.getVal()+Ymass1S-Ymass2S;
+
+    RooRealVar m_chib2P1fix_2Sin1S= RooRealVar("m_chib2P1fix_2Sin1S","m_chib2P1fix_2Sin1S",Mass2P1_2Sin1S);
+    RooRealVar m_chib2P2fix_2Sin1S= RooRealVar("m_chib2P2fix_2Sin1S","m_chib2P2fix_2Sin1S",Mass2P2_2Sin1S);//mean~9.9, Q=0.44
+
+    sprintf(MassScaleFormula,"(@0-%f)*@1+%f",Ymass1S,Ymass1S);
     sprintf(SigmaScaleFormula,"(@0-%f)*@1",Ymass1S);
 
+	RooFormulaVar m_chib2P1float_2Sin1S("m_chib2P1float_2Sin1S", MassScaleFormula, RooArgList(m_chib2P1fix_2Sin1S, PhotonMassScale2P_2Sin1S));
+	RooFormulaVar m_chib2P2float_2Sin1S("m_chib2P2float_2Sin1S", MassScaleFormula, RooArgList(m_chib2P2fix_2Sin1S, PhotonMassScale2P_2Sin1S));
 
-	RooFormulaVar m_chib2P1float_2Sin1S("m_chib2P1float_2Sin1S", "@0", RooArgList(mX));
-	RooFormulaVar m_chib2P2float_2Sin1S("m_chib2P2float_2Sin1S", "@0+0.01319", RooArgList(mX));
+//	RooFormulaVar m_chib2P1float_2Sin1S("m_chib2P1float_2Sin1S", "@0", RooArgList(mX));
+//	RooFormulaVar m_chib2P2float_2Sin1S("m_chib2P2float_2Sin1S", "@0+0.01319", RooArgList(mX));
 
-    RooFormulaVar w_chib2P1float_2Sin1S("w_chib2P1float_2Sin1S", SigmaScaleFormula, RooArgList(m_chib2P1float_2Sin1S, PhotonSigmaScale3P));
-    RooFormulaVar w_chib2P2float_2Sin1S("w_chib2P2float_2Sin1S", SigmaScaleFormula, RooArgList(m_chib2P1float_2Sin1S, PhotonSigmaScale3P));
+    RooFormulaVar w_chib2P1float_2Sin1S("w_chib2P1float_2Sin1S", SigmaScaleFormula, RooArgList(m_chib2P1float_2Sin1S, PhotonSigmaScale2P_2Sin1S));
+    RooFormulaVar w_chib2P2float_2Sin1S("w_chib2P2float_2Sin1S", SigmaScaleFormula, RooArgList(m_chib2P1float_2Sin1S, PhotonSigmaScale2P_2Sin1S));
 
 	RooCBShape chib2P1_2Sin1S      = RooCBShape ("chib2P1_2Sin1S","chib2P1_2Sin1S",invm1S,m_chib2P1float_2Sin1S,w_chib2P1float_2Sin1S,alpha_3J,n_3J);
     RooCBShape chib2P2_2Sin1S      = RooCBShape ("chib2P2_2Sin1S","chib2P2_2Sin1S",invm1S,m_chib2P2float_2Sin1S,w_chib2P2float_2Sin1S,alpha_3J,n_3J);
 
     double nX_START=10;
-    RooRealVar nX= RooRealVar("nX","nX",nX_START,0,200);
+    RooRealVar nX= RooRealVar("N_{2P#rightarrow 1S+X+#gamma}","nX",nX_START,0,200);
     nX.setVal(nX_START);
     RooAddPdf chib2P_sigInd_2Sin1S= RooAddPdf("chib2P_sigInd_2Sin1S","chib2P_sigInd_2Sin1S",RooArgList(chib2P1_2Sin1S,chib2P2_2Sin1S),RooArgList(fracJ1));
 
@@ -1736,20 +2568,26 @@ int main(int argc, char** argv) {
 ////////////////////////////////////////////////////////
 
 
-    RooRealVar background_nevt1S = RooRealVar("N_{bkg}1S","N_{bkg}1S",1500,0,100000);
+    RooRealVar background_nevt1S = RooRealVar("N_{bkg,1S+#gamma}","N_{bkg}1S",1500,0,100000);
     RooRealVar background_nevtSB1S = RooRealVar("background_nevtSB1S","background_nevtSB1S",1500,0,10000);
     RooAddPdf backgroundSB1S= RooAddPdf("backgroundSB1S","backgroundSB1S",RooArgList(*background1S),RooArgList(background_nevtSB1S));
     RooAddPdf backgroundE1S= RooAddPdf("backgroundE1S","backgroundE1S",RooArgList(*background1S),RooArgList(background_nevt1S));
-    RooRealVar background_nevt2S = RooRealVar("N_{bkg}2S","N_{bkg}2S",1500,0,40000);
+    RooRealVar background_nevt2S = RooRealVar("N_{bkg,2S+#gamma}","N_{bkg}2S",1500,0,40000);
     RooRealVar background_nevtSB2S = RooRealVar("background_nevtSB2S","background_nevtSB2S",1500,0,10000);
     RooAddPdf backgroundSB2S= RooAddPdf("backgroundSB2S","backgroundSB2S",RooArgList(*background2S),RooArgList(background_nevtSB2S));
     RooAddPdf backgroundE2S= RooAddPdf("backgroundE2S","backgroundE2S",RooArgList(*background2S),RooArgList(background_nevt2S));
+
+    RooRealVar background_nevt3S = RooRealVar("N_{bkg,3S+#gamma}","N_{bkg}3S",1500,0,100000);
+    RooRealVar background_nevtSB3S = RooRealVar("background_nevtSB3S","background_nevtSB3S",1500,0,10000);
+    RooAddPdf backgroundSB3S= RooAddPdf("backgroundSB3S","backgroundSB3S",RooArgList(*background3S),RooArgList(background_nevtSB3S));
 
 
     sprintf(DScutChar,"invm1S > %f && invm1S < %f",invm_min1S,invm_max1S);
     RooDataSet* data1S_masswindow=(RooDataSet*)data1S->reduce(Cut(DScutChar));
     sprintf(DScutChar,"invm2S > %f && invm2S < %f",invm_min2S,invm_max2S);
     RooDataSet* data2S_masswindow=(RooDataSet*)data2S->reduce(Cut(DScutChar));
+    sprintf(DScutChar,"invm3S > %f && invm3S < %f",invm_min3S,invm_max3S);
+    RooDataSet* data3S_masswindow=(RooDataSet*)data3S->reduce(Cut(DScutChar));
 
 
 
@@ -1785,6 +2623,10 @@ int main(int argc, char** argv) {
     RooAddPdf modelPdf2S_red= RooAddPdf("modelPdf2S_red","modelPdf2S_red",RooArgList(chib3P_sig,chib2P_sig_2S,*background2S),RooArgList(chib3P_nevt,chib2P_nevt_2S,background_nevt2S));
     RooAddPdf modelPdf2S_2P= RooAddPdf("modelPdf2S_2P","modelPdf2S_2P",RooArgList(chib2P_sig_2S,*background2S),RooArgList(chib2P_nevt_2S,background_nevt2S));
 
+////////// Y3S //////////////////////
+
+    RooAddPdf modelPdf3S= RooAddPdf("modelPdf3S","modelPdf3S",RooArgList(chib3P_sig_3S,*background3S),RooArgList(chib3P_nevt_3S,background_nevt3S));
+    RooAddPdf modelPdf3S_red= RooAddPdf("modelPdf3S_red","modelPdf3S_red",RooArgList(chib3P_sig_3S,*background3S),RooArgList(chib3P_nevt_3S,background_nevt3S));
 
 
     invm1S.setRange("SBregion2",chib1Pmax,chib2Pmin);
@@ -1815,13 +2657,17 @@ int main(int argc, char** argv) {
     sprintf(SBregion31SChar,"invm1S > %f && invm1S < %f",bb_thresh,invm_max1S);
     char SBregion32SChar[200];
     sprintf(SBregion32SChar,"invm2S > %f && invm2S < %f",bb_thresh,invm_max2S);
+    char SBregion3SChar[200];
+    sprintf(SBregion3SChar,"invm3S > %f && invm3S < %f",bb_thresh,invm_max3S);
 
     double Nbkg_1S_SB1=data1S->sumEntries(SBregion2Char);
     double Nbkg_1S_SB2=data1S->sumEntries(SBregion31SChar);
     double Nbkg_2S_SB1=data2S->sumEntries(SBregion32SChar);
+    double Nbkg_3S_SB1=data3S->sumEntries(SBregion3SChar);
     cout<<"background_nevt1S sumentriesrange = " << Nbkg_1S_SB1<<endl;
     cout<<"background_nevt1S sumentriesrange2 = " << Nbkg_1S_SB2<<endl;
     cout<<"background_nevt2S sumentriesrange = " << Nbkg_2S_SB1<<endl;
+    cout<<"background_nevt3S sumentriesrange = " << Nbkg_3S_SB1<<endl;
 
 
     double BkgSBInt1S;
@@ -1838,6 +2684,12 @@ int main(int argc, char** argv) {
     background_nevt2S.setConstant();
     cout<<"background normalization 2S = " << background_nevt2S.getVal()<<endl;
 
+    double BkgSBInt3S;
+    BkgSBInt3S = NormalizedIntegral(&backgroundSB3S, invm3S, bb_thresh, invm_max3S);
+    cout<<BkgSBInt3S<<endl;
+    background_nevt3S.setVal(Nbkg_3S_SB1/BkgSBInt3S);
+    background_nevt3S.setConstant();
+    cout<<"background normalization 3S = " << background_nevt3S.getVal()<<endl;
 
     double covQual_BG2S=0;
     double covQual_1P2P2S=0;
@@ -1895,15 +2747,15 @@ int main(int argc, char** argv) {
  //   alpha1.setConstant();
   //  beta1.setConstant();
 
-	 RooAbsReal* nll1S_1P2P_=modelPdf1S_1P2P.createNLL(*data1S,Range(9.72,chib2Pmax));
 
 	 //	 RooFitResult* r_sig = modelPdf1S_1P2P.fitTo(*data1S,Save(kTRUE),Range("Y1SAll"),PrintEvalErrors(-1),PrintLevel(-1),Warnings(kFALSE));
 	 //	 r_sig->Print();
 
-//	 data1S->Print();
-//	    RooDataSet* data1Sexclude3P=(RooDataSet*)data1S->reduce(Cut("invm1S<10.325||invm1S>10.58"));
-//	    data1Sexclude3P->Print();
+	 data1S->Print();
+	 RooDataSet* data1Sexclude3P=(RooDataSet*)data1S->reduce(Cut("invm1S<1000"));//->reduce(Cut("invm1S<10.325||invm1S>10.58"));
+	 data1Sexclude3P->Print();
 
+	 RooAbsReal* nll1S_1P2P_=modelPdf1S_1P2P.createNLL(*data1S,Range(invm_min1S,invm_max1S));
 
 
 
@@ -1921,6 +2773,7 @@ int main(int argc, char** argv) {
      RooAddition simNLL_innitial = RooAddition("add_innitial","add_innitial",simNLL_Set);//RooArgSet(*nll1S_1P2P));
 
 	 RooMinuit* minuit1 = new RooMinuit(simNLL_innitial);
+	 if(useAnalyticalBKG) minuit1 = new RooMinuit(*nll1S_1P2P_);
 
 	 minuit1->setStrategy(2);
 	 minuit1->setPrintEvalErrors(-1);
@@ -2002,6 +2855,8 @@ int main(int argc, char** argv) {
         ratio_J2overJ1_1P.setConstant();
         PhotonSigmaScale.setConstant();
         PhotonMassScale.setConstant();
+        PhotonMassScale2P_2Sin1S.setConstant();
+        PhotonSigmaScale2P_2Sin1S.setConstant();
 
         alpha1.setConstant();
         beta1.setConstant();
@@ -2082,6 +2937,7 @@ int main(int argc, char** argv) {
 
         background_nevt1S.setConstant();
         background_nevt2S.setConstant();
+        background_nevt3S.setConstant();
 
 //        delete Fit1P2P;
 //        sigmaInd2P.setVal(sigmaInd.getVal());
@@ -2136,10 +2992,12 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
 
 		 RooAbsReal* nll1S=modelPdf1S_3P.createNLL(*data1S,Range(chib2Pmax,bb_thresh));
 		 RooAbsReal* nll2S=modelPdf2S_red.createNLL(*data2S,Range(invm_min2S,bb_thresh));
+		 RooAbsReal* nll3S=modelPdf3S_red.createNLL(*data3S,Range(invm_min3S,bb_thresh));
 
 		 RooArgSet simNLL_Set2("simNLL_Set2");
 		 simNLL_Set2.add(*nll1S);
-		 if(nState==2) simNLL_Set2.add(*nll2S);
+		 if(nState>1) simNLL_Set2.add(*nll2S);
+		 if(nState>2) simNLL_Set2.add(*nll3S);
 
 
 		 RooAddition simNLL = RooAddition("add","add",simNLL_Set2);
@@ -2240,14 +3098,18 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
 		        background_nevt2S.setConstant();
 
 
+		 double Nevt_buff3;
          double Nllafter3P=simNLL.getVal();
          Nevt_buff=n3PnJ.getVal();
          Nevt_buff2=n3PnJ_1S.getVal();
+         Nevt_buff3=n3PnJ_3S.getVal();
  		 n3PnJ.setVal(0.001);
  		 n3PnJ_1S.setVal(0.001);
+ 		 n3PnJ_3S.setVal(0.001);
  		 Nllbefore3P=simNLL.getVal();
  		 n3PnJ.setVal(Nevt_buff);
  		 n3PnJ_1S.setVal(Nevt_buff2);
+ 		 n3PnJ_3S.setVal(Nevt_buff3);
 
          cout<<"minNllNoSigAll "<<Nllbefore3P<<endl;
          cout<<"minNll3PAll    "<<Nllafter3P<<endl;
@@ -2288,6 +3150,23 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
         cout<<"logLikelihoodRatio3P_1S "<<logLikelihoodRatio3P_1S<<endl;
         double ThreePsig_1S=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio3P_1S));
         cout<<"ThreePsig_1S "<<ThreePsig_1S<<endl;
+
+
+        RooAbsReal* model3SNLL=modelPdf3S.createNLL(*data3S);
+        Nevt_buff=n3PnJ_3S.getVal();
+		double minNll3P_3S=model3SNLL->getVal();
+		n3PnJ_3S.setVal(0.001);
+		double minNllNoSig3S=model3SNLL->getVal();
+		n3PnJ_3S.setVal(Nevt_buff);
+
+		cout<<"minNllNoSig3S "<<minNllNoSig3S<<endl;
+        cout<<"minNll3P_3S    "<<minNll3P_3S<<endl;
+        double logLikelihoodRatio3P_3S=TMath::Log(TMath::Exp(minNll3P_3S-minNllNoSig3S));
+        cout<<"logLikelihoodRatio3P_3S "<<logLikelihoodRatio3P_3S<<endl;
+        double ThreePsig_3S=TMath::Sqrt(2*TMath::Abs(logLikelihoodRatio3P_3S));
+        cout<<"ThreePsig_3S "<<ThreePsig_3S<<endl;
+
+
 
         Nevt_buff=n1PnJ.getVal();
 		double minNll1P=model1SNLL->getVal();
@@ -2367,10 +3246,12 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
 
 		delete model2SNLL;
 		delete model1SNLL;
+		delete model3SNLL;
 
         cout<<"chib1P_nevt: "<<chib1P_nevt.getVal()<<endl;
         cout<<"chib2P_nevt: "<<chib2P_nevt.getVal()<<endl;
         cout<<"chib3P_nevt_1S: "<<chib3P_nevt_1S.getVal()<<endl;
+        cout<<"chib3P_nevt_3S: "<<chib3P_nevt_3S.getVal()<<endl;
         cout<<"chib3P_nevt: "<<chib3P_nevt.getVal()<<endl;
         cout<<"chib2P_nevt_2S: "<<chib2P_nevt_2S.getVal()<<endl;
 
@@ -2379,9 +3260,12 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      double totalEventsInFit1S;
      double TotalRealEvents2S = data2S_masswindow->sumEntries();
      double totalEventsInFit2S;
+     double TotalRealEvents3S = data3S_masswindow->sumEntries();
+     double totalEventsInFit3S;
 
      totalEventsInFit1S = nX.getVal()+chib1P_nevt.getVal()+chib2P_nevt.getVal()+chib3P_nevt_1S.getVal()+background_nevt1S.getVal();
      totalEventsInFit2S = chib3P_nevt.getVal()+chib2P_nevt_2S.getVal()+background_nevt2S.getVal();
+     totalEventsInFit3S = chib3P_nevt_3S.getVal()+background_nevt3S.getVal();
 
      cout<< "N_tot_Fit1S =                            "<<totalEventsInFit1S <<endl;
      cout<< "N_tot_Samlpe1S =                         "<<TotalRealEvents1S <<endl;
@@ -2390,6 +3274,10 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      cout<< "N_tot_Fit2S =                            "<<totalEventsInFit2S <<endl;
      cout<< "N_tot_Samlpe2S =                         "<<TotalRealEvents2S <<endl;
      cout<< "Delta_N_tot2S = N_tot_Sample2S-N_tot_Fit2S = "<<TotalRealEvents2S-totalEventsInFit2S <<endl;
+
+     cout<< "N_tot_Fit3S =                            "<<totalEventsInFit3S <<endl;
+     cout<< "N_tot_Samlpe3S =                         "<<TotalRealEvents3S <<endl;
+     cout<< "Delta_N_tot3S = N_tot_Sample3S-N_tot_Fit3S = "<<TotalRealEvents3S-totalEventsInFit3S <<endl;
 
      double onePwidth=(m_chib1P1fix.getVal()-Ymass1S)*PhotonSigmaScale.getVal();
      double onePwidtherr=(m_chib1P1fix.getVal()-Ymass1S)*PhotonSigmaScale.getError();
@@ -2446,6 +3334,11 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      double err_fmchib3P = m_chib3P.getError();
      double fmchib3P_1S = m_chib3P.getVal();//m_chib3P_1S.getVal();
      double err_fmchib3P_1S = m_chib3P.getError();//m_chib3P_1S.getError();
+     double fmchib3P_3S = m_chib3P.getVal();//m_chib3P_1S.getVal();
+     double err_fmchib3P_3S = m_chib3P.getError();//m_chib3P_1S.getError();
+
+     double fmchib1_3P=fmchib3P-0.012*(1-1./(1+ratio_J2overJ1.getVal()));
+     double fmchib2_3P=fmchib3P+0.012*1./(1+ratio_J2overJ1.getVal());
 
 
      double OneSigmaCL = 0.682689492137;
@@ -2464,15 +3357,23 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
 
      sigmaCalc=0.005;
      for(int i = 1; i < 10000; i++){
-    	 sigmaCalc+=i*0.000001;double Int1 = NormalizedIntegral(&chib3P_sig, invm2S, (fmchib3P-Ymass2S)*PhotonMassScale.getVal()+Ymass2S-sigmaCalc, (fmchib3P-Ymass2S)*PhotonMassScale.getVal()+Ymass2S+sigmaCalc);if(Int1 > OneSigmaCL) break;
+    	 sigmaCalc+=i*0.000001;double Int1 = NormalizedIntegral(&chib3P_sig, invm2S, (fmchib3P-Ymass2S)*PhotonMassScale3P.getVal()+Ymass2S-sigmaCalc, (fmchib3P-Ymass2S)*PhotonMassScale3P.getVal()+Ymass2S+sigmaCalc);if(Int1 > OneSigmaCL) break;
      }
      double fsigma3=sigmaCalc;
 
      sigmaCalc=0.005;
      for(int i = 1; i < 10000; i++){
-    	 sigmaCalc+=i*0.000001;double Int1 = NormalizedIntegral(&chib3P_sig_1S, invm1S, (fmchib3P_1S-Ymass1S)*PhotonMassScale2P.getVal()+Ymass1S-sigmaCalc, (fmchib3P_1S-Ymass1S)*PhotonMassScale2P.getVal()+Ymass1S+sigmaCalc);if(Int1 > OneSigmaCL) break;
+    	 sigmaCalc+=i*0.000001;double Int1 = NormalizedIntegral(&chib3P_sig_1S, invm1S, (fmchib3P_1S-Ymass1S)*PhotonMassScale3P.getVal()+Ymass1S-sigmaCalc, (fmchib3P_1S-Ymass1S)*PhotonMassScale3P.getVal()+Ymass1S+sigmaCalc);if(Int1 > OneSigmaCL) break;
      }
      double fsigma3_1S=sigmaCalc;
+
+     sigmaCalc=0.005;
+     for(int i = 1; i < 10000; i++){
+    	 sigmaCalc+=i*0.000001;double Int1 = NormalizedIntegral(&chib3P_sig_3S, invm3S, (fmchib3P_3S-Ymass3S)*PhotonMassScale3P.getVal()+Ymass3S-sigmaCalc, (fmchib3P_3S-Ymass3S)*PhotonMassScale3P.getVal()+Ymass3S+sigmaCalc);if(Int1 > OneSigmaCL) break;
+     }
+     double fsigma3_3S=sigmaCalc;
+
+
 
      m_chib2P.setVal(m_chib2P1float.getVal()*fracJ1.getVal()+m_chib2P2float.getVal()*(1-fracJ1.getVal()));
 
@@ -2481,10 +3382,12 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      cout<<"m_chib2P: "<<m_chib2P.getVal()<<endl;
      cout<<"m_chib3P: "<<m_chib3P.getVal()<<endl;
      cout<<"m_chib3P_1S: "<<m_chib3P_1S.getVal()<<endl;
+     cout<<"m_chib3P_3S: "<<m_chib3P_3S.getVal()<<endl;
      cout<<"fsigma1: "<<fsigma1<<endl;
      cout<<"fsigma2: "<<fsigma2<<endl;
      cout<<"fsigma3: "<<fsigma3<<endl;
      cout<<"fsigma3_1S: "<<fsigma3_1S<<endl<<endl;
+     cout<<"fsigma3_3S: "<<fsigma3_3S<<endl<<endl;
 
      cout<<"m_chib1_2Pin1S: "<<m_chib2P1float_2Sin1S.getVal()<<endl;
      cout<<"m_chib2_2Pin1S: "<<m_chib2P2float_2Sin1S.getVal()<<endl;
@@ -2508,22 +3411,27 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      double fnchib2P = chib2P_nevt.getVal();
      double fnchib3P = chib3P_nevt.getVal();
      double fnchib3P_1S = chib3P_nevt_1S.getVal();
+     double fnchib3P_3S = chib3P_nevt_3S.getVal();
      double fnbg1S = background_nevt1S.getVal();
      double fnbg2S = background_nevt2S.getVal();
-     double rchib1P,rchib2P,rchib3P,rbgchib1P,rbgchib2P,rbgchib3P,rsigchib1P,rsigchib2P,rsigchib3P,rchib3P_1S,rbgchib3P_1S,rsigchib3P_BityukovKrasnikov,rsigchib3P_BityukovKrasnikov_1S,rsigchib3P_ScL,rsigchib3P_ScL_1S;
-     double rratchib1P,rratchib2P,rratchib3P,rratchib3P_1S,rsigchib3P_1S;
+     double fnbg3S = background_nevt3S.getVal();
+     double rchib1P,rchib2P,rchib3P,rbgchib1P,rbgchib2P,rbgchib3P,rsigchib1P,rsigchib2P,rsigchib3P,rchib3P_1S,rchib3P_3S,rbgchib3P_1S,rbgchib3P_3S,rsigchib3P_BityukovKrasnikov,rsigchib3P_BityukovKrasnikov_1S,rsigchib3P_ScL,rsigchib3P_ScL_1S;
+     double rratchib1P,rratchib2P,rratchib3P,rratchib3P_1S,rsigchib3P_1S,rsigchib3P_3S,rratchib3P_3S;
      rchib1P=fnchib1P*NormalizedIntegral(&chib1P_sig, invm1S, fmchib1P-nSig*fsigma1, fmchib1P+nSig*fsigma1);
      rchib2P=fnchib2P*NormalizedIntegral(&chib2P_sig, invm1S, fmchib2P-nSig*fsigma2, fmchib2P+nSig*fsigma2);
      rchib3P=fnchib3P*NormalizedIntegral(&chib3P_sig, invm2S, fmchib3P-nSig*fsigma3, fmchib3P+nSig*fsigma3);
      rchib3P_1S=fnchib3P_1S*NormalizedIntegral(&chib3P_sig_1S, invm1S, fmchib3P_1S-nSig*fsigma3_1S, fmchib3P_1S+nSig*fsigma3_1S);
+     rchib3P_3S=fnchib3P_3S*NormalizedIntegral(&chib3P_sig_3S, invm3S, fmchib3P_3S-nSig*fsigma3_3S, fmchib3P_3S+nSig*fsigma3_3S);
      rbgchib1P=fnbg1S*NormalizedIntegral(&*background1S, invm1S, fmchib1P-nSig*fsigma1, fmchib1P+nSig*fsigma1);
      rbgchib2P=fnbg1S*NormalizedIntegral(&*background1S, invm1S, fmchib2P-nSig*fsigma2, fmchib2P+nSig*fsigma2);
      rbgchib3P=fnbg2S*NormalizedIntegral(&*background2S, invm2S, fmchib3P-nSig*fsigma3, fmchib3P+nSig*fsigma3);
      rbgchib3P_1S=fnbg1S*NormalizedIntegral(&*background1S, invm1S, fmchib3P_1S-nSig*fsigma3_1S, fmchib3P_1S+nSig*fsigma3_1S);
+     rbgchib3P_3S=fnbg3S*NormalizedIntegral(&*background3S, invm3S, fmchib3P_3S-nSig*fsigma3_3S, fmchib3P_3S+nSig*fsigma3_3S);
      rratchib1P=rchib1P/rbgchib1P;
      rratchib2P=rchib2P/rbgchib2P;
      rratchib3P=rchib3P/rbgchib3P;
      rratchib3P_1S=rchib3P_1S/rbgchib3P_1S;
+     rratchib3P_3S=rchib3P_3S/rbgchib3P_3S;
      rsigchib1P=rchib1P/sqrt(rchib1P+rbgchib1P);
      rsigchib2P=rchib2P/sqrt(rchib2P+rbgchib2P);
 
@@ -2756,6 +3664,141 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      delete hChibPt_2P;
 
 
+
+
+
+//////////////////////////////////////////////////////
+///////// Calculate reflections //////////////////////
+//////////////////////////////////////////////////////
+
+// Mass values:
+
+//     Ymass1S=9.4603;
+//     Ymass2S=10.02326;
+//     Ymass3S=10.3552;
+// 	   M_PDG_chib1_1P=9.89278;
+// 	   M_PDG_chib2_1P=9.91221;
+// 	   M_PDG_chib1_2P=10.25546;
+// 	   M_PDG_chib2_2P=10.26865;
+//	   fmchib3P_1S
+//	   fmchib1_3P
+//	   fmchib2_3P
+
+     double M_PDG_chib0_1P=9.85944;
+     double M_PDG_chib0_2P=10.2325;
+
+// Q values 'standard peaks':
+
+     double Q_PDG_chib1_1P_1S=M_PDG_chib1_1P-Ymass1S;
+     double Q_PDG_chib2_1P_1S=M_PDG_chib2_1P-Ymass1S;
+     double Q_PDG_chib1_2P_1S=M_PDG_chib1_2P-Ymass1S;
+     double Q_PDG_chib2_2P_1S=M_PDG_chib2_2P-Ymass1S;
+     double Q_PDG_chib1_2P_2S=M_PDG_chib1_2P-Ymass2S;
+     double Q_PDG_chib2_2P_2S=M_PDG_chib2_2P-Ymass2S;
+     double Q_PDG_chib1_3P_1S=fmchib1_3P-Ymass1S;
+     double Q_PDG_chib2_3P_1S=fmchib2_3P-Ymass1S;
+     double Q_PDG_chib1_3P_2S=fmchib1_3P-Ymass2S;
+     double Q_PDG_chib2_3P_2S=fmchib2_3P-Ymass2S;
+     double Q_PDG_chib1_3P_3S=fmchib1_3P-Ymass3S;
+     double Q_PDG_chib2_3P_3S=fmchib2_3P-Ymass3S;
+
+     double Q_PDG_chib0_1P_1S=M_PDG_chib0_1P-Ymass1S;
+     double Q_PDG_chib0_2P_1S=M_PDG_chib0_2P-Ymass1S;
+
+     double Q_MEAS_chib1_1P_1S=Q_PDG_chib1_1P_1S*PhotonMassScale.getVal();
+     double Q_MEAS_chib2_1P_1S=Q_PDG_chib2_1P_1S*PhotonMassScale.getVal();
+     double Q_MEAS_chib1_2P_1S=Q_PDG_chib1_2P_1S*PhotonMassScale2P.getVal();
+     double Q_MEAS_chib2_2P_1S=Q_PDG_chib2_2P_1S*PhotonMassScale2P.getVal();
+     double Q_MEAS_chib1_2P_2S=Q_PDG_chib1_2P_2S*PhotonMassScale2P_2S.getVal();
+     double Q_MEAS_chib2_2P_2S=Q_PDG_chib2_2P_2S*PhotonMassScale2P_2S.getVal();
+     double Q_MEAS_chib1_3P_1S=Q_PDG_chib1_3P_1S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_3P_1S=Q_PDG_chib2_3P_1S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib1_3P_2S=Q_PDG_chib1_3P_2S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_3P_2S=Q_PDG_chib2_3P_2S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib1_3P_3S=Q_PDG_chib1_3P_3S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_3P_3S=Q_PDG_chib2_3P_3S*PhotonMassScale3P.getVal();
+
+     double Q_MEAS_chib0_1P_1S=Q_PDG_chib0_1P_1S*PhotonMassScale.getVal();
+     double Q_MEAS_chib0_2P_1S=Q_PDG_chib0_2P_1S*PhotonMassScale2P.getVal();
+
+     double M_MEAS_chib1_1P_1S=Q_MEAS_chib1_1P_1S+Ymass1S;
+     double M_MEAS_chib2_1P_1S=Q_MEAS_chib2_1P_1S+Ymass1S;
+     double M_MEAS_chib1_2P_1S=Q_MEAS_chib1_2P_1S+Ymass1S;
+     double M_MEAS_chib2_2P_1S=Q_MEAS_chib2_2P_1S+Ymass1S;
+     double M_MEAS_chib1_2P_2S=Q_MEAS_chib1_2P_2S+Ymass2S;
+     double M_MEAS_chib2_2P_2S=Q_MEAS_chib2_2P_2S+Ymass2S;
+     double M_MEAS_chib1_3P_1S=Q_MEAS_chib1_3P_1S+Ymass1S;
+     double M_MEAS_chib2_3P_1S=Q_MEAS_chib2_3P_1S+Ymass1S;
+     double M_MEAS_chib1_3P_2S=Q_MEAS_chib1_3P_2S+Ymass2S;
+     double M_MEAS_chib2_3P_2S=Q_MEAS_chib2_3P_2S+Ymass2S;
+     double M_MEAS_chib1_3P_3S=Q_MEAS_chib1_3P_3S+Ymass3S;
+     double M_MEAS_chib2_3P_3S=Q_MEAS_chib2_3P_3S+Ymass3S;
+
+     double M_MEAS_chib0_1P_1S=Q_MEAS_chib0_1P_1S+Ymass1S;
+     double M_MEAS_chib0_2P_1S=Q_MEAS_chib0_2P_1S+Ymass1S;
+
+// Q values 'reflection peaks':
+
+     double Q_PDG_chib1_2P_2Sin1S=M_PDG_chib1_2P-Ymass2S;
+     double Q_PDG_chib2_2P_2Sin1S=M_PDG_chib2_2P-Ymass2S;
+     double Q_PDG_chib1_3P_2Sin1S=fmchib1_3P-Ymass2S;
+     double Q_PDG_chib2_3P_2Sin1S=fmchib2_3P-Ymass2S;
+     double Q_PDG_chib1_3P_3Sin1S=fmchib1_3P-Ymass3S;
+     double Q_PDG_chib2_3P_3Sin1S=fmchib2_3P-Ymass3S;
+     double Q_PDG_chib1_3P_3Sin2S=fmchib1_3P-Ymass3S;
+     double Q_PDG_chib2_3P_3Sin2S=fmchib2_3P-Ymass3S;
+
+     double Q_MEAS_chib1_2P_2Sin1S=Q_PDG_chib1_2P_2Sin1S*PhotonMassScale2P_2S.getVal();
+     double Q_MEAS_chib2_2P_2Sin1S=Q_PDG_chib2_2P_2Sin1S*PhotonMassScale2P_2S.getVal();
+     double Q_MEAS_chib1_3P_2Sin1S=Q_PDG_chib1_3P_2Sin1S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_3P_2Sin1S=Q_PDG_chib2_3P_2Sin1S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib1_3P_3Sin1S=Q_PDG_chib1_3P_3Sin1S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_3P_3Sin1S=Q_PDG_chib2_3P_3Sin1S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib1_3P_3Sin2S=Q_PDG_chib1_3P_3Sin2S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_3P_3Sin2S=Q_PDG_chib2_3P_3Sin2S*PhotonMassScale3P.getVal();
+
+     double M_MEAS_chib1_2P_2Sin1S=Q_MEAS_chib1_2P_2Sin1S+Ymass1S;
+     double M_MEAS_chib2_2P_2Sin1S=Q_MEAS_chib2_2P_2Sin1S+Ymass1S;
+     double M_MEAS_chib1_3P_2Sin1S=Q_MEAS_chib1_3P_2Sin1S+Ymass1S;
+     double M_MEAS_chib2_3P_2Sin1S=Q_MEAS_chib2_3P_2Sin1S+Ymass1S;
+     double M_MEAS_chib1_3P_3Sin1S=Q_MEAS_chib1_3P_3Sin1S+Ymass1S;
+     double M_MEAS_chib2_3P_3Sin1S=Q_MEAS_chib2_3P_3Sin1S+Ymass1S;
+     double M_MEAS_chib1_3P_3Sin2S=Q_MEAS_chib1_3P_3Sin2S+Ymass2S;
+     double M_MEAS_chib2_3P_3Sin2S=Q_MEAS_chib2_3P_3Sin2S+Ymass2S;
+
+// Q values 'mirror peaks':
+
+     double Q_PDG_chib1_1P_1Sfrom3S=Ymass3S-M_PDG_chib1_1P;
+     double Q_PDG_chib2_1P_1Sfrom3S=Ymass3S-M_PDG_chib2_1P;
+     double Q_PDG_chib1_1P_1Sfrom2S=Ymass2S-M_PDG_chib1_1P;
+     double Q_PDG_chib2_1P_1Sfrom2S=Ymass2S-M_PDG_chib2_1P;
+     double Q_PDG_chib1_2P_1Sfrom3S=Ymass3S-M_PDG_chib1_2P;
+     double Q_PDG_chib2_2P_1Sfrom3S=Ymass3S-M_PDG_chib2_2P;
+     double Q_PDG_chib1_2P_2Sfrom3S=Ymass3S-M_PDG_chib1_2P;
+     double Q_PDG_chib2_2P_2Sfrom3S=Ymass3S-M_PDG_chib2_2P;
+
+     double Q_MEAS_chib1_1P_1Sfrom3S=Q_PDG_chib1_1P_1Sfrom3S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_1P_1Sfrom3S=Q_PDG_chib2_1P_1Sfrom3S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib1_1P_1Sfrom2S=Q_PDG_chib1_1P_1Sfrom2S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_1P_1Sfrom2S=Q_PDG_chib2_1P_1Sfrom2S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib1_2P_1Sfrom3S=Q_PDG_chib1_2P_1Sfrom3S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_2P_1Sfrom3S=Q_PDG_chib2_2P_1Sfrom3S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib1_2P_2Sfrom3S=Q_PDG_chib1_2P_2Sfrom3S*PhotonMassScale3P.getVal();
+     double Q_MEAS_chib2_2P_2Sfrom3S=Q_PDG_chib2_2P_2Sfrom3S*PhotonMassScale3P.getVal();
+
+     double M_MEAS_chib1_1P_1Sfrom3S=Q_MEAS_chib1_1P_1Sfrom3S+Ymass1S;
+     double M_MEAS_chib2_1P_1Sfrom3S=Q_MEAS_chib2_1P_1Sfrom3S+Ymass1S;
+     double M_MEAS_chib1_1P_1Sfrom2S=Q_MEAS_chib1_1P_1Sfrom2S+Ymass1S;
+     double M_MEAS_chib2_1P_1Sfrom2S=Q_MEAS_chib2_1P_1Sfrom2S+Ymass1S;
+     double M_MEAS_chib1_2P_1Sfrom3S=Q_MEAS_chib1_2P_1Sfrom3S+Ymass1S;
+     double M_MEAS_chib2_2P_1Sfrom3S=Q_MEAS_chib2_2P_1Sfrom3S+Ymass1S;
+     double M_MEAS_chib1_2P_2Sfrom3S=Q_MEAS_chib1_2P_2Sfrom3S+Ymass2S;
+     double M_MEAS_chib2_2P_2Sfrom3S=Q_MEAS_chib2_2P_2Sfrom3S+Ymass2S;
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+
      hCut_1Psig->SetBinContent(inCut+1,rsigchib1P);
      if(rratchib1P<100) hCut_1PSB->SetBinContent(inCut+1,rratchib1P);
      hCut_1PS->SetBinContent(inCut+1,rchib1P);
@@ -2823,12 +3866,12 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      double linewidth = 1;
      double chi21S;
      double chi22S;
-     double binWidth=12.5;
      if(MCsample) binWidth=5.;
      int FrameBins1S=(invm_max1S-invm_min1S)*1000/binWidth;
-     int FrameBins2Sin1S=100./4.*44./binWidth;
-     int FrameBins2S=100./4.*64./binWidth;
-     int FrameBins3Sin1S=100./4.*32./binWidth;
+     int FrameBins2Sin1S=(invm_max1S-invm_min1S)*1000/binWidth;
+     int FrameBins2S=(invm_max1S-invm_min1S)*1000/binWidth;
+     int FrameBins3Sin1S=(invm_max1S-invm_min1S)*1000/binWidth;
+     int FrameBins3S=(invm_max1S-invm_min1S)*1000/binWidth;
 
      if(PlotStep2){
      n3PnJ_1S.setConstant(kFALSE);
@@ -2853,6 +3896,8 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      n1PnJ.setConstant(kFALSE);
      gamma1.setConstant(kFALSE);
 
+     PhotonMassScale2P_2Sin1S.setConstant(kFALSE);
+     PhotonSigmaScale2P_2Sin1S.setConstant(kFALSE);
      mX.setConstant(kFALSE);
      nX.setConstant(kFALSE);
     }
@@ -2869,6 +3914,8 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      n2PnJ.setConstant(kTRUE);
      n1PnJ.setConstant(kTRUE);
      gamma1.setConstant(kTRUE);
+     PhotonMassScale2P_2Sin1S.setConstant(kTRUE);
+     PhotonSigmaScale2P_2Sin1S.setConstant(kTRUE);
      }
      if(PlotStep1&&PlotStep2&&MCsample){
      alpha_3J.setConstant(kFALSE);
@@ -2889,6 +3936,8 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
      nX.setConstant();
   	 ratio_J2overJ1.setConstant(kFALSE);
      n_3J.setConstant(kFALSE);
+     PhotonMassScale2P_2Sin1S.setConstant(kFALSE);
+     PhotonSigmaScale2P_2Sin1S.setConstant(kFALSE);
     }
 
      char plotYtitle[200];
@@ -2940,6 +3989,7 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
 
     if(PlotBothSteps) totalEventsInFit1S_plot=totalEventsInFit1S;
     double totalEventsInFit2S_plot=totalEventsInFit2S;
+    double totalEventsInFit3S_plot=totalEventsInFit3S;
 
     cout<<"Plotting in Range "<<PlotRangeSteps<<endl;
     cout<<"Normalizing to "<<totalEventsInFit1S_plot<<" Events , totalEventsInFit1S = "<<totalEventsInFit1S<<endl;
@@ -2947,7 +3997,7 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
     RooPlot* frame1S= invm1S.frame(FrameBins1S);
     frame1S->SetTitle("#chi_{b} invariant mass, Y1S decay");
     frame1S->GetXaxis()->SetLimits(invm_min1S,invm_max1S);
-    data1S->plotOn(frame1S);
+    data1S->plotOn(frame1S,MarkerStyle(MarkerStyle_nS[1]),MarkerColor(MarkerColor_nS[1]),MarkerSize(MarkerSize_nS[1]));
     sprintf(plotYtitle,"Events per %1.1f MeV",binWidth);
     frame1S->SetYTitle(plotYtitle);
     frame1S->SetTitleOffset(1.15,"X");
@@ -2955,14 +4005,16 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
     if(OneSPlotModel) modelPdf1S.plotOn(frame1S,Range(PlotRangeSteps),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));;
     chi21S = frame1S->chiSquare();
     /////////// Two CB adventure //////////////////
-    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib1P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib1P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib2P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib2P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-    if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(frame1S, Components("chib3P1_1S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-    if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(frame1S, Components("chib3P2_1S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-    if(OneSPlotModel) modelPdf1S.plotOn(frame1S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-    if(OneSPlotModel) modelPdf1S.plotOn(frame1S,Range(PlotRangeSteps),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib2P1_2Sin1S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib2P2_2Sin1S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib1P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib1P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib2P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(frame1S, Components("chib2P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(frame1S, Components("chib3P1_1S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(frame1S, Components("chib3P2_1S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel) modelPdf1S.plotOn(frame1S, Components("background1S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    if(OneSPlotModel) modelPdf1S.plotOn(frame1S,Range(PlotRangeSteps),LineColor(LineColor_nS[1]),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));
 
     bool plotParamOnPlot=true;
     if(!OneSPlotModel) plotParamOnPlot=false;
@@ -2970,13 +4022,13 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
     if(plotParamOnPlot) modelPdf1S.paramOn(frame1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
 
     frame1S->SetTitle(0);
-    frame1S->SetMinimum(0);
+    frame1S->SetMinimum(PlotMinimum);
     if(MCsample) restrictMaximum=false;
     if(Optimize) restrictMaximum=true;
-    if(restrictMaximum) frame1S->SetMaximum(550.);
+    if(restrictMaximum) frame1S->SetMaximum(restrictMaximum_nPlots[0]);
     frame1S->Draw();
 
-    double xText=10.45;
+    double xText=invm_max1S-0.68;
     double highestText=frame1S->GetMaximum();
     double deltaText=0.06;
     if(MCsample) xText=9.55;
@@ -2995,13 +4047,17 @@ PhotonSigmaScale3P.setVal( (PhotonSigmaScale.getVal()+PhotonSigmaScale2P.getVal(
     sprintf(text,"S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P_1S,rbgchib3P_1S,ThreePsig_1S);
     TLatex text3 = TLatex(xText,highestText*(0.95-3*deltaText),text);
     text3.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
-    if(DrawTextOnPlots&&PlotBothSteps&&!finalPlots&&!MCsample)text3.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    if(DrawTextOnPlots&&PlotBothSteps&&!finalPlots&&!MCsample)text3.Draw( "same" );
+    sprintf(text,"Sig. #chi_{b}(2P)#rightarrow#Upsilon(2S)+#gamma#rightarrow#Upsilon(1S)+X+#gamma = %1.3f",Xsignificance);
+    TLatex text3X = TLatex(xText,highestText*(0.95-4*deltaText),text);
+    text3X.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+    if(DrawTextOnPlots&&PlotBothSteps&&!finalPlots&&!MCsample)text3X.Draw( "same" );
     sprintf(text,"M_{#chi_{b}(3P)} =  %1.4f #pm %1.4f",fmchib3P_1S,err_fmchib3P_1S);
-    TLatex text0 = TLatex(xText,highestText*(0.95-4*deltaText),text)                                                                                                                            ;
+    TLatex text0 = TLatex(xText,highestText*(0.95-5*deltaText),text)                                                                                                                            ;
     text0.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
     if(DrawTextOnPlots&&PlotBothSteps&&!finalPlots&&!MCsample)text0.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"N_{tot} = %1.0f",data1S_masswindow->sumEntries());
-    TLatex text4 = TLatex(xText,highestText*(0.95-5*deltaText),text);                                                                                                                                                                        ;
+    TLatex text4 = TLatex(xText,highestText*(0.95-6*deltaText),text);                                                                                                                                                                        ;
     text4.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
 //    if(DrawTextOnPlots)text4.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"#chi^{2}/ndf = %1.4f",chi21S);
@@ -3021,6 +4077,9 @@ alpha2.setConstant(kFALSE);
 beta2.setConstant(kFALSE);
 q02S.setConstant(kFALSE);
 background_nevt2S.setConstant(kFALSE);
+PhotonMassScale2P_2S.setConstant(kFALSE);
+PhotonSigmaScale2P_2S.setConstant(kFALSE);
+
 alpha_3J.setConstant(kTRUE);
 PhotonMassScale2P.setConstant(kTRUE);
 PhotonSigmaScale.setConstant(kTRUE);
@@ -3046,32 +4105,33 @@ gamma1.setConstant(kTRUE);
     frame2S->SetTitle("#chi_{b} invariant mass, Y2S decay");
     frame2S->GetXaxis()->SetLimits(invm_min1S,invm_max1S);
     frame2S->SetYTitle(plotYtitle);
-    data2S->plotOn(frame2S,MarkerStyle(24));
+    data2S->plotOn(frame2S,MarkerStyle(MarkerStyle_nS[2]),MarkerColor(MarkerColor_nS[2]),MarkerSize(MarkerSize_nS[2]));
     frame2S->SetTitleOffset(1.15,"X");
     frame2S->SetTitleOffset(0.825,"Y");
 
-
+    if(OneSPlotModel){
     modelPdf2S.plotOn(frame2S,Range(invm_min2S,invm_max2S),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));;
     chi22S = frame2S->chiSquare();
 
-    modelPdf2S.plotOn(frame2S, Components("chib3P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S, Components("chib3P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S, Components("chib2P1_2S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S, Components("chib2P2_2S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S, Components("background2S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame2S,Range(invm_min2S,invm_max2S),LineColor(kGreen+2),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame2S, Components("chib3P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame2S, Components("chib3P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame2S, Components("chib2P1_2S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame2S, Components("chib2P2_2S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame2S, Components("background2S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame2S,Range(invm_min2S,invm_max2S),LineColor(LineColor_nS[2]),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));
 
     modelPdf2S.paramOn(frame2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+    }
 
     frame2S->SetTitle(0);
-    frame2S->SetMinimum(0);
+    frame2S->SetMinimum(PlotMinimum);
     if(MCsample) restrictMaximum=false;
     if(Optimize) restrictMaximum=true;
-    if(restrictMaximum) frame2S->SetMaximum(160.);
+    if(restrictMaximum) frame2S->SetMaximum(restrictMaximum_nPlots[1]);
 
     frame2S->Draw();
 
-    xText=10.45;
+    xText=invm_min1S+0.1;
     highestText=frame2S->GetMaximum();
     deltaText=0.06;
 
@@ -3088,15 +4148,88 @@ gamma1.setConstant(kTRUE);
     text9.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
 //    if(DrawTextOnPlots)text9.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"#chi^{2}/ndf = %1.4f",chi22S);
-    TLatex text10 = TLatex(xText+0.4,highestText*(0.95-0*deltaText),text)                                                                                                                                                                                          ;
+    TLatex text10 = TLatex(xText,highestText*(0.95-0*deltaText),text)                                                                                                                                                                                          ;
     text10.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
     if(DrawTextOnPlots)text10.Draw( "same" )                                                                                                                                                                                                                                                 ;
 
 
     ChibCanvas2S->Modified();
     sprintf(saveName,"Figures/%s/InvMass_Y2S_%s.pdf",FitID,cutName_);
-    if(nState==2) ChibCanvas2S->SaveAs(saveName);
+    if(nState>1) ChibCanvas2S->SaveAs(saveName);
 
+
+    n3PnJ_3S.setConstant(kFALSE);
+    m_chib3P.setConstant(kFALSE);
+    background_nevt3S.setConstant(kFALSE);
+
+gamma2.setConstant(kTRUE);
+alpha2.setConstant(kTRUE);
+beta2.setConstant(kTRUE);
+q02S.setConstant(kTRUE);
+background_nevt2S.setConstant(kTRUE);
+PhotonMassScale2P_2S.setConstant(kTRUE);
+PhotonSigmaScale2P_2S.setConstant(kTRUE);
+
+    TCanvas* ChibCanvas3S = new TCanvas("#chi_{b} 3S invariant mass","#chi_{b} 3S invariant mass",1900, 800);
+    ChibCanvas3S->Divide(1);
+    ChibCanvas3S->SetFillColor(kWhite);
+    ChibCanvas3S->cd(1);
+    gPad->SetRightMargin(0.3);/////
+    gPad->SetFillColor(kWhite);
+
+    RooPlot* frame3S= invm3S.frame(invm_min1S,invm_max3S,FrameBins3S);
+    frame3S->SetTitle("#chi_{b} invariant mass, Y3S decay");
+    frame3S->GetXaxis()->SetLimits(invm_min1S,invm_max1S);
+    frame3S->SetYTitle(plotYtitle);
+    data3S->plotOn(frame3S,MarkerStyle(MarkerStyle_nS[3]),MarkerColor(MarkerColor_nS[3]),MarkerSize(MarkerSize_nS[3]));
+    frame3S->SetTitleOffset(1.15,"X");
+    frame3S->SetTitleOffset(0.825,"Y");
+
+    double chi23S;
+    if(OneSPlotModel){
+    modelPdf3S.plotOn(frame3S,Range(invm_min3S,invm_max3S),LineWidth(linewidth),Normalization(totalEventsInFit3S,2));;
+    chi23S = frame3S->chiSquare();
+    modelPdf3S.plotOn(frame3S, Components("chib3P1_3S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S,2));
+    modelPdf3S.plotOn(frame3S, Components("chib3P2_3S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S,2));
+    modelPdf3S.plotOn(frame3S, Components("background3S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S,2));
+    modelPdf3S.plotOn(frame3S,Range(invm_min3S,invm_max3S),LineColor(LineColor_nS[3]),LineWidth(linewidth),Normalization(totalEventsInFit3S,2));
+
+    modelPdf3S.paramOn(frame3S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+    }
+
+    frame3S->SetTitle(0);
+    frame3S->SetMinimum(PlotMinimum);
+    if(MCsample) restrictMaximum=false;
+    if(Optimize) restrictMaximum=true;
+    if(restrictMaximum) frame3S->SetMaximum(restrictMaximum_nPlots[2]);
+
+    frame3S->Draw();
+
+    xText=invm_min1S+0.1;
+    highestText=frame3S->GetMaximum();
+    deltaText=0.06;
+
+    sprintf(text,"M_{#chi_{b}(3P)} =  %1.4f #pm %1.4f",fmchib3P,err_fmchib3P);
+    TLatex text05 = TLatex(xText,highestText*(0.95-1*deltaText),text)                                                                                                                            ;
+    text05.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+    if(DrawTextOnPlots&&!finalPlots)text05.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P_3S,rbgchib3P_3S,ThreePsig_3S);
+    TLatex text08 = TLatex(xText,highestText*(0.95-2*deltaText),text)                                                                                                                            ;
+    text08.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+    if(DrawTextOnPlots&&!finalPlots)text08.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"N_{tot} = %1.0f",data3S_masswindow->sumEntries());
+    TLatex text09 = TLatex(xText,highestText*(0.95-3*deltaText),text);                                                                                                                                                                        ;
+    text09.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+//    if(DrawTextOnPlots)text09.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"#chi^{2}/ndf = %1.4f",chi23S);
+    TLatex text010 = TLatex(xText,highestText*(0.95-0*deltaText),text)                                                                                                                                                                                          ;
+    text010.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+    if(DrawTextOnPlots)text010.Draw( "same" )                                                                                                                                                                                                                                                 ;
+
+
+    ChibCanvas3S->Modified();
+    sprintf(saveName,"Figures/%s/InvMass_Y3S_%s.pdf",FitID,cutName_);
+    if(nState>2) ChibCanvas3S->SaveAs(saveName);
 
 
 
@@ -3113,19 +4246,23 @@ gamma1.setConstant(kTRUE);
     RooPlot* frame1S2S= invm1S.frame(FrameBins1S);
     frame1S2S->SetYTitle(plotYtitle);
     frame1S2S->SetTitle("#chi_{b} invariant mass, Y1S decay");
+    frame1S2S->GetXaxis()->SetLimits(invm_min1S,invm_max1S);
     frame1S2S->SetTitleOffset(1.15,"X");
     frame1S2S->SetTitleOffset(0.825,"Y");
 
-    data1S->plotOn(frame1S2S);
+    data1S->plotOn(frame1S2S,MarkerStyle(MarkerStyle_nS[1]),MarkerColor(MarkerColor_nS[1]),MarkerSize(MarkerSize_nS[1]));
 
+    if(OneSPlotModel){
     modelPdf1S.plotOn(frame1S2S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));;
-    modelPdf1S.plotOn(frame1S2S, Components("chib1P_sig"), LineStyle(2),LineColor(kMagenta),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S2S, Components("chib2P_sig"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S2S, Components("chib3P_sig_1S"), LineStyle(2),LineColor(kOrange),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S2S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(frame1S2S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(frame1S2S, Components("chib2P_sigInd_2Sin1S"), LineStyle(2),LineColor(LineColor_nP[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+    modelPdf1S.plotOn(frame1S2S, Components("chib1P_sig"), LineStyle(2),LineColor(LineColor_nP[1]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(frame1S2S, Components("chib2P_sig"), LineStyle(2),LineColor(LineColor_nP[2]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(frame1S2S, Components("chib3P_sig_1S"), LineStyle(2),LineColor(LineColor_nP[3]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(frame1S2S, Components("background1S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(frame1S2S,Range(invm_min1S,invm_max1S),LineColor(LineColor_nS[1]),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));
 
-    modelPdf1S.paramOn(frame1S2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+//    modelPdf1S.paramOn(frame1S2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+    }
 
     alpha_3J.setConstant();
     n_3J.setConstant();
@@ -3139,42 +4276,53 @@ gamma1.setConstant(kTRUE);
     RooPlot* frame1S2S_= invm2S.frame(FrameBins2Sin1S);
     frame1S2S_->SetTitle("#chi_{b} invariant mass, Y1S decay");
     frame1S2S_->SetYTitle(plotYtitle);
-    data2S->plotOn(frame1S2S_,MarkerStyle(24));
+    frame1S2S_->GetXaxis()->SetLimits(invm_min1S,invm_max1S);
+    data2S->plotOn(frame1S2S_,MarkerStyle(MarkerStyle_nS[2]),MarkerColor(MarkerColor_nS[2]),MarkerSize(MarkerSize_nS[2]));
 
-    modelPdf2S.plotOn(frame1S2S_, Components("chib3P_sig"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame1S2S_, Components("chib2P_sig_2S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame1S2S_, Components("background2S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
-    modelPdf2S.plotOn(frame1S2S_,Range(invm_min2S,invm_max2S),LineWidth(linewidth),LineColor(kGreen+2),Normalization(totalEventsInFit2S,2));
+    if(OneSPlotModel){
+    modelPdf2S.plotOn(frame1S2S_, Components("chib3P_sig"), LineStyle(2),LineColor(LineColor_nP[3]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame1S2S_, Components("chib2P_sig_2S"), LineStyle(2),LineColor(LineColor_nP[2]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame1S2S_, Components("background2S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S,2));
+    modelPdf2S.plotOn(frame1S2S_,Range(invm_min2S,invm_max2S),LineWidth(linewidth),LineColor(LineColor_nS[2]),Normalization(totalEventsInFit2S,2));
 
-    modelPdf2S.paramOn(frame1S2S_, Layout(0.725,0.9875,0.275), Format("NE",AutoPrecision(2)));
+//    modelPdf2S.paramOn(frame1S2S_, Layout(0.725,0.9875,0.275), Format("NE",AutoPrecision(2)));
+    }
 
     RooPlot* frame1S2S__= invm3S.frame(FrameBins3Sin1S);
     frame1S2S__->SetTitle("#chi_{b} invariant mass, Y3S decay");
     frame1S2S__->SetYTitle(plotYtitle);
     frame1S2S__->SetTitleOffset(1.15,"X");
     frame1S2S__->SetTitleOffset(0.825,"Y");
+    frame1S2S__->GetXaxis()->SetLimits(invm_min1S,invm_max1S);
 
-    data3S->plotOn(frame1S2S__,MarkerStyle(22));
+    data3S->plotOn(frame1S2S__,MarkerStyle(MarkerStyle_nS[3]),MarkerColor(MarkerColor_nS[3]),MarkerSize(MarkerSize_nS[3]));
+    if(OneSPlotModel){
+    modelPdf3S.plotOn(frame1S2S__, Components("chib3P_sig_3S"), LineStyle(2),LineColor(LineColor_nP[3]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S,2));
+    modelPdf3S.plotOn(frame1S2S__, Components("background3S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S,2));
+    modelPdf3S.plotOn(frame1S2S__,Range(invm_min3S,invm_max3S),LineWidth(linewidth),LineColor(LineColor_nS[3]),Normalization(totalEventsInFit3S,2));
+
+//    modelPdf3S.paramOn(frame1S2S_, Layout(0.725,0.9875,0.275), Format("NE",AutoPrecision(2)));
+    }
 
     sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(nS)^{PDG}} [GeV]");
 
     frame1S2S->GetXaxis()->SetTitle(invmName);
     frame1S2S->SetTitle(0);
-    frame1S2S->SetMinimum(0);
+    frame1S2S->SetMinimum(PlotMinimum);
     if(MCsample) restrictMaximum=false;
     if(Optimize) restrictMaximum=true;
-    if(restrictMaximum) frame1S2S->SetMaximum(550.);
+    if(restrictMaximum) frame1S2S->SetMaximum(restrictMaximum_nPlots[3]);
 
     frame1S2S->Draw();
     frame1S2S_->SetTitle(0);
-    frame1S2S_->SetMinimum(0);
+    frame1S2S_->SetMinimum(PlotMinimum);
     frame1S2S_->Draw("same");
     frame1S2S__->SetTitle(0);
-    frame1S2S__->SetMinimum(0);
-//    frame1S2S__->Draw("same");
+    frame1S2S__->SetMinimum(PlotMinimum);
+    if(nState>2) frame1S2S__->Draw("same");
 
 
-    xText=10.35;
+    xText=invm_max1S-0.8;
     highestText=frame1S->GetMaximum();
     deltaText=0.06;
 
@@ -3182,22 +4330,26 @@ gamma1.setConstant(kTRUE);
     TLatex text14 = TLatex(xText,highestText*(0.95-0*deltaText),text)                                                                                                                            ;
     text14.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
     if(DrawTextOnPlots)text14.Draw( "same" )                                                                                                                                                                                                                                                 ;
+    sprintf(text,"Y(3S) + #gamma: S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P_3S,rbgchib3P_3S,ThreePsig_3S);
+    TLatex text111 = TLatex(xText,highestText*(0.95-3*deltaText),text)                                                                                                                            ;
+    text111.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+    if(DrawTextOnPlots)text111.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"Y(2S) + #gamma: S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P,rbgchib3P,ThreePsig);
-    TLatex text11 = TLatex(xText,highestText*(0.95-1*deltaText),text)                                                                                                                            ;
+    TLatex text11 = TLatex(xText,highestText*(0.95-2*deltaText),text)                                                                                                                            ;
     text11.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
     if(DrawTextOnPlots)text11.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"Y(1S) + #gamma: S/B #chi_{b}(3P) = %1.0f / %1.0f, #chi_{b}(3P)_{sig.} = %1.3f",rchib3P_1S,rbgchib3P_1S,ThreePsig_1S);
-    TLatex text12 = TLatex(xText,highestText*(0.95-2*deltaText),text)                                                                                                                            ;
+    TLatex text12 = TLatex(xText,highestText*(0.95-1*deltaText),text)                                                                                                                            ;
     text12.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
     if(DrawTextOnPlots)text12.Draw( "same" )                                                                                                                                                                                                                                                 ;
     sprintf(text,"Combined Significance: #chi_{b}(3P)_{sig.} = %1.3f",ThreePsigALL);
-    TLatex text13 = TLatex(xText,highestText*(0.95-3*deltaText),text)                                                                                                                            ;
+    TLatex text13 = TLatex(xText,highestText*(0.95-4*deltaText),text)                                                                                                                            ;
     text13.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
     if(DrawTextOnPlots)text13.Draw( "same" )                                                                                                                                                                                                                                                 ;
 
     ChibCanvas1S2S->Modified();
-    sprintf(saveName,"Figures/%s/InvMass_Y1S2S_%s.pdf",FitID,cutName_);
-    if(nState==2) ChibCanvas1S2S->SaveAs(saveName);
+    sprintf(saveName,"Figures/%s/InvMass_Y1S2S3S_%s.pdf",FitID,cutName_);
+    if(nState>1) ChibCanvas1S2S->SaveAs(saveName);
 
 
 
@@ -3222,7 +4374,7 @@ gamma1.setConstant(kTRUE);
     n_3J_2P.setConstant();
 
 
-    bool DrawZoom=true;
+    bool DrawZoom=false;
     if(DrawZoom){
 
     	double ZoomPlotMin=9.75;
@@ -3279,9 +4431,9 @@ gamma1.setConstant(kTRUE);
 	  FrameBins1SZoom=(ZoomPlotMax-ZoomPlotMin)*1000./ScaleZoomBinsTo;
 
 	TGraphAsymmErrors *zoomGraphinvm1S = new TGraphAsymmErrors(FrameBins1SZoom-nBinsReplace+nBinsReplace/nRebin,invm1SCentre,nEventsZoom,err_invm1SCentre,err_invm1SCentre,err_up_nEventsZoom,err_low_nEventsZoom);
-	zoomGraphinvm1S->SetMarkerSize(1);
-	  zoomGraphinvm1S->SetMarkerStyle(20);
-	  zoomGraphinvm1S->SetMarkerColor(kBlack);
+	zoomGraphinvm1S->SetMarkerSize(MarkerSize_nS[1]);
+	  zoomGraphinvm1S->SetMarkerStyle(MarkerStyle_nS[1]);
+	  zoomGraphinvm1S->SetMarkerColor(MarkerColor_nS[1]);
 
 
     TCanvas* ZoomChibCanvas1S = new TCanvas("#chi_{b} 1S2S invariant mass zoom","#chi_{b} 1S2S invariant mass zoom",2100,800);
@@ -3293,27 +4445,27 @@ gamma1.setConstant(kTRUE);
 
     RooPlot* Zoomframe1S= invm1S.frame(ZoomPlotMin,ZoomPlotMax,FrameBins1SZoom);
     Zoomframe1S->SetTitle("#chi_{b} invariant mass, Y1S decay");
-    data1S->plotOn(Zoomframe1S);
+    data1S->plotOn(Zoomframe1S,MarkerColor(MarkerColor_nS[1]),MarkerStyle(MarkerStyle_nS[1]),MarkerSize(MarkerSize_nS[1]));
     sprintf(plotYtitle,"Events per %1.1f  MeV",ScaleZoomBinsTo);
     Zoomframe1S->SetYTitle(plotYtitle);
         modelPdf1S.plotOn(Zoomframe1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));;
        double chi21Szoom = Zoomframe1S->chiSquare();
     /////////// Two CB adventure //////////////////
-       modelPdf1S.plotOn(Zoomframe1S, Components("chib3P1"), LineStyle(2),LineColor(kGreen+2),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-       modelPdf1S.plotOn(Zoomframe1S, Components("chib3P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-       modelPdf1S.plotOn(Zoomframe1S, Components("chib1P1"), LineStyle(2),LineColor(kGreen+2),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-       modelPdf1S.plotOn(Zoomframe1S, Components("chib1P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P1"), LineStyle(2),LineColor(kGreen+2),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P1_2Sin1S"), LineStyle(2),LineColor(kGreen+2),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P2_2Sin1S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(Zoomframe1S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
-    modelPdf1S.plotOn(Zoomframe1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib3P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib3P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib1P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib1P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P1_2Sin1S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+       modelPdf1S.plotOn(Zoomframe1S, Components("chib2P2_2Sin1S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(Zoomframe1S, Components("background1S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min1S,invm_max1S),Normalization(totalEventsInFit1S,2));
+    modelPdf1S.plotOn(Zoomframe1S,Range(invm_min1S,invm_max1S),LineColor(LineColor_nS[1]),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));
 
 //    modelPdf1S.paramOn(Zoomframe1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
 
     Zoomframe1S->SetTitle(0);
-    Zoomframe1S->SetMinimum(0);
+    Zoomframe1S->SetMinimum(PlotMinimum);
 //    Zoomframe1S->SetMaximum(75.*ScaleZoomBinsTo/5.);
     Zoomframe1S->Draw();
 
@@ -3367,6 +4519,8 @@ gamma1.setConstant(kTRUE);
 
         int nBins_buff;
         int nBins_buff2S;
+        int nBins_buff3S;
+        double MinDistancetoMax=0.1;
 
 	double resolutionMin=0.01;
     double nResolution=1.;
@@ -3381,7 +4535,19 @@ gamma1.setConstant(kTRUE);
     	if(BinBorders[iBin-1]>9.9&&BinBorders[iBin-1]<10.15){
     		BinBorders[iBin]=BinBorders[iBin-1]+2.5*nResolution*(BinBorders[iBin-1]-Ymass1S)*PhotonSigmaScale3P.getVal();
     	}
-    	if(BinBorders[iBin]>invm_max1S) {
+    	if(BinBorders[iBin-1]>bb_thresh){
+    		BinBorders[iBin]=BinBorders[iBin-1]+2.5*nResolution*(BinBorders[iBin-1]-Ymass1S)*PhotonSigmaScale3P.getVal();
+    	}
+//Carlos additions:
+		BinBorders[iBin]=BinBorders[iBin-1]+0.01;
+    	if(BinBorders[iBin-1]>10.){
+    		BinBorders[iBin]=BinBorders[iBin-1]+0.02;
+    	}
+    	if(BinBorders[iBin-1]>10.6){
+    		BinBorders[iBin]=BinBorders[iBin-1]+0.04;
+    	}
+/////////
+    	if(BinBorders[iBin]>invm_max1S-MinDistancetoMax) {
     		nBins_buff=iBin; BinBorders[iBin]=invm_max1S; break;
     	}
     }
@@ -3404,10 +4570,30 @@ gamma1.setConstant(kTRUE);
     	}
     }
 
+    resolutionMin=0.02;
+    double BinBorders3S[1000];
+    BinBorders3S[0]=invm_min3S;
+    BinBorders3S[1]=invm_min3S+0.01;
+    for(int iBin=2;iBin<1000;iBin++){
+    	BinBorders3S[iBin]=BinBorders3S[iBin-1]+nResolution*(BinBorders3S[iBin-1]-Ymass3S)*PhotonSigmaScale3P.getVal();
+    	if(BinBorders3S[iBin]-BinBorders3S[iBin-1]<resolutionMin){
+    		BinBorders3S[iBin]=BinBorders3S[iBin-1]+resolutionMin;
+    		cout<<"using min resolution = "<<resolutionMin<<" at "<<BinBorders3S[iBin]<<" GeV "<<endl;
+    	}
+    	if(BinBorders3S[iBin-1]>10.5999){
+    		BinBorders3S[iBin]=BinBorders3S[iBin-1]+0.1;
+    	}
+    	if(BinBorders3S[iBin]>invm_max3S) {
+    		nBins_buff3S=iBin; BinBorders3S[iBin]=invm_max3S; break;
+    	}
+    }
+
     const int nBins=nBins_buff;
     const int nBins2S=nBins_buff2S;
+    const int nBins3S=nBins_buff3S;
     TH1F  *data1SNonEquHist = new TH1F("data1SNonEquHist","",nBins,invm_min1S,invm_max1S);//9.7,10.1);
     TH1F  *data2SNonEquHist = new TH1F("data2SNonEquHist","",nBins2S,invm_min2S,invm_max2S);//9.7,10.1);
+    TH1F  *data3SNonEquHist = new TH1F("data3SNonEquHist","",nBins3S,invm_min3S,invm_max3S);//9.7,10.1);
 
     double xBins[nBins+1];
     for(int iBin=0;iBin<nBins+1;iBin++){
@@ -3419,36 +4605,53 @@ gamma1.setConstant(kTRUE);
     	xBins2S[iBin]=BinBorders2S[iBin];
     }
 
+    double xBins3S[nBins+1];
+    for(int iBin=0;iBin<nBins3S+1;iBin++){
+    	xBins3S[iBin]=BinBorders3S[iBin];
+    }
+
     data1SNonEquHist->GetXaxis()->Set(nBins, xBins);
     data2SNonEquHist->GetXaxis()->Set(nBins2S, xBins2S);
+    data3SNonEquHist->GetXaxis()->Set(nBins3S, xBins3S);
 
 
     tree1S->Draw("invm1S>>data1SNonEquHist");
     tree2S->Draw("invm2S>>data2SNonEquHist");
+    tree3S->Draw("invm3S>>data3SNonEquHist");
 
-        double ScaleBinsTo=10./1000.;
+        double ScaleBinsTo=ScalePlot1S_NE/1000.;
         double ScaledContent;
         for(int iBin=1;iBin<nBins+1;iBin++){
         	ScaledContent=data1SNonEquHist->GetBinContent(iBin)*ScaleBinsTo/data1SNonEquHist->GetBinWidth(iBin);
         	data1SNonEquHist->SetBinContent(iBin,ScaledContent);
         }
-        double ScaleBinsTo2S=20./1000.;
+        double ScaleBinsTo2S=ScalePlot2S_NE/1000.;
         for(int iBin=1;iBin<nBins2S+1;iBin++){
         	ScaledContent=data2SNonEquHist->GetBinContent(iBin)*ScaleBinsTo2S/data2SNonEquHist->GetBinWidth(iBin);
         	data2SNonEquHist->SetBinContent(iBin,ScaledContent);
         }
+        double ScaleBinsTo3S=ScalePlot3S_NE/1000.;
+        for(int iBin=1;iBin<nBins3S+1;iBin++){
+        	ScaledContent=data3SNonEquHist->GetBinContent(iBin)*ScaleBinsTo3S/data3SNonEquHist->GetBinWidth(iBin);
+        	data3SNonEquHist->SetBinContent(iBin,ScaledContent);
+        }
 
 
-        data1SNonEquHist->SetMarkerSize(1);
-        data1SNonEquHist->SetMarkerStyle(20);
-        data1SNonEquHist->SetMarkerColor(kBlack);
+        data1SNonEquHist->SetMarkerSize(MarkerSize_nS[1]);
+        data1SNonEquHist->SetMarkerStyle(MarkerStyle_nS[1]);
+        data1SNonEquHist->SetMarkerColor(LineColor_nS[1]);
 
-        data2SNonEquHist->SetMarkerSize(1);
-        data2SNonEquHist->SetMarkerStyle(24);
-        data2SNonEquHist->SetMarkerColor(kBlack);
+        data2SNonEquHist->SetMarkerSize(MarkerSize_nS[2]);
+        data2SNonEquHist->SetMarkerStyle(MarkerStyle_nS[2]);
+        data2SNonEquHist->SetMarkerColor(LineColor_nS[2]);
 
-    	RooDataHist NonEquHist("NonEquHist", "NonEquHist",RooArgList(invm1S), data1SNonEquHist);
+        data3SNonEquHist->SetMarkerSize(MarkerSize_nS[3]);
+        data3SNonEquHist->SetMarkerStyle(MarkerStyle_nS[3]);
+        data3SNonEquHist->SetMarkerColor(LineColor_nS[3]);
+
+        RooDataHist NonEquHist("NonEquHist", "NonEquHist",RooArgList(invm1S), data1SNonEquHist);
     	RooDataHist NonEquHist2S("NonEquHist2S", "NonEquHist2S",RooArgList(invm2S), data2SNonEquHist);
+    	RooDataHist NonEquHist3S("NonEquHist3S", "NonEquHist3S",RooArgList(invm3S), data3SNonEquHist);
 
     TCanvas* NonEquChibCanvas1S = new TCanvas("#chi_{b} 1S2S invariant mass NonEqu","#chi_{b} 1S2S invariant mass NonEqu",1900,800);
     NonEquChibCanvas1S->Divide(1);
@@ -3470,25 +4673,27 @@ gamma1.setConstant(kTRUE);
         modelPdf1S.plotOn(NonEquframe1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));;
        double chi21SNonEqu = NonEquframe1S->chiSquare();
     /////////// Two CB adventure //////////////////
-       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib1P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib1P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib2P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib2P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-       if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(NonEquframe1S, Components("chib3P1_1S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-       if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(NonEquframe1S, Components("chib3P2_1S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
-       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("background1S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib2P1_2Sin1S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib2P2_2Sin1S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib1P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib1P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib2P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("chib2P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(NonEquframe1S, Components("chib3P1_1S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep2) modelPdf1S.plotOn(NonEquframe1S, Components("chib3P2_1S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S, Components("background1S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
 //       data1SNonEquHist->Draw("same,E");
-       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S,Range(PlotRangeSteps),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S,Range(PlotRangeSteps),LineColor(LineColor_nS[1]),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));
 
 //       if(OneSPlotModel) modelPdf1S.paramOn(NonEquframe1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
 
 //    modelPdf1S.paramOn(NonEquframe1S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
 
     NonEquframe1S->SetTitle(0);
-    NonEquframe1S->SetMinimum(0);
+    NonEquframe1S->SetMinimum(PlotMinimum);
     if(MCsample) restrictMaximum=false;
     if(Optimize) restrictMaximum=true;
-    if(restrictMaximum) NonEquframe1S->SetMaximum(75);
+    if(restrictMaximum) NonEquframe1S->SetMaximum(restrictMaximum_nPlots[4]);
     NonEquframe1S->Draw();
 
     data1SNonEquHist->Draw("same,E");
@@ -3497,7 +4702,7 @@ gamma1.setConstant(kTRUE);
 
 //    NonEquGraphinvm1S->Draw("P");
 //    data1SNonEquHist->Draw("same,E");
-    xText=10.7;
+    xText=invm_max1S-0.4;
     highestText=NonEquframe1S->GetMaximum();
     deltaText=0.06;
     FontSize=0.0425;
@@ -3533,10 +4738,6 @@ gamma1.setConstant(kTRUE);
 
 
 
-    delete NonEquChibCanvas1S;
-    delete data1SNonEquHist;
-	delete NonEquframe1S;
-
 
 
     TCanvas* NonEquChibCanvas2S = new TCanvas("#chi_{b} 2S2S invariant mass NonEqu","#chi_{b} 2S2S invariant mass NonEqu",1900,800);
@@ -3559,23 +4760,23 @@ gamma1.setConstant(kTRUE);
         modelPdf2S.plotOn(NonEquframe2S,Range(invm_min2S,invm_max2S),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));;
        double chi22SNonEqu = NonEquframe2S->chiSquare();
     /////////// Two CB adventure //////////////////
-       modelPdf2S.plotOn(NonEquframe2S, Components("chib2P1_2S"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
-       modelPdf2S.plotOn(NonEquframe2S, Components("chib2P2_2S"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
-       modelPdf2S.plotOn(NonEquframe2S, Components("chib3P1"), LineStyle(2),LineColor(kGreen),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
-       modelPdf2S.plotOn(NonEquframe2S, Components("chib3P2"), LineStyle(2),LineColor(kRed),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
-       modelPdf2S.plotOn(NonEquframe2S, Components("background2S"), LineStyle(2),LineColor(kBlack),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
-       modelPdf2S.plotOn(NonEquframe2S,Range(invm_min2S,invm_max2S),LineColor(kGreen+2),LineWidth(linewidth),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("chib2P1_2S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("chib2P2_2S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("chib3P1"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("chib3P2"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S, Components("background2S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe2S,Range(invm_min2S,invm_max2S),LineColor(LineColor_nS[2]),LineWidth(linewidth),Normalization(totalEventsInFit2S_plot,2));
 
 //       if(OneSPlotModel) modelPdf2S.paramOn(NonEquframe2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
 
 //    modelPdf2S.paramOn(NonEquframe2S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
 
     NonEquframe2S->SetTitle(0);
-    NonEquframe2S->SetMinimum(0);
+    NonEquframe2S->SetMinimum(PlotMinimum);
     if(MCsample) restrictMaximum=false;
     if(Optimize) restrictMaximum=true;
 //    if(restrictMaximum)
-    NonEquframe2S->SetMaximum(NonEquframe2S->GetMaximum()*2);
+    NonEquframe2S->SetMaximum(restrictMaximum_nPlots[5]);
     NonEquframe2S->Draw();
 
     data2SNonEquHist->Draw("same,E");
@@ -3584,7 +4785,7 @@ gamma1.setConstant(kTRUE);
 
 //    NonEquGraphinvm2S->Draw("P");
 //    data2SNonEquHist->Draw("same,E");
-    xText=10.7;
+    xText=invm_max1S-0.4;
     highestText=NonEquframe2S->GetMaximum();
     deltaText=0.06;
     FontSize=0.0425;
@@ -3603,13 +4804,405 @@ gamma1.setConstant(kTRUE);
         FontSize=0.0325;
 
     sprintf(saveName,"Figures/%s/InvMass_NonEqu_Y2S_%s.pdf",FitID,cutName_);
-    NonEquChibCanvas2S->SaveAs(saveName);
+    if(nState>1) NonEquChibCanvas2S->SaveAs(saveName);
 
 
+
+
+
+
+
+
+    TCanvas* NonEquChibCanvas3S = new TCanvas("#chi_{b} 3S3S invariant mass NonEqu","#chi_{b} 3S3S invariant mass NonEqu",1900,800);
+    NonEquChibCanvas3S->Divide(1);
+    NonEquChibCanvas3S->SetFillColor(kWhite);
+    NonEquChibCanvas3S->cd(1);
+    gPad->SetRightMargin(0.3);/////
+    gPad->SetFillColor(kWhite);
+
+	int FrameBins3SNonEqu=(invm_max3S-invm_min1S)/ScaleBinsTo3S;
+
+    RooPlot* NonEquframe3S= invm3S.frame(invm_min1S,invm_max3S,FrameBins3SNonEqu);
+    NonEquframe3S->SetTitle("#chi_{b} invariant mass, Y3S decay");
+    sprintf(plotYtitle,"Events per %1.1f MeV",ScaleBinsTo3S*1000.);
+    NonEquframe3S->SetYTitle(plotYtitle);
+    NonEquframe3S->SetTitleOffset(1.15,"X");
+    NonEquframe3S->SetTitleOffset(0.825,"Y");
+//    data3S->plotOn(NonEquframe3S);
+//    NonEquHist.plotOn(NonEquframe3S);
+        modelPdf3S.plotOn(NonEquframe3S,Range(invm_min3S,invm_max3S),LineWidth(linewidth),Normalization(totalEventsInFit3S,2));;
+       double chi23SNonEqu = NonEquframe3S->chiSquare();
+    /////////// Two CB adventure //////////////////
+       modelPdf3S.plotOn(NonEquframe3S, Components("chib3P1_3S"), LineStyle(2),LineColor(LineColor_nJ[1]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S_plot,2));
+       modelPdf3S.plotOn(NonEquframe3S, Components("chib3P2_3S"), LineStyle(2),LineColor(LineColor_nJ[2]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S_plot,2));
+       modelPdf3S.plotOn(NonEquframe3S, Components("background3S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S_plot,2));
+       modelPdf3S.plotOn(NonEquframe3S,Range(invm_min3S,invm_max3S),LineColor(LineColor_nS[3]),LineWidth(linewidth),Normalization(totalEventsInFit3S_plot,2));
+
+//       if(OneSPlotModel) modelPdf3S.paramOn(NonEquframe3S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+
+//    modelPdf3S.paramOn(NonEquframe3S, Layout(0.725,0.9875,0.9), Format("NE",AutoPrecision(2)));
+
+    NonEquframe3S->SetTitle(0);
+    NonEquframe3S->SetMinimum(PlotMinimum);
+    if(MCsample) restrictMaximum=false;
+    if(Optimize) restrictMaximum=true;
+//    if(restrictMaximum)
+    NonEquframe3S->SetMaximum(restrictMaximum_nPlots[6]);
+    NonEquframe3S->Draw();
+
+    data3SNonEquHist->Draw("same,E");
+
+    NonEquframe3S->Draw("same");
+
+//    NonEquGraphinvm3S->Draw("P");
+//    data3SNonEquHist->Draw("same,E");
+    xText=invm_max1S-0.4;
+    highestText=NonEquframe3S->GetMaximum();
+    deltaText=0.06;
+    FontSize=0.0425;
+
+
+    	cout<<"DRAW LATEX"<<endl;
+
+        sprintf(text,"CMS preliminary");
+        TLatex NonEqutext43S = TLatex(xText,highestText*(0.95-1*deltaText),text);
+        NonEqutext43S.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)NonEqutext43S.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        sprintf(text,"L_{int} = 4.7 fb^{-1}");
+        TLatex NonEqutext53S = TLatex(xText,highestText*(0.95-2*deltaText),text);
+        NonEqutext53S.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)NonEqutext53S.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        FontSize=0.0325;
+
+    sprintf(saveName,"Figures/%s/InvMass_NonEqu_Y3S_%s.pdf",FitID,cutName_);
+    if(nState>2) NonEquChibCanvas3S->SaveAs(saveName);
+
+
+
+
+
+// NonEQU-All-In-One:::
+
+    TCanvas* NonEquChibCanvas1S2S3S = new TCanvas("#chi_{b} 1S2S3S1S2S3S invariant mass NonEqu","#chi_{b} 1S2S3S1S2S3S invariant mass NonEqu",1900,800);
+    NonEquChibCanvas1S2S3S->Divide(1);
+    NonEquChibCanvas1S2S3S->SetFillColor(kWhite);
+    NonEquChibCanvas1S2S3S->cd(1);
+    gPad->SetRightMargin(0.3);/////
+    gPad->SetFillColor(kWhite);
+
+
+
+
+
+    RooPlot* NonEquframe1S2S3S_1S= invm1S.frame(invm_min1S,invm_max1S,FrameBins1SNonEqu);
+    NonEquframe1S2S3S_1S->SetTitle("#chi_{b} invariant mass, Y1S decay");
+    sprintf(plotYtitle,"Events per %1.1f MeV",ScaleBinsTo*1000.);
+    NonEquframe1S2S3S_1S->SetYTitle(plotYtitle);
+    NonEquframe1S2S3S_1S->SetTitleOffset(1.15,"X");
+    NonEquframe1S2S3S_1S->SetTitleOffset(0.825,"Y");
+        modelPdf1S.plotOn(NonEquframe1S2S3S_1S,Range(invm_min1S,invm_max1S),LineWidth(linewidth),Normalization(totalEventsInFit1S,2));;
+    /////////// Two CB adventure //////////////////
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S2S3S_1S, Components("background1S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(PlotRangeSteps),Normalization(totalEventsInFit1S_plot,2));
+       if(OneSPlotModel&&PlotStep1) modelPdf1S.plotOn(NonEquframe1S2S3S_1S,Range(PlotRangeSteps),LineColor(LineColor_nS[1]),LineWidth(linewidth),Normalization(totalEventsInFit1S_plot,2));
+
+       NonEquframe1S2S3S_1S->SetTitle(0);
+       NonEquframe1S2S3S_1S->SetMinimum(PlotMinimum);
+       NonEquframe1S2S3S_1S->SetMaximum(restrictMaximum_nPlots[7]);
+
+
+
+    RooPlot* NonEquframe1S2S3S_2S= invm2S.frame(invm_min1S,invm_max2S,FrameBins2SNonEqu);
+    NonEquframe1S2S3S_2S->SetTitle("#chi_{b} invariant mass, Y2S decay");
+    sprintf(plotYtitle,"Events per %1.1f MeV",ScaleBinsTo2S*1000.);
+    NonEquframe1S2S3S_2S->SetYTitle(plotYtitle);
+    NonEquframe1S2S3S_2S->SetTitleOffset(1.15,"X");
+    NonEquframe1S2S3S_2S->SetTitleOffset(0.825,"Y");
+        modelPdf2S.plotOn(NonEquframe1S2S3S_2S,Range(invm_min2S,invm_max2S),LineWidth(linewidth),Normalization(totalEventsInFit2S,2));;
+    /////////// Two CB adventure //////////////////
+        modelPdf2S.plotOn(NonEquframe1S2S3S_2S, Components("background2S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min2S,invm_max2S),Normalization(totalEventsInFit2S_plot,2));
+       modelPdf2S.plotOn(NonEquframe1S2S3S_2S,Range(invm_min2S,invm_max2S),LineColor(LineColor_nS[2]),LineWidth(linewidth),Normalization(totalEventsInFit2S_plot,2));
+
+       NonEquframe1S2S3S_2S->SetTitle(0);
+       NonEquframe1S2S3S_2S->SetMinimum(PlotMinimum);
+
+
+
+       RooPlot* NonEquframe1S2S3S_3S= invm3S.frame(invm_min1S,invm_max3S,FrameBins3SNonEqu);
+       NonEquframe1S2S3S_3S->SetTitle("#chi_{b} invariant mass, Y2S decay");
+       sprintf(plotYtitle,"Events per %1.1f MeV",ScaleBinsTo3S*1000.);
+       NonEquframe1S2S3S_3S->SetYTitle(plotYtitle);
+       NonEquframe1S2S3S_3S->SetTitleOffset(1.15,"X");
+       NonEquframe1S2S3S_3S->SetTitleOffset(0.825,"Y");
+           modelPdf3S.plotOn(NonEquframe1S2S3S_3S,Range(invm_min3S,invm_max3S),LineWidth(linewidth),Normalization(totalEventsInFit3S,2));;
+       /////////// Two CB adventure //////////////////
+           modelPdf3S.plotOn(NonEquframe1S2S3S_3S, Components("background3S"), LineStyle(2),LineColor(LineColor_nJ[3]),LineWidth(linewidth),Range(invm_min3S,invm_max3S),Normalization(totalEventsInFit3S_plot,2));
+          modelPdf3S.plotOn(NonEquframe1S2S3S_3S,Range(invm_min3S,invm_max3S),LineColor(LineColor_nS[3]),LineWidth(linewidth),Normalization(totalEventsInFit3S_plot,2));
+
+          NonEquframe1S2S3S_3S->SetTitle(0);
+          NonEquframe1S2S3S_3S->SetMinimum(PlotMinimum);
+
+
+          sprintf(invmName,"m_{#mu#mu#gamma}-m_{#mu#mu}+m_{#Upsilon(nS)^{PDG}} [GeV]");
+
+          NonEquframe1S2S3S_1S->GetXaxis()->SetTitle(invmName);
+
+    NonEquframe1S2S3S_1S->Draw();
+    data1SNonEquHist->Draw("same,E");
+    NonEquframe1S2S3S_1S->Draw("same");
+
+    if(nState>1.5){
+    NonEquframe1S2S3S_2S->Draw("same");
+    data2SNonEquHist->Draw("same,E");
+    NonEquframe1S2S3S_2S->Draw("same");
+    }
+    if(nState>2.5){
+    NonEquframe1S2S3S_3S->Draw("same");
+    data3SNonEquHist->Draw("same,E");
+    NonEquframe1S2S3S_3S->Draw("same");
+    }
+
+    xText=invm_max1S-0.4;
+    highestText=NonEquframe1S2S3S_1S->GetMaximum();
+    deltaText=0.06;
+    FontSize=0.0425;
+
+
+    	cout<<"DRAW LATEX"<<endl;
+
+        sprintf(text,"CMS preliminary");
+        TLatex NonEqutext41S2S3S = TLatex(xText,highestText*(0.95-1*deltaText),text);
+        NonEqutext41S2S3S.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)NonEqutext41S2S3S.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        sprintf(text,"L_{int} = 4.7 fb^{-1}");
+        TLatex NonEqutext51S2S3S = TLatex(xText,highestText*(0.95-2*deltaText),text);
+        NonEqutext51S2S3S.SetTextSize(FontSize)                                                                                                                                                                                                                                             ;
+        if(DrawTextOnPlots)NonEqutext51S2S3S.Draw( "same" )                                                                                                                                                                                                                                                 ;
+        FontSize=0.0325;
+
+    sprintf(saveName,"Figures/%s/InvMass_NonEqu_Y1S2S3S_%s.pdf",FitID,cutName_);
+    if(nState>1) NonEquChibCanvas1S2S3S->SaveAs(saveName);
+
+
+
+
+
+
+
+
+    if(SaveAll){
+
+            TH1F  *AN_Q1SHisto = new TH1F("AN_Q1SHisto","",int((invm_max1S-invm_min1S)/binWidth*1000),0,invm_max1S-invm_min1S);//binWidth MeV
+            TH1F  *AN_Q2SHisto = new TH1F("AN_Q2SHisto","",int((invm_max1S-invm_min1S)/binWidth*1000),0,invm_max1S-invm_min1S);//binWidth MeV
+            TH1F  *AN_Q3SHisto = new TH1F("AN_Q3SHisto","",int((invm_max1S-invm_min1S)/binWidth*1000),0,invm_max1S-invm_min1S);//binWidth MeV
+
+            char PlotCutChar[1000];
+
+            sprintf(PlotCutChar,"%s && TMath::Abs(Y1Smass_nSigma)<%f", FinalCutChar, nYsig);
+            treeBeforeAllCuts->Draw("Q>>AN_Q1SHisto",PlotCutChar);
+            sprintf(PlotCutChar,"%s && TMath::Abs(Y2Smass_nSigma)<%f", FinalCutChar, nYsig*Ymass2S/Ymass1S);
+            treeBeforeAllCuts->Draw("Q>>AN_Q2SHisto",PlotCutChar);
+            sprintf(PlotCutChar,"%s && TMath::Abs(Y3Smass_nSigma)<%f", FinalCutChar, nYsig*Ymass3S/Ymass2S);
+            treeBeforeAllCuts->Draw("Q>>AN_Q3SHisto",PlotCutChar);
+
+            TCanvas* PlotCanvas = new TCanvas("PlotCanvas","PlotCanvas",1600, 1200);
+            PlotCanvas->SetFillColor(kWhite);
+            gPad->SetLeftMargin(0.125);
+            gPad->SetRightMargin(0.05);
+            gPad->SetTopMargin(0.05);
+            gPad->SetFillColor(kWhite);
+
+            double MaxFact=1.2;
+            double yOff=1.5;
+            double PlotMinDist=1.;
+            char saveMass[200];
+
+        	  AN_Q1SHisto->SetMinimum(PlotMinDist); AN_Q1SHisto->SetMaximum(AN_Q1SHisto->GetMaximum()*MaxFact);
+        	  MaxFact=1.;
+        AN_Q1SHisto->GetYaxis()->SetTitleOffset(yOff); AN_Q1SHisto->GetXaxis()->SetTitle("m_{#mu#mu#gamma}-m_{#mu#mu} [GeV]");	AN_Q1SHisto->GetYaxis()->SetTitle("Counts per 12.5 MeV");
+
+        AN_Q1SHisto->SetStats(0);
+        AN_Q1SHisto->SetMarkerColor(MarkerColor_nS[1]);
+        AN_Q1SHisto->SetMarkerStyle(MarkerStyle_nS[1]);
+        AN_Q1SHisto->SetMarkerSize(MarkerSize_nS[1]);
+        AN_Q1SHisto->Draw("E");
+        AN_Q2SHisto->SetStats(0);
+        AN_Q2SHisto->SetMarkerColor(MarkerColor_nS[2]);
+        AN_Q2SHisto->SetMarkerStyle(MarkerStyle_nS[2]);
+        AN_Q2SHisto->SetMarkerSize(MarkerSize_nS[2]);
+        if(nState>1.5) AN_Q2SHisto->Draw("same,E");
+        AN_Q3SHisto->SetStats(0);
+        AN_Q3SHisto->SetMarkerColor(MarkerColor_nS[3]);
+        AN_Q3SHisto->SetMarkerStyle(MarkerStyle_nS[3]);
+        AN_Q3SHisto->SetMarkerSize(MarkerSize_nS[3]);
+        if(nState>2.5) AN_Q3SHisto->Draw("same,E");
+
+
+        bool addStandardQ=true;
+        if(addStandardQ){
+        	  cout<<"addStandardQ"<<endl;
+
+              int ColorQ1P=632;
+              int ColorQ2P=600;
+              int ColorQ3P=416;
+      const int nQLinesStandard=14;
+  	  TLine* QLine[nQLinesStandard];
+
+  	  double QvalForQlines[nQLinesStandard]={
+  			  Q_MEAS_chib0_1P_1S,
+  			  Q_MEAS_chib1_1P_1S,
+  		      Q_MEAS_chib2_1P_1S,
+  		      Q_MEAS_chib0_2P_1S,
+  		      Q_MEAS_chib1_2P_1S,
+  		      Q_MEAS_chib2_2P_1S,
+  		      Q_MEAS_chib1_2P_2S,
+  		      Q_MEAS_chib2_2P_2S,
+  		      Q_MEAS_chib1_3P_1S,
+  		      Q_MEAS_chib2_3P_1S,
+  		      Q_MEAS_chib1_3P_2S,
+  		      Q_MEAS_chib2_3P_2S,
+  		      Q_MEAS_chib1_3P_3S,
+  		      Q_MEAS_chib2_3P_3S
+  	  };
+
+  	  int ColorForQlines[nQLinesStandard]={ColorQ1P,ColorQ1P,ColorQ1P, ColorQ2P,ColorQ2P,ColorQ2P,ColorQ2P,ColorQ2P, ColorQ3P,ColorQ3P,ColorQ3P,ColorQ3P,ColorQ3P,ColorQ3P};
+
+  	  int StyleForQlines[nQLinesStandard]={2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+
+  	  for(int iQLine=0;iQLine<nQLinesStandard;iQLine++){
+  	  QLine[iQLine] = new TLine( 0,0,0,0 );
+      QLine[iQLine]->SetLineWidth( 1 );
+  	  QLine[iQLine]->SetLineStyle(StyleForQlines[iQLine]);
+  	  QLine[iQLine]->SetLineColor(ColorForQlines[iQLine]);
+  	  QLine[iQLine]->SetY1(0);
+  	  QLine[iQLine]->SetY2(AN_Q1SHisto->GetMaximum());
+  	  QLine[iQLine]->SetX1(QvalForQlines[iQLine]);
+  	  QLine[iQLine]->SetX2(QvalForQlines[iQLine]);
+  	  QLine[iQLine]->Draw("same");
+  	  cout<<QvalForQlines[iQLine]<<endl;
+  	  }
+
+        }
+
+        bool addReflectedQ=true;
+        if(addReflectedQ){
+            int ColorQ1P=627;
+            int ColorQ2P=595;
+            int ColorQ3P=411;
+      	  cout<<"addReflectedQ"<<endl;
+      const int nQLinesReflected=8;
+  	  TLine* QLine[nQLinesReflected];
+
+  	  double QvalForQlines[nQLinesReflected]={
+  		  	Q_MEAS_chib1_2P_2Sin1S,
+  		  	Q_MEAS_chib2_2P_2Sin1S,
+  		  	Q_MEAS_chib1_3P_2Sin1S,
+  		  	Q_MEAS_chib2_3P_2Sin1S,
+  		  	Q_MEAS_chib1_3P_3Sin1S,
+  		  	Q_MEAS_chib2_3P_3Sin1S,
+  		  	Q_MEAS_chib1_3P_3Sin2S,
+  		  	Q_MEAS_chib2_3P_3Sin2S
+  	  };
+
+  	  int ColorForQlines[nQLinesReflected]={ColorQ2P,ColorQ2P, ColorQ3P,ColorQ3P,ColorQ3P,ColorQ3P,ColorQ3P,ColorQ3P};
+
+  	  int StyleForQlines[nQLinesReflected]={3, 3, 3, 3, 3, 3, 3, 3};
+
+  	  for(int iQLine=0;iQLine<nQLinesReflected;iQLine++){
+  	  QLine[iQLine] = new TLine( 0,0,0,0 );
+      QLine[iQLine]->SetLineWidth( 1 );
+  	  QLine[iQLine]->SetLineStyle(StyleForQlines[iQLine]);
+  	  QLine[iQLine]->SetLineColor(ColorForQlines[iQLine]);
+  	  QLine[iQLine]->SetY1(0);
+  	  QLine[iQLine]->SetY2(AN_Q1SHisto->GetMaximum());
+  	  QLine[iQLine]->SetX1(QvalForQlines[iQLine]);
+  	  QLine[iQLine]->SetX2(QvalForQlines[iQLine]);
+  	  QLine[iQLine]->Draw("same");
+  	  cout<<QvalForQlines[iQLine]<<endl;
+  	  }
+
+        }
+
+
+        bool addMirroredQ=true;
+        if(addMirroredQ){
+            int ColorQ1P=635;
+            int ColorQ2P=603;
+            int ColorQ3P=419;
+        	  cout<<"addMirroredQ"<<endl;
+      const int nQLinesMirrored=8;
+  	  TLine* QLine[nQLinesMirrored];
+
+  	  double QvalForQlines[nQLinesMirrored]={
+  		  	Q_MEAS_chib1_1P_1Sfrom3S,
+  		  	Q_MEAS_chib2_1P_1Sfrom3S,
+  		  	Q_MEAS_chib1_1P_1Sfrom2S,
+  		  	Q_MEAS_chib2_1P_1Sfrom2S,
+  		  	Q_MEAS_chib1_2P_1Sfrom3S,
+  		  	Q_MEAS_chib2_2P_1Sfrom3S,
+  		  	Q_MEAS_chib1_2P_2Sfrom3S,
+  		  	Q_MEAS_chib2_2P_2Sfrom3S
+  	  };
+
+  	  int ColorForQlines[nQLinesMirrored]={ColorQ1P,ColorQ1P,ColorQ1P,ColorQ1P, ColorQ2P,ColorQ2P,ColorQ2P,ColorQ2P};
+
+  	  int StyleForQlines[nQLinesMirrored]={10,10,10,10,10,10,10,10};
+
+  	  for(int iQLine=0;iQLine<nQLinesMirrored;iQLine++){
+  	  QLine[iQLine] = new TLine( 0,0,0,0 );
+      QLine[iQLine]->SetLineWidth( 1 );
+  	  QLine[iQLine]->SetLineStyle(StyleForQlines[iQLine]);
+  	  QLine[iQLine]->SetLineColor(ColorForQlines[iQLine]);
+  	  QLine[iQLine]->SetY1(0);
+  	  QLine[iQLine]->SetY2(AN_Q1SHisto->GetMaximum());
+  	  QLine[iQLine]->SetX1(QvalForQlines[iQLine]);
+  	  QLine[iQLine]->SetX2(QvalForQlines[iQLine]);
+  	  QLine[iQLine]->Draw("same");
+  	  cout<<QvalForQlines[iQLine]<<endl;
+  	  }
+
+        }
+
+
+        TLegend* plotcompLegend=new TLegend(0.8,0.725,0.875,0.925);
+        plotcompLegend->SetFillColor(0);
+        plotcompLegend->SetTextFont(72);
+        plotcompLegend->SetTextSize(0.04);
+        plotcompLegend->SetBorderSize(0);
+        char complegendentry[200];
+        sprintf(complegendentry,"#Upsilon(1S)");
+        plotcompLegend->AddEntry(AN_Q1SHisto,complegendentry,"elp");
+        sprintf(complegendentry,"#Upsilon(2S)");
+        if(nState>1.5) plotcompLegend->AddEntry(AN_Q2SHisto,complegendentry,"elp");
+        sprintf(complegendentry,"#Upsilon(3S)");
+        if(nState>2.5) plotcompLegend->AddEntry(AN_Q3SHisto,complegendentry,"elp");
+        if(nState>1.5) plotcompLegend->Draw();
+
+        PlotCanvas->Modified();
+        PlotCanvas->SetLogy(false);
+        sprintf(saveMass,"Figures/%s/AN_QnSHisto.pdf",FitID);
+        PlotCanvas->SaveAs(saveMass);
+    }
+
+    delete NonEquChibCanvas1S2S3S;
+	delete NonEquframe1S2S3S_1S;
+	delete NonEquframe1S2S3S_2S;
+	delete NonEquframe1S2S3S_3S;
+
+    delete NonEquChibCanvas1S;
+    delete data1SNonEquHist;
+	delete NonEquframe1S;
 
     delete NonEquChibCanvas2S;
     delete data2SNonEquHist;
 	delete NonEquframe2S;
+
+    delete NonEquChibCanvas3S;
+    delete data3SNonEquHist;
+	delete NonEquframe3S;
+
+
+
+
 
 	    }
 
@@ -3623,7 +5216,7 @@ gamma1.setConstant(kTRUE);
 
 
 
-    bool PlotPull=true;
+    bool PlotPull=false;
 	if(PlotPull){
 
 
@@ -3719,6 +5312,7 @@ gamma1.setConstant(kTRUE);
     if(BkgMixerBool&&!useExistingMixFile){
     delete data1SExceptGammaPtCut;
     delete data2SExceptGammaPtCut;
+    delete data3SExceptGammaPtCut;
     delete dataAfterBasicCutsExceptGammaPtCut;
     }
 
