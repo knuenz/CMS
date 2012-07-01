@@ -140,12 +140,12 @@ int main(int argc, char** argv) {
 		if(injectRealDataPolarization){
 			cout<<"injectRealDataPolarization"<<endl;
 
-			char filename[200];
+			char filename[1000];
 			sprintf(filename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/UpsilonPol/macros/polFit/Systematics/TotalSyst/May20Centrals_CentralsFromAlteredPPDMay20_1SigmaStatError_FracHighCorrected/TGraphResults_%dSUps.root",nState);
 			cout<<filename<<endl;
 			TFile *infile1 = new TFile(filename,"READ");
 
-			char GraphName[200];
+			char GraphName[1000];
 
 
 			for(int rapBin = 1; rapBin < 3; rapBin++){
@@ -254,11 +254,16 @@ int main(int argc, char** argv) {
   	  	Char_t *TreeBinID;
   	  	double f_BG;
   	 	int n_events;
-  		char basestruct[200],substruct[200], dirstruct[200], rapptstruct[200], filenameFrom[200], filenameTo[200] , tmpfilename[200], TreeBinID_[200], effDir[200];
+  		char basestruct[1000],substruct[1000], dirstruct[1000], rapptstruct[1000], filenameFrom[1000], filenameTo[1000] , tmpfilename[1000], TreeBinID_[1000], effDir[1000];
 
   		sprintf(basestruct,"%s/%s",storagedir,JobID);gSystem->mkdir(basestruct);
   		sprintf(substruct,"%s/Sig_frame%dscen%d_Bkg_frame%dscen%d",basestruct,frameSig,polScenSig,frameBkg,polScenBkg); if(!RealData) gSystem->mkdir(substruct);
   		sprintf(effDir,"%s/macros/polFit/EffFiles",basedir);
+
+    	cout<<"storagedir: "<<storagedir<<endl;
+    	cout<<"JobID: "<<JobID<<endl;
+    	cout<<"basestruct: "<<basestruct<<endl;
+    	cout<<"substruct: "<<substruct<<endl;
 
   		time_t seconds; seconds = time (NULL); double time_0=seconds; double time_1;
 
@@ -336,7 +341,9 @@ int main(int argc, char** argv) {
   		OutputDirectory=dirstruct;
   		if(RealData) OutputDirectory=basestruct;
 
-  	  cout<<"nState: "<<nState<<endl;
+    	  cout<<"nState: "<<nState<<endl;
+      	  cout<<"OutputDirectory: "<<OutputDirectory<<endl;
+      	  cout<<"basestruct: "<<basestruct<<endl;
 
   	    if(gen)polGen(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,n_events,f_BG,lambda_theta_sig_,lambda_phi_sig_,lambda_thetaphi_sig_,lambda_theta_bkg_,lambda_phi_bkg_,lambda_thetaphi_bkg_,frameSig,frameBkg,iGen,OutputDirectory);
 		if(rec)polRec(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,nRecEff,nRecDileptonEff,nRecRhoFactor,FidCuts,OutputDirectory, false, effDir, MCReceff, MCDileptonReceff, iRap, iPt);
