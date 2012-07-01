@@ -229,10 +229,10 @@ int main(int argc, char** argv) {
 
 
 
-		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,0,0);
+//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,0,0);
 //		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre2_,lmean2,ptCentreErr2_low,ptCentreErr2_high,lmean1,lmean1);// ifCentralsWithTotalSyst
 //		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,lmeanErr_change,lmeanErr_change);// ifCombineErrorsOfTheTwo
-//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean2,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// if 'take central value from JobID2, take error from JobID1'
+		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean2,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// if 'take central value from JobID2, take error from JobID1'
 		graphSyst->SetMarkerColor(ToyMC::MarkerColor[nFrame]);
 		graphSyst->SetLineColor(ToyMC::MarkerColor[nFrame]);
 		graphSyst->SetMarkerStyle(ToyMC::MarkerStyle[nState][rapBin]);

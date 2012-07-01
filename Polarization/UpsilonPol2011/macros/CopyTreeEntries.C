@@ -79,6 +79,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
   treeIn->SetBranchAddress("lepN", &lepN);
   TLorentzVector *onia = new TLorentzVector();
 
+  bool CMSprelim=true;
   bool PlotSpecials=false;
   if(DoCPUconsumingPlots) PlotSpecials=true;
 
@@ -112,7 +113,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  char DMCutChar[2000];
 
 
-		TLegend* DMLegend=new TLegend(0.48,0.75,0.9,0.9);
+		TLegend* DMLegend=new TLegend(0.53,0.75,0.95,0.9);
 		DMLegend->SetFillColor(0);
 		DMLegend->SetTextFont(72);
 		DMLegend->SetTextSize(0.0345);
@@ -145,10 +146,15 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  gStyle->SetPalette(1);
  	  gPad->SetFillColor(kWhite);
 
+ 	  double MargLeft=0.125;//0.175;
+ 	  double MargRight=0.025;//0.1;
+ 	  double MargTop=0.05;//0.175;
 
-      gPad->SetLeftMargin(0.175);
-      gPad->SetRightMargin(0.1);
-	  dimumassRap2->SetYTitle(DMyTitle);
+ 	  gPad->SetLeftMargin(MargLeft);
+      gPad->SetRightMargin(MargRight);
+      gPad->SetTopMargin(MargTop);
+
+ 	  dimumassRap2->SetYTitle(DMyTitle);
 	  dimumassRap2->SetXTitle("dimuon mass [GeV]");
 	  dimumassRap1->SetTitle(0);
 	  dimumassRap1->SetStats(0);
@@ -188,22 +194,27 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 		DMLegend->Draw();
 
 		double xCentralsDM=10.15;
+		double xCentralsDM_shift=0.;
+
 		 cout<<"DRAW CMS preliminary Latex"<<endl;
 	 double CentralsFontSize=0.035;
 	 char text[200];
 	 sprintf(text,"CMS preliminary");
+	 if(!CMSprelim) sprintf(text,"CMS");
 	 cout<<text<<endl;
-	 TLatex *CentralsText1DM = new TLatex(xCentralsDM,dimumassRap2->GetMaximum()*0.75,text);
+	 TLatex *CentralsText1DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap2->GetMaximum()*0.75,text);
 	 CentralsText1DM->SetTextSize(CentralsFontSize);
 	 CentralsText1DM->Draw( "same" );
 	 sprintf(text,"L = 4.9 fb^{-1}");
 	 cout<<text<<endl;
-	 TLatex *CentralsText2DM = new TLatex(xCentralsDM,dimumassRap2->GetMaximum()*0.6,text);
+	 TLatex *CentralsText2DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap2->GetMaximum()*0.6,text);
+//	 if(!CMSprelim) CentralsText2DM = new TLatex(xCentralsDM+0.15,dimumassRap2->GetMaximum()*0.65,text);
 	 CentralsText2DM->SetTextSize(CentralsFontSize);
 	 CentralsText2DM->Draw( "same" );
 	 sprintf(text,"pp    #sqrt{s} = 7 TeV");
 	 cout<<text<<endl;
-	 TLatex *CentralsText3DM = new TLatex(xCentralsDM,dimumassRap2->GetMaximum()*0.675,text);
+	 TLatex *CentralsText3DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap2->GetMaximum()*0.675,text);
+//	 if(!CMSprelim) CentralsText3DM = new TLatex(xCentralsDM+0.15,dimumassRap2->GetMaximum()*0.725,text);
 	 CentralsText3DM->SetTextSize(CentralsFontSize);
 	 CentralsText3DM->Draw( "same" );
 
@@ -211,7 +222,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	   sprintf(abcdef,"a)");
 	   TLatex *tex_abcdef = new TLatex(8.95,dimumassRap2->GetMaximum()*0.95,abcdef);
 	   tex_abcdef->SetTextSize(CentralsFontSize*1.25);
-	   tex_abcdef->Draw( "same" );
+//	   tex_abcdef->Draw( "same" );
 
 	   sprintf(abcdef,"x 10^{3}");
 	   tex_abcdef = new TLatex(8.5,dimumassRap2->GetMaximum()*1.07,abcdef);
@@ -222,6 +233,8 @@ void CopyTreeEntries(Int_t iRapBin = 1,
   	  sprintf(savename,"Figures/dimuonMass.pdf");
   	  c2->SaveAs(savename);
   	  sprintf(savename,"Figures/dimuonMass.C");
+  	  c2->SaveAs(savename);
+  	  sprintf(savename,"Figures/dimuonMass.jpg");
   	  c2->SaveAs(savename);
 
 
@@ -252,7 +265,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  // mean 10.344 GeV
 	  }
 
-		PTLegend=new TLegend(0.63,0.75,0.9,0.9);
+		PTLegend=new TLegend(0.68,0.75,0.95,0.9);
 		PTLegend->SetFillColor(0);
 		PTLegend->SetTextFont(72);
 		PTLegend->SetTextSize(0.0345);
@@ -290,8 +303,9 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  c2 = new TCanvas("c2","c2",1200,1100);
 	  gStyle->SetPalette(1);
 	  c2->SetFillColor(kWhite);
-      gPad->SetLeftMargin(0.175);
-      gPad->SetRightMargin(0.1);
+      gPad->SetLeftMargin(MargLeft);
+      gPad->SetRightMargin(MargRight);
+      gPad->SetTopMargin(MargTop);
 	  c2->SetFrameBorderMode(0);
 
 	  double histMin=0.5;
@@ -346,37 +360,50 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 
 		PTLegend->Draw();
 
-		double xCentralsPt=53.5;
+		double xCentralsPt=55;
+		double xCentralsPt_shift=0.;
 		 cout<<"DRAW CMS preliminary Latex"<<endl;
 	 double CentralsFontSize=0.035;
 	 char text[200];
 	 sprintf(text,"CMS preliminary");
-	 cout<<text<<endl;
-	 TLatex *CentralsText1Pt = new TLatex(xCentralsPt,10e2,text);
+	 if(!CMSprelim) sprintf(text,"CMS");
+     cout<<text<<endl;
+	 TLatex *CentralsText1Pt = new TLatex(xCentralsPt+xCentralsPt_shift,10e2,text);
 	 CentralsText1Pt->SetTextSize(CentralsFontSize);
 	 CentralsText1Pt->Draw( "same" );
 	 sprintf(text,"L = 4.9 fb^{-1}");
 	 cout<<text<<endl;
-	 TLatex *CentralsText2Pt = new TLatex(xCentralsPt,2.5e2,text);
+	 TLatex *CentralsText2Pt = new TLatex(xCentralsPt+xCentralsPt_shift,2.5e2,text);
+//	 if(!CMSprelim) CentralsText2Pt = new TLatex(xCentralsPt+2.5,4e2,text);
 	 CentralsText2Pt->SetTextSize(CentralsFontSize);
 	 CentralsText2Pt->Draw( "same" );
 	 sprintf(text,"pp    #sqrt{s} = 7 TeV");
 	 cout<<text<<endl;
-	 TLatex *CentralsText3Pt = new TLatex(xCentralsPt,5e2,text);
+	 TLatex *CentralsText3Pt = new TLatex(xCentralsPt+xCentralsPt_shift,5e2,text);
+//	 if(!CMSprelim) CentralsText3Pt = new TLatex(xCentralsPt+2.5,8e2,text);
 	 CentralsText3Pt->SetTextSize(CentralsFontSize);
 	 CentralsText3Pt->Draw( "same" );
+
+	 sprintf(text,"#Upsilon(%dS)",iState);
+	 cout<<text<<endl;
+	 TLatex *CentralsText4Pt = new TLatex(37,6e3,text);
+	 CentralsText4Pt->SetTextSize(CentralsFontSize);
+	 CentralsText4Pt->Draw( "same" );
+
 
 	   if(iState==1) sprintf(abcdef,"b)");
 	   if(iState==2) sprintf(abcdef,"c)");
 	   if(iState==3) sprintf(abcdef,"d)");
 	   tex_abcdef = new TLatex(23.5,7e3,abcdef);
 	   tex_abcdef->SetTextSize(CentralsFontSize*1.25);
-	   tex_abcdef->Draw( "same" );
+//	   tex_abcdef->Draw( "same" );
 
   	  sprintf(savename,"Figures/pTdist_Ups%dS.pdf",iState);
   	  c2->SetLogy(true);
   	  c2->SaveAs(savename);
   	  sprintf(savename,"Figures/pTdist_Ups%dS.C",iState);
+  	  c2->SaveAs(savename);
+  	  sprintf(savename,"Figures/pTdist_Ups%dS.jpg",iState);
   	  c2->SaveAs(savename);
 
 		  }

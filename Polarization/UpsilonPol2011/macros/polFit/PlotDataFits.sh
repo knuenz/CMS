@@ -9,10 +9,10 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 
 ########## INPUTS ##########
 
-for JobID in Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_PLUS_28_46_30 Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_MINUS_28_46_30;do
+for JobID in Data_TheGreatApproval_June25_CrossCheck_Mixed_Mixed;do
 
-for nState in 2 3;do
-
+#Take Care of Mean pT in ToyMC.h
+for nState in 1;do
 
 ptBinMin=1
 ptBinMax=10

@@ -9,6 +9,8 @@
 #include "polRec.C"
 #include "polFit.C"
 #include "polPlot.C"
+#include "TGraphAsymmErrors.h"
+#include "TFile.h"
 
 #include <time.h>
 
@@ -19,7 +21,7 @@ int main(int argc, char** argv) {
 
 
 	int nGenerations=999;
-	int polScenSig=999;
+	int polScenSig=9999;
 	int frameSig=999;
 	int polScenBkg=999;
 	int frameBkg=999;
@@ -113,16 +115,134 @@ int main(int argc, char** argv) {
 
 	    }
 
-  		double lambda_theta_sig_ = ToyMC::ScenarioSig[0][polScenSig-1];
-  		double lambda_phi_sig_ = ToyMC::ScenarioSig[1][polScenSig-1];
-  		double lambda_thetaphi_sig_ = ToyMC::ScenarioSig[2][polScenSig-1];
+
+		double mass_signal_peak;
+		double mass_signal_sigma=0.1;
+
+  		double lambda_theta_sig_;
+  		double lambda_phi_sig_;
+  		double lambda_thetaphi_sig_;
 
   		double lambda_theta_bkg_ = ToyMC::ScenarioBkg[0][polScenBkg-1];
   		double lambda_phi_bkg_ = ToyMC::ScenarioBkg[1][polScenBkg-1];
   		double lambda_thetaphi_bkg_ = ToyMC::ScenarioBkg[2][polScenBkg-1];
 
-		double mass_signal_peak;
-		double mass_signal_sigma=0.1;
+
+		bool injectRealDataPolarization(false);
+		if(polScenSig==999) injectRealDataPolarization=true;
+
+			if(!injectRealDataPolarization){
+	  		lambda_theta_sig_ = ToyMC::ScenarioSig[0][polScenSig-1];
+	  		lambda_phi_sig_ = ToyMC::ScenarioSig[1][polScenSig-1];
+	  		lambda_thetaphi_sig_ = ToyMC::ScenarioSig[2][polScenSig-1];
+			}
+
+		if(injectRealDataPolarization){
+			cout<<"injectRealDataPolarization"<<endl;
+
+			char filename[200];
+			sprintf(filename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/UpsilonPol/macros/polFit/Systematics/TotalSyst/May20Centrals_CentralsFromAlteredPPDMay20_1SigmaStatError_FracHighCorrected/TGraphResults_%dSUps.root",nState);
+			cout<<filename<<endl;
+			TFile *infile1 = new TFile(filename,"READ");
+
+			char GraphName[200];
+
+
+			for(int rapBin = 1; rapBin < 3; rapBin++){
+
+
+
+			TGraphAsymmErrors* graph_lth;
+			TGraphAsymmErrors* graph_lph;
+			TGraphAsymmErrors* graph_ltp;
+			TGraphAsymmErrors* graph_lthstar;
+			TGraphAsymmErrors* graph_lphstar;
+			TGraphAsymmErrors* graph_ltilde;
+
+			if(frameSig==1)  {
+				cout<<GraphName<<endl;
+				sprintf(GraphName,"lth_CS_rap%d",rapBin);
+				graph_lth = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lph_CS_rap%d",rapBin);
+				graph_lph = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"ltp_CS_rap%d",rapBin);
+				graph_ltp = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lthstar_CS_rap%d",rapBin);
+				graph_lthstar = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lphstar_CS_rap%d",rapBin);
+				graph_lphstar = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"ltilde_CS_rap%d",rapBin);
+				graph_ltilde = (TGraphAsymmErrors*) infile1->Get(GraphName);
+	}
+
+			if(frameSig==2)  {
+				sprintf(GraphName,"lth_HX_rap%d",rapBin);
+				graph_lth = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lph_HX_rap%d",rapBin);
+				graph_lph = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"ltp_HX_rap%d",rapBin);
+				graph_ltp = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lthstar_HX_rap%d",rapBin);
+				graph_lthstar = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lphstar_HX_rap%d",rapBin);
+				graph_lphstar = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"ltilde_HX_rap%d",rapBin);
+				graph_ltilde = (TGraphAsymmErrors*) infile1->Get(GraphName);
+	}
+
+			if(frameSig==3)  {
+				sprintf(GraphName,"lth_PX_rap%d",rapBin);
+				graph_lth = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lph_PX_rap%d",rapBin);
+				graph_lph = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"ltp_PX_rap%d",rapBin);
+				graph_ltp = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lthstar_PX_rap%d",rapBin);
+				graph_lthstar = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"lphstar_PX_rap%d",rapBin);
+				graph_lphstar = (TGraphAsymmErrors*) infile1->Get(GraphName);
+				sprintf(GraphName,"ltilde_PX_rap%d",rapBin);
+				graph_ltilde = (TGraphAsymmErrors*) infile1->Get(GraphName);
+	}
+
+			cout<<"TGraphs of all parameters loaded for frame "<<frameSig<<endl;
+
+
+
+			double ptCentre;
+			double lth_lmean;
+			double lph_lmean;
+			double ltp_lmean;
+
+
+
+				graph_lth->GetPoint(ptBinMin-1,ptCentre,lth_lmean);
+
+				graph_lph->GetPoint(ptBinMin-1,ptCentre,lph_lmean);
+
+				graph_ltp->GetPoint(ptBinMin-1,ptCentre,ltp_lmean);
+
+
+			cout<<"Values of all parameters loaded for frame "<<frameSig<<endl;
+
+
+
+			if(rapBin==rapBinMin){
+			lambda_theta_sig_ = lth_lmean;
+			lambda_phi_sig_ = lph_lmean;
+			lambda_thetaphi_sig_ = ltp_lmean;
+			}
+
+			}
+
+			cout<<"Using Real Data Results as Input for toyMC-samples, rap"<<rapBinMin<<"_pT"<<ptBinMin<<", injected in frame "<<frameSig<<endl;
+			cout<<"lth = "<<lambda_theta_sig_<<endl;
+			cout<<"lph = "<<lambda_phi_sig_<<endl;
+			cout<<"ltp = "<<lambda_thetaphi_sig_<<endl;
+
+		}
+
+
 
 		if(nState==1) mass_signal_peak=9.5;
 		if(nState==2) mass_signal_peak=10.;
@@ -216,10 +336,12 @@ int main(int argc, char** argv) {
   		OutputDirectory=dirstruct;
   		if(RealData) OutputDirectory=basestruct;
 
-		if(gen)polGen(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,n_events,f_BG,lambda_theta_sig_,lambda_phi_sig_,lambda_thetaphi_sig_,lambda_theta_bkg_,lambda_phi_bkg_,lambda_thetaphi_bkg_,frameSig,frameBkg,iGen,OutputDirectory);
+  	  cout<<"nState: "<<nState<<endl;
+
+  	    if(gen)polGen(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,n_events,f_BG,lambda_theta_sig_,lambda_phi_sig_,lambda_thetaphi_sig_,lambda_theta_bkg_,lambda_phi_bkg_,lambda_thetaphi_bkg_,frameSig,frameBkg,iGen,OutputDirectory);
 		if(rec)polRec(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,nRecEff,nRecDileptonEff,nRecRhoFactor,FidCuts,OutputDirectory, false, effDir, MCReceff, MCDileptonReceff, iRap, iPt);
   		if(fit)polFit(nSample,FidCuts, nEff, nDileptonEff, nRhoFactor, OutputDirectory, realdatadir, TreeBinID, RealData, effDir, MCeff, MCDileptoneff, iRap, iPt, NewAccCalc, MPValgo);
-  		if(plot)polPlot(OutputDirectory, TreeBinID, RealData, MPValgo, scalePlots, nTotalFits);
+  		if(plot)polPlot(OutputDirectory, TreeBinID, RealData, MPValgo, scalePlots, nTotalFits, nState, ptlow, pthigh, raplow, raphigh);
 
   		sprintf(dirstruct,"%s/Generation%d",rapptstruct,iGen+nSkipGen);
   		if(deletePseudoData){

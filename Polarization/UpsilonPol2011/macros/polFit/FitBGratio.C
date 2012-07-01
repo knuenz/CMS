@@ -27,7 +27,7 @@ void FitBGratio(){
 
 
 	  char PlotDir[200];
-	  sprintf(PlotDir,"1DfitsAllCells_Comb");
+	  sprintf(PlotDir,"June7_2DfitsAllCells_Comb_AbsCosth07");
 	  char PlotDirFull[200];
 	  sprintf(PlotDirFull,"FigBuffer/BGratioFits/%s",PlotDir);
 	  gSystem->mkdir(PlotDirFull);
@@ -35,8 +35,8 @@ void FitBGratio(){
 	  sprintf(SystDirFull,"Systematics/TheGreatRun_BKGratio/%s",PlotDir);
 	  gSystem->mkdir(SystDirFull);
 
-	  int FitDimension=1;
-	  double AbsCosthMax=1.;
+	  int FitDimension=2;
+	  double AbsCosthMax=0.7;
 
 	  const int nStates=3;
 	  int fLSB[nStates+1]={0,72,46,30};
@@ -193,6 +193,11 @@ void FitBGratio(){
 	    histoBGratio->SetStats(0);
 	    histoBGratio->Draw("colz");
 	    sprintf(savenamePlot,"FigBuffer/BGratioFits/%s/histoBGratio_%dSUps_rap%d_pT%d.pdf",PlotDir,nState,irap,ipT);
+	    if(ipT>5||ipT==0) c2->SaveAs(savenamePlot);
+	    histoBGratio->GetXaxis()->SetTitleOffset(1.65);
+	    histoBGratio->GetYaxis()->SetTitleOffset(2.);
+	    histoBGratio->Draw("lego");
+	    sprintf(savenamePlot,"FigBuffer/BGratioFits/%s/histoBGratio_%dSUps_rap%d_pT%d_LEGO.pdf",PlotDir,nState,irap,ipT);
 	    if(ipT>5||ipT==0) c2->SaveAs(savenamePlot);
 
 	    histoBGratio->Fit("fcosthphi","0");

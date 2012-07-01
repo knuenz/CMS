@@ -9,11 +9,11 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 
 ########## INPUTS ##########
 
-for nState in 1 2 3;do
+for nState in 3;do
 
-JobID=AlteredPPD_May20_BKGlinPLUSRestSquaredGauss_1nRand
+JobID=AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand
 
-DefaultID=Data_TheGreatRun_10B_May20_NewestCentrals
+DefaultID=Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT
 
 nSystematics=2
 

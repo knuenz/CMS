@@ -13,37 +13,31 @@ datadir_Start=${basedir}/macros/DataFiles
 #fracL=0 #in percent
 nSigma=1.00 #needed in 2 decimal accuracy (x.yz)
 
-for nState in 3;do
+for nState in 1;do
 
-JobID=Data_TheGreatRun_10B_May20_NewestCentrals #Data_TheGreatRun_10B_May11_NewestCentrals
+JobID=Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand #Data_TheGreatRun_10B_May11_NewestCentrals
 
-rapBinMin=2
-rapBinMax=2
-ptBinMin=7
-ptBinMax=7
+rapBinMin=1
+rapBinMax=1
+ptBinMin=10
+ptBinMax=10
 
 #NOTE: take care of nFits!
-
-FidCuts=11
-
-nEff=1020
-UseMCeff=true
-
-nDileptonEff=1
-UseMCDileptoneff=true
-
-nRhoFactor=1
-
-nSample=60000
-
 nFits=50
-nSkipGen=0
-
-DataID=_FinalData_CtauSig2_RequestTrigger
-
-MPValgo=3 		#1...mean,2...gauss,3...gauss-loop with chi2<2
 
 ########################################
+
+FidCuts=11
+nEff=1030
+UseMCeff=true
+nDileptonEff=1
+UseMCDileptoneff=true
+nRhoFactor=1
+nSample=60000
+nSkipGen=0
+DataID=_FinalData_CtauSig2_RequestTrigger
+MPValgo=3 		#1...mean,2...gauss,3...gauss-loop with chi2<2
+
 
 useCentralFracL=1
 
@@ -121,7 +115,7 @@ done
 
 
 cp ${storagedir}/${JobID}/polGenRecFitPlot ${storagedir}/${JobID}/polGenRecFitPlot_rap${rap_}_pt${pT_}
-./polGenRecFitPlot_rap${rap_}_pt${pT_} ${nGen_}ThisGen ${JobID}=JobID ${storagedir}=storagedir ${basedir}=basedir ${nGenerations}nGenerations ${polScenSig}polScenSig ${frameSig}frameSig ${polScenBkg}polScenBkg ${frameBkg}frameBkg ${rap_}rapBinMin ${rap_}rapBinMax ${pT_}ptBinMin ${pT_}ptBinMax ${nEff}nEff ${nDileptonEff}nDiEff ${FidCuts}FidCuts ${nSample}nSample ${ConstEvents}ConstEvents ${nSkipGen}nSkipGen UseConstEv=${UseConstEv} gen=false rec=false fit=false plot=${plot} ${TreeID}=TreeID ${datadir}=realdatadir UseMCeff=${UseMCeff} UseMCDileptoneff=${UseMCDileptoneff} ${nRhoFactor}nRhoFactor ${MPValgo}MPValgo scalePlots=true NewAccCalc=${NewAccCalc}
+./polGenRecFitPlot_rap${rap_}_pt${pT_} ${nGen_}ThisGen ${JobID}=JobID ${storagedir}=storagedir ${basedir}=basedir ${nGenerations}nGenerations ${polScenSig}polScenSig ${frameSig}frameSig ${polScenBkg}polScenBkg ${frameBkg}frameBkg ${rap_}rapBinMin ${rap_}rapBinMax ${pT_}ptBinMin ${pT_}ptBinMax ${nEff}nEff ${nDileptonEff}nDiEff ${FidCuts}FidCuts ${nSample}nSample ${nState}nState ${ConstEvents}ConstEvents ${nSkipGen}nSkipGen UseConstEv=${UseConstEv} gen=false rec=false fit=false plot=${plot} ${TreeID}=TreeID ${datadir}=realdatadir UseMCeff=${UseMCeff} UseMCDileptoneff=${UseMCDileptoneff} ${nRhoFactor}nRhoFactor ${MPValgo}MPValgo scalePlots=true NewAccCalc=${NewAccCalc}
 rm polGenRecFitPlot_rap${rap_}_pt${pT_}
 
 

@@ -28,8 +28,10 @@ int main(int argc, char** argv){
 
 	int inputTrees=0;
 
-
-
+	bool selectSOFT(false);
+	bool selectTIGHT(false);
+	bool selectMIXED(false);
+	bool selectNOTMIXED(false);
 
 	  for( int i=0;i < argc; ++i ) {
 	    if(std::string(argv[i]).find("rejectCowboys=false") != std::string::npos) {rejectCowboys=kFALSE; cout<<"reject Cowboys"<<endl;}
@@ -40,6 +42,10 @@ int main(int argc, char** argv){
 	    if(std::string(argv[i]).find("inputTree3") != std::string::npos) {inputTrees++; char* inputTree3char = argv[i]; char* inputTree3char2 = strtok (inputTree3char, "="); inputTree3 = inputTree3char2; cout<<"inputTree3 = "<<inputTree3<<endl;}
 	    if(std::string(argv[i]).find("inputTree4") != std::string::npos) {inputTrees++; char* inputTree4char = argv[i]; char* inputTree4char2 = strtok (inputTree4char, "="); inputTree4 = inputTree4char2; cout<<"inputTree4 = "<<inputTree4<<endl;}
 	    if(std::string(argv[i]).find("FidCuts") != std::string::npos) {char* FidCutschar = argv[i]; char* FidCutschar2 = strtok (FidCutschar, "p"); FidCuts = atof(FidCutschar2); cout<<"FidCuts = "<<FidCuts<<endl;}
+	    if(std::string(argv[i]).find("selectSOFT=1") != std::string::npos) {selectSOFT=true; cout<<"selectSOFT"<<endl;}
+	    if(std::string(argv[i]).find("selectTIGHT=1") != std::string::npos) {selectTIGHT=true; cout<<"selectTIGHT"<<endl;}
+	    if(std::string(argv[i]).find("selectMIXED=1") != std::string::npos) {selectMIXED=true; cout<<"selectMIXED"<<endl;}
+	    if(std::string(argv[i]).find("selectNOTMIXED=1") != std::string::npos) {selectNOTMIXED=true; cout<<"selectNOTMIXED"<<endl;}
 	    }
 
 	  cout<<"Number of Input Trees = "<<inputTrees<<endl;
@@ -58,7 +64,7 @@ int main(int argc, char** argv){
   BookHistosReco();
   printf("after booking of histo\n");
   Int_t selDimuType = 4; //0...only GG, 1... only GT, 2... only TT, 3...GG+GT, 4...GG+GT+TT
-  treeReco.Loop(selDimuType, rejectCowboys, FidCuts, UpsMC, RequestTrigger);
+  treeReco.Loop(selDimuType, rejectCowboys, FidCuts, UpsMC, RequestTrigger, selectSOFT, selectTIGHT, selectMIXED, selectNOTMIXED);
   printf("writing out the histograms\n");
   WriteHistosReco(fNameOut);
 
@@ -120,6 +126,7 @@ void BookHistosReco(){
   lepN = new TLorentzVector();
   treeOut->Branch("lepP", "TLorentzVector", &lepP);
   treeOut->Branch("lepN", "TLorentzVector", &lepN);
+  //treeOut->Branch("RunID", &RunID, "RunID/I");
 
   // //polarization histos:
   // for(int iFrame = 0; iFrame < onia::kNbFrames; iFrame++){

@@ -18,6 +18,18 @@ public :
    Int_t           lumiBlock;
    Int_t           nPriVtx;
    Int_t           JpsiType;
+   Int_t           muPosPglobalOK;
+   Int_t           muNegPglobalOK;
+
+   Double_t		   muPosPglobalchi2;
+   Double_t		   muNegPglobalchi2;
+   Int_t           muPosPglobalMuonHits;
+   Int_t           muNegPglobalMuonHits;
+   Int_t           muPosPMuonMatchedStations;
+   Int_t           muNegPMuonMatchedStations;
+   Int_t           ismuPosTMOneStationTight;
+   Int_t           ismuNegTMOneStationTight;
+
  //TLorentzVector  *JpsiP;
    /* UInt_t          fUniqueID; */
    /* UInt_t          fBits; */
@@ -218,6 +230,19 @@ public :
 
 
    // List of branches
+
+   TBranch        *b_muPosPglobalOK;   //!
+   TBranch        *b_muNegPglobalOK;   //!
+
+   TBranch		  *b_muPosPglobalchi2;
+   TBranch		  *b_muNegPglobalchi2;
+   TBranch        *b_muPosPglobalMuonHits;
+   TBranch        *b_muNegPglobalMuonHits;
+   TBranch        *b_muPosPMuonMatchedStations;
+   TBranch        *b_muNegPMuonMatchedStations;
+   TBranch        *b_ismuPosTMOneStationTight;
+   TBranch        *b_ismuNegTMOneStationTight;
+
    TBranch        *b_eventNb;   //!
    TBranch        *b_runNb;   //!
    TBranch        *b_lumiBlock;   //!
@@ -426,7 +451,7 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     Loop(Int_t selDimuType, Bool_t rejectCowboys, Int_t FidCuts, bool UpsMC, bool RequestTrigger);
+   virtual void     Loop(Int_t selDimuType, Bool_t rejectCowboys, Int_t FidCuts, bool UpsMC, bool RequestTrigger, bool selectSOFT, bool selectTIGHT, bool selectMIXED, bool selectNOTMIXED);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
@@ -498,6 +523,27 @@ void PolData::Init(TTree *tree)
    fChain->SetBranchAddress("JpsiP", &onia);
    fChain->SetBranchAddress("muNegP", &muNeg);
    fChain->SetBranchAddress("muPosP", &muPos);
+
+   fChain->SetBranchAddress("muPosPglobalOK", &muPosPglobalOK, &b_muPosPglobalOK);
+   fChain->SetBranchAddress("muNegPglobalOK", &muNegPglobalOK, &b_muNegPglobalOK);
+
+   fChain->SetBranchAddress("muPosPglobalchi2", &muPosPglobalchi2         , &b_muPosPglobalchi2         );
+   fChain->SetBranchAddress("muNegPglobalchi2", &muNegPglobalchi2         , &b_muNegPglobalchi2         );
+   fChain->SetBranchAddress("muPosPglobalMuonHits", &muPosPglobalMuonHits     , &b_muPosPglobalMuonHits     );
+   fChain->SetBranchAddress("muNegPglobalMuonHits", &muNegPglobalMuonHits     , &b_muNegPglobalMuonHits     );
+   fChain->SetBranchAddress("muPosPMuonMatchedStations", &muPosPMuonMatchedStations, &b_muPosPMuonMatchedStations);
+   fChain->SetBranchAddress("muNegPMuonMatchedStations", &muNegPMuonMatchedStations, &b_muNegPMuonMatchedStations);
+   fChain->SetBranchAddress("ismuPosTMOneStationTight", &ismuPosTMOneStationTight , &b_ismuPosTMOneStationTight );
+   fChain->SetBranchAddress("ismuNegTMOneStationTight", &ismuNegTMOneStationTight , &b_ismuNegTMOneStationTight );
+
+
+
+
+
+
+
+
+
 
    fChain->SetBranchAddress("eventNb", &eventNb, &b_eventNb);
    fChain->SetBranchAddress("runNb", &runNb, &b_runNb);

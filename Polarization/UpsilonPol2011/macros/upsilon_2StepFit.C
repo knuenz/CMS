@@ -47,7 +47,7 @@ void upsilon_2StepFit(Int_t iRapBin = 0,
   
   GetHisto(fileNameIn, iRapBin, iPTBin);
   if(hMass->GetEntries() < 1.){
-    printf("\n\n\nskip processing this bin, because the number of entries is smaller than 200\n\n\n");
+    printf("\n\n\nskip processing this bin, because the number of entries is smaller than 1\n\n\n");
     return;
   }
   FitSignalBG(nSigma, iRapBin, iPTBin);

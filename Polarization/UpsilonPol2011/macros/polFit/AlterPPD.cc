@@ -288,7 +288,7 @@ int main(int argc, char** argv) {
 		  int n_step;
 		  int n_entries;
 		  char TreeOutName[200];
-		  const int nRandPerEntry=1;
+		  const int nRandPerEntry=5;
 	 	  double randomNumber[nRandPerEntry+1][nParameters+1];
 
 ///// CS variations /////////

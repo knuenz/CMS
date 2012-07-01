@@ -2,17 +2,17 @@
 
 ########## INPUTS ##########
 
-nState=3
+nState=2
 
-JobID=Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_PLUS_28_46_30
+JobID=Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT
 
-nGenerations=10
+nGenerations=50
 MergeFiles=1
 
-rapBinMin=2
-rapBinMax=2
-ptBinMin=2
-ptBinMax=2
+rapBinMin=1
+rapBinMax=1
+ptBinMin=9
+ptBinMax=9
 
 
 ########################################

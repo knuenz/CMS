@@ -9,12 +9,12 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 
 ########## INPUTS ##########
 
-for nState in 2 3;do
-for JobID1 in Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_PLUS_28_46_30;do #this is the systematic error!!!
+for nState in 1 2 3;do
+for JobID1 in Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT;do #this is the systematic error!!!
 
-SystID=TheGreatRun_BKGmodel
+SystID=TotalSyst
 
-JobID2=Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_MINUS_28_46_30   #this is the default!!!
+JobID2=Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand   #this is the default!!!
 
 ptBinMin=1
 ptBinMax=10

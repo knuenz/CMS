@@ -136,7 +136,7 @@ void polRec(double rapdilepton_min = 1,
 
 
 
-  if( nEff>1019 && nEff<1040 ){
+  if( nEff>1019 && nEff<1099 ){
   const int etaBinsTotal = 8;
   double etaBinningParametrized[etaBinsTotal+1]={0.,0.2,0.3,0.6,0.8,1.0,1.2,1.4,1.6};
   int pTBinsNew = 2000;
@@ -294,6 +294,9 @@ if(nEff > 10000) hEvalEff = (TH2D*)hEvalEff2D->Clone("hEvalEff");
 
     bool isEventAccepted = isMuonInAcceptance( FidCuts-1, lepP_pT, lepP_eta )
                          * isMuonInAcceptance( FidCuts-1, lepN_pT, lepN_eta );
+
+//    if (lepP_gen->Phi()>0 && lepP_gen->Phi()<TMath::Pi()/8.) isEventAccepted=false;
+//    if (lepN_gen->Phi()>0 && lepN_gen->Phi()<TMath::Pi()/8.) isEventAccepted=false;
 
     if ( !isEventAccepted ) {rejected++; continue;}
 

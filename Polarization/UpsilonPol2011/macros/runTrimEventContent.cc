@@ -140,6 +140,13 @@ int main(int argc, char** argv){
   double backgroundFrac_3S_rap1[nBinspT];
   double backgroundFrac_3S_rap2[nBinspT];
 
+  double err_backgroundFrac_1S_rap1[nBinspT];
+  double err_backgroundFrac_1S_rap2[nBinspT];
+  double err_backgroundFrac_2S_rap1[nBinspT];
+  double err_backgroundFrac_2S_rap2[nBinspT];
+  double err_backgroundFrac_3S_rap1[nBinspT];
+  double err_backgroundFrac_3S_rap2[nBinspT];
+
   double SignalEvents_1S_rap1[nBinspT];
   double SignalEvents_1S_rap2[nBinspT];
   double SignalEvents_2S_rap1[nBinspT];
@@ -175,6 +182,13 @@ int main(int argc, char** argv){
           backgroundFrac_2S_rap2[pt]=backgroundFrac_[1][1][iPT-1];
           backgroundFrac_3S_rap1[pt]=backgroundFrac_[2][0][iPT-1];
           backgroundFrac_3S_rap2[pt]=backgroundFrac_[2][1][iPT-1];
+
+       	  err_backgroundFrac_1S_rap1[pt]=err_backgroundFrac_[0][0][iPT-1];
+          err_backgroundFrac_1S_rap2[pt]=err_backgroundFrac_[0][1][iPT-1];
+          err_backgroundFrac_2S_rap1[pt]=err_backgroundFrac_[1][0][iPT-1];
+          err_backgroundFrac_2S_rap2[pt]=err_backgroundFrac_[1][1][iPT-1];
+          err_backgroundFrac_3S_rap1[pt]=err_backgroundFrac_[2][0][iPT-1];
+          err_backgroundFrac_3S_rap2[pt]=err_backgroundFrac_[2][1][iPT-1];
 
        	  SignalEvents_1S_rap1[pt]=SignalEvents_[0][0][iPT-1];
           SignalEvents_1S_rap2[pt]=SignalEvents_[0][1][iPT-1];
@@ -475,39 +489,39 @@ int main(int argc, char** argv){
 //  	    	plotHisto->SetLeftMargin(0.3);
 
 
-  	     	TGraphAsymmErrors *graph_backgroundFrac_1S_rap1 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_1S_rap1,ptCentreErr_low,ptCentreErr_high,0,0);
+  	     	TGraphAsymmErrors *graph_backgroundFrac_1S_rap1 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_1S_rap1,ptCentreErr_low,ptCentreErr_high,err_backgroundFrac_1S_rap1,err_backgroundFrac_1S_rap1);
   	     	graph_backgroundFrac_1S_rap1->SetMarkerColor(MarkerColor[1]);
   	     	graph_backgroundFrac_1S_rap1->SetLineColor(MarkerColor[1]);
   	     	graph_backgroundFrac_1S_rap1->SetMarkerStyle(MarkerStyle[1][1]);
   	     	graph_backgroundFrac_1S_rap1->SetMarkerSize(MarkerSize[1][1]);
   	     	graph_backgroundFrac_1S_rap1->Draw("P");
-  	     	TGraphAsymmErrors *graph_backgroundFrac_1S_rap2 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_1S_rap2,ptCentreErr_low,ptCentreErr_high,0,0);
+  	     	TGraphAsymmErrors *graph_backgroundFrac_1S_rap2 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_1S_rap2,ptCentreErr_low,ptCentreErr_high,err_backgroundFrac_1S_rap2,err_backgroundFrac_1S_rap2);
   	     	graph_backgroundFrac_1S_rap2->SetMarkerColor(MarkerColor[1]);
   	     	graph_backgroundFrac_1S_rap2->SetLineColor(MarkerColor[1]);
   	     	graph_backgroundFrac_1S_rap2->SetMarkerStyle(MarkerStyle[1][2]);
   	     	graph_backgroundFrac_1S_rap2->SetMarkerSize(MarkerSize[1][2]);
   	     	graph_backgroundFrac_1S_rap2->Draw("P");
 
-  	     	TGraphAsymmErrors *graph_backgroundFrac_2S_rap1 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_2S_rap1,ptCentreErr_low,ptCentreErr_high,0,0);
+  	     	TGraphAsymmErrors *graph_backgroundFrac_2S_rap1 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_2S_rap1,ptCentreErr_low,ptCentreErr_high,err_backgroundFrac_2S_rap1,err_backgroundFrac_2S_rap1);
   	     	graph_backgroundFrac_2S_rap1->SetMarkerColor(MarkerColor[2]);
   	     	graph_backgroundFrac_2S_rap1->SetLineColor(MarkerColor[2]);
   	     	graph_backgroundFrac_2S_rap1->SetMarkerStyle(MarkerStyle[1][1]);
   	     	graph_backgroundFrac_2S_rap1->SetMarkerSize(MarkerSize[1][1]);
   	     	graph_backgroundFrac_2S_rap1->Draw("P");
-  	     	TGraphAsymmErrors *graph_backgroundFrac_2S_rap2 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_2S_rap2,ptCentreErr_low,ptCentreErr_high,0,0);
+  	     	TGraphAsymmErrors *graph_backgroundFrac_2S_rap2 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_2S_rap2,ptCentreErr_low,ptCentreErr_high,err_backgroundFrac_2S_rap2,err_backgroundFrac_2S_rap2);
   	     	graph_backgroundFrac_2S_rap2->SetMarkerColor(MarkerColor[2]);
   	     	graph_backgroundFrac_2S_rap2->SetLineColor(MarkerColor[2]);
   	     	graph_backgroundFrac_2S_rap2->SetMarkerStyle(MarkerStyle[1][2]);
   	     	graph_backgroundFrac_2S_rap2->SetMarkerSize(MarkerSize[1][2]);
   	     	graph_backgroundFrac_2S_rap2->Draw("P");
 
-  	     	TGraphAsymmErrors *graph_backgroundFrac_3S_rap1 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_3S_rap1,ptCentreErr_low,ptCentreErr_high,0,0);
+  	     	TGraphAsymmErrors *graph_backgroundFrac_3S_rap1 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_3S_rap1,ptCentreErr_low,ptCentreErr_high,err_backgroundFrac_3S_rap1,err_backgroundFrac_3S_rap1);
   	     	graph_backgroundFrac_3S_rap1->SetMarkerColor(MarkerColor[3]);
   	     	graph_backgroundFrac_3S_rap1->SetLineColor(MarkerColor[3]);
   	     	graph_backgroundFrac_3S_rap1->SetMarkerStyle(MarkerStyle[1][1]);
   	     	graph_backgroundFrac_3S_rap1->SetMarkerSize(MarkerSize[1][1]);
   	     	graph_backgroundFrac_3S_rap1->Draw("P");
-  	     	TGraphAsymmErrors *graph_backgroundFrac_3S_rap2 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_3S_rap2,ptCentreErr_low,ptCentreErr_high,0,0);
+  	     	TGraphAsymmErrors *graph_backgroundFrac_3S_rap2 = new TGraphAsymmErrors(nBinspT,ptCentre_,backgroundFrac_3S_rap2,ptCentreErr_low,ptCentreErr_high,err_backgroundFrac_3S_rap2,err_backgroundFrac_3S_rap2);
   	     	graph_backgroundFrac_3S_rap2->SetMarkerColor(MarkerColor[3]);
   	     	graph_backgroundFrac_3S_rap2->SetLineColor(MarkerColor[3]);
   	     	graph_backgroundFrac_3S_rap2->SetMarkerStyle(MarkerStyle[1][2]);

@@ -17,7 +17,7 @@ bool isMuonInAcceptance(int iCut, double pT, double eta){
 	//iCut=8  (FidCuts=9) - New TIGHT cuts Feb12
 	//iCut=9  (FidCuts=10) - New TIGHT cuts Feb12, without an eta<1.6 cut
 	//iCut=10  (FidCuts=11) - TPV cuts
-	//iCut=11  (FidCuts=12) - TPV cuts + 500 MeV
+	//iCut=11  (FidCuts=12) - TPV cuts + 1000 MeV
 	//iCut=12  (FidCuts=13) - TPV cuts + 0.2-0.3 eta cut
 	//iCut=13  (FidCuts=14) - Chib cuts
 
@@ -99,9 +99,9 @@ bool isMuonInAcceptance(int iCut, double pT, double eta){
   }
 
   if(iCut==11){
-	  if(TMath::Abs(eta)<1.2 && pT>5.0) decision=kTRUE;
-	  if(TMath::Abs(eta)>1.2 && TMath::Abs(eta)<1.4 && pT>4.0) decision=kTRUE;
-	  if(TMath::Abs(eta)>1.4 && TMath::Abs(eta)<1.6 && pT>3.5) decision=kTRUE;
+	  if(TMath::Abs(eta)<1.2 && pT>5.5) decision=kTRUE;
+	  if(TMath::Abs(eta)>1.2 && TMath::Abs(eta)<1.4 && pT>4.5) decision=kTRUE;
+	  if(TMath::Abs(eta)>1.4 && TMath::Abs(eta)<1.6 && pT>4.) decision=kTRUE;
   }
 
   if(iCut==12){
@@ -135,6 +135,7 @@ void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff)
 		if(nEff==109 || nEff==1009 || nEff==10009) sprintf(EffFileName,"EfficiencyProduct_combinedMC_fineBins_Trk80Cuts_3Feb2011.root");
 		if(nEff==110 || nEff==1010 || nEff==10010) sprintf(EffFileName,"EfficiencyProductDimuon0Jpsi_combinedMC_fineBins_Trk80Cuts_6Mar2011.root");
 		if(nEff==111 || nEff==1011 || nEff==10011) sprintf(EffFileName,"EfficiencyFactorized_Dimuon0Jpsi_combined_DATA_MC_Trk80Cuts_14Mar2012.root");
+		if(nEff==112 || nEff==1012 || nEff==10012) sprintf(EffFileName,"EfficiencyFactorized_Dimuon0Jpsi_combinedMC_DATA_run1_Trk80Cuts_scaled_sanity_drM1_newFactor_21June2012.root");
 
 		if(nEff==1020) sprintf(EffFileName,"ParametrizedFactDataEff_16Mar_Central.root");
 		if(nEff==1021) sprintf(EffFileName,"ParametrizedFactDataEff_16Mar_pTshift_plus.root");
@@ -144,13 +145,23 @@ void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff)
 		if(nEff==1025) sprintf(EffFileName,"ParametrizedFactDataEff_16Mar_effshift_plus.root");
 		if(nEff==1026) sprintf(EffFileName,"ParametrizedFactDataEff_16Mar_effshift_minus.root");
 
-		if(nEff==1030) sprintf(EffFileName,"ParametrizedFactDataEff_May19_Central.root");
+		if(nEff==1030) sprintf(EffFileName,"ParametrizedFactDataEff_May19_Central.root");//'soft'
 		if(nEff==1031) sprintf(EffFileName,"ParametrizedFactDataEff_May19_pTshift_plus.root");
 		if(nEff==1032) sprintf(EffFileName,"ParametrizedFactDataEff_May19_pTshift_minus.root");
 		if(nEff==1033) sprintf(EffFileName,"ParametrizedFactDataEff_May19_pTscale_plus.root");
 		if(nEff==1034) sprintf(EffFileName,"ParametrizedFactDataEff_May19_pTscale_minus.root");
 		if(nEff==1035) sprintf(EffFileName,"ParametrizedFactDataEff_May19_effshift_plus.root");
 		if(nEff==1036) sprintf(EffFileName,"ParametrizedFactDataEff_May19_effshift_minus.root");
+
+		if(nEff==1040) sprintf(EffFileName,"ParametrizedFactDataEff_June12_Central.root");
+
+		if(nEff==1050) sprintf(EffFileName,"ParametrizedFactDataEff_May19_Central.root");
+		if(nEff==1051) sprintf(EffFileName,"ParametrizedFactDataEff_June14_Run1_Central.root");
+		if(nEff==1052) sprintf(EffFileName,"ParametrizedFactDataEff_June14_Run2_Central.root");
+		if(nEff==1053) sprintf(EffFileName,"ParametrizedFactDataEff_June14_Run3_Central.root");
+
+		if(nEff==1060) sprintf(EffFileName,"ParametrizedFactDataEff_June21_Central.root");//'almost tight'
+		if(nEff==1070) sprintf(EffFileName,"ParametrizedFactDataEff_June25_Central.root");//'mixed'
 
 	}
 

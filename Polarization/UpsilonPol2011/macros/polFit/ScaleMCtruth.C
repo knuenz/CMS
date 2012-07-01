@@ -61,12 +61,16 @@ void ScaleMCtruth(){
 	  char EffFileData[200];
 	  char graphName[200];
 
-//	  sprintf(EffFile,"EffFiles/singleMuTruthEff_18Jan2012_40GeVrap1_2pT100GeV_EtaCut_FineBins200MeV.root");
 	  sprintf(EffFile,"EffFiles/singleMuTruthEff_7March2012_40GeVrap1_TnPBins.root");
 	  sprintf(EffFileData,"EffFiles/EfficiencyFactorized_Dimuon0Jpsi_combined_DATA_MC_Trk80Cuts_14Mar2012.root");
+//	  sprintf(EffFileData,"EffFiles/EfficiencyFactorized_Dimuon0Jpsi_combinedMC_DATA_run1_Trk80Cuts_scaled_14June2012.root");
+//	  sprintf(EffFileData,"EffFiles/EfficiencyFactorized_Dimuon0Jpsi_combinedMC_DATA_run1_Trk80Cuts_scaled_sanity_drM1_newFactor_21June2012.root");
+//	  sprintf(EffFileData,"EffFiles/EfficiencyFactorized_Dimuon0Jpsi_combinedMC_DATA_run1_Trk80Cuts_scaled_sanity_Mixed_24June2012.root");
 
+	  char Date[100];
+	  sprintf(Date,"May20");
 	  char JobID[200];
-	  sprintf(JobID,"May19_FINALS");
+	  sprintf(JobID,"June27_SOFT_Approval_changedScaling");
 	  char filename[200];
 	  sprintf(filename,"Scaling/%s",JobID);
 	  gSystem->mkdir("Scaling");
@@ -221,13 +225,15 @@ void ScaleMCtruth(){
 	  graphDATA->SaveAs("tmp/graphDataBefore.root");
 
 ///// Alter according to MuonID, May19:
-
+/*
 	  double SFerror;
 	  double SF;
 
 	  if(etaBin==0||etaBin==2||etaBin==3||etaBin==4||etaBin==5) { SF=1.019; SFerror=0.005; }//for the bin |eta| < 1.2 (excl. 0.2-0.3)
 	  if(etaBin==1) { SF=1.032; SFerror=0.01; }//for the bin 0.2 < |eta| < 0.3
 	  if(etaBin==5||etaBin==6) { SF=1.019; SFerror=0.01; }//for the bin 1.2 < |eta| < 1.6
+
+
 
 //	  SF=1;
 //	  SFerror=0;
@@ -244,6 +250,7 @@ void ScaleMCtruth(){
 	  double err_pTDATAALTER_high[nDimALTER];
 	  double efferrALTER_low[nDimALTER];
 	  double efferrALTER_high[nDimALTER];
+
 
 	  for(int i=0;i<nPtALTER_;i++){
 
@@ -266,7 +273,7 @@ void ScaleMCtruth(){
 //	  graphDATA = new TGraphAsymmErrors(nPtALTER_,pTDATAALTER,effDATAALTER,err_pTDATAALTER_low,err_pTDATAALTER_high,efferrALTER_low,efferrALTER_high);
 
 	  graphDATA->SaveAs("tmp/graphDataAfter.root");
-
+*/
 /////// End Altering Data Graph
 
 	  double pTdist = 150./double(pTBinsNew);
@@ -988,6 +995,8 @@ RefLineeffscale2->SetLineColor( kGreen+2 );
 						  double errY[nDim];
 
 
+						  TH1D* pull_histo=new TH1D("pull_histo","pull_histo",24,-3,3);
+
 					  for(int i=0;i<nPt_;i++){
 					  graphDATA->GetPoint(i,pTDATA[i],effDATA[i]);
 					  effModel[i] = Ngraph->Eval(pTDATA[i]);
@@ -997,7 +1006,9 @@ RefLineeffscale2->SetLineColor( kGreen+2 );
 					  errXlow[i]=graphDATA->GetErrorXlow(i);
 					  errXhigh[i]=graphDATA->GetErrorXhigh(i);
 					  errY[i]=0;
+					  pull_histo->Fill(pull[i]);
 					  }
+
 					 	TGraphAsymmErrors *Pullgraph = new TGraphAsymmErrors(nDim,pTDATA,pull,errXlow,errXhigh,errY,errY);
 
 				   	    TCanvas *pullCanvas = new TCanvas("pullCanvas","pullCanvas",1000,800);
@@ -1030,13 +1041,67 @@ RefLineeffscale2->SetLineColor( kGreen+2 );
 				   		RefLinePull->Draw( "same" );
 
 				   		Pullgraph->SetMarkerStyle(20);
-   		Pullgraph->SetMarkerSize(0.8);
-					Pullgraph->Draw("P");
+				   		Pullgraph->SetMarkerSize(0.8);
+				   		Pullgraph->Draw("P");
 
 						  sprintf(savename,"Scaling/%s/eta%d_Pull.pdf",JobID,etaBin);
 						  pullCanvas->SaveAs(savename);
 						  pullCanvas->Close();
 						  delete pullCanvas;
+
+
+
+						  pull_histo->Print();
+
+
+					   	    TCanvas *pullHistoCanvas = new TCanvas("pullHistoCanvas","pullHistoCanvas",1000,800);
+					   	    pullHistoCanvas->SetFillColor(kWhite);
+					   	    pullHistoCanvas->SetGrid();
+						   	pullHistoCanvas->GetFrame()->SetFillColor(kWhite);
+						   	pullHistoCanvas->GetFrame()->SetBorderSize(0);
+						   	pullHistoCanvas->SetRightMargin(0.05) ;
+
+						   	double pullHistoPlotMax=1.5*pull_histo->GetMaximum();
+					   		TH1F *pullHistoHisto = new TH1F;
+					   		pullHistoHisto = pullHistoCanvas->DrawFrame(-4,0,4,pullHistoPlotMax);
+					   		pullHistoHisto->SetYTitle("counts");
+					   		pullHistoHisto->GetYaxis()->SetTitleOffset(1.5);
+					   		pullHistoHisto->SetXTitle("(#epsilon_{data}-#epsilon_{model})/#sigma_{data}");
+
+					   		TLine* RefLinePullHisto = new TLine( 0, 0,0, pullHistoPlotMax );
+					   		RefLinePullHisto->SetLineWidth( 2 );
+					   		RefLinePullHisto->SetLineStyle( 2 );
+					   		RefLinePullHisto->SetLineColor( kGreen+2 );
+					   		RefLinePullHisto->Draw( "same" );
+					   		RefLinePullHisto = new TLine( -1, 0,-1, pullHistoPlotMax );
+					   		RefLinePullHisto->SetLineWidth( 2 );
+					   		RefLinePullHisto->SetLineStyle( 2 );
+					   		RefLinePullHisto->SetLineColor( kBlue-6 );
+					   		RefLinePullHisto->Draw( "same" );
+					   		RefLinePullHisto = new TLine( 1, 0,1, pullHistoPlotMax );
+					   		RefLinePullHisto->SetLineWidth( 2 );
+					   		RefLinePullHisto->SetLineStyle( 2 );
+					   		RefLinePullHisto->SetLineColor( kBlue-6 );
+					   		RefLinePullHisto->Draw( "same" );
+
+					   		pull_histo->SetMarkerStyle(20);
+					   		pull_histo->SetMarkerSize(0.8);
+					   		pull_histo->Draw("E,same");
+
+							char texTexPull[200];
+							sprintf(texTexPull,"#mu = %1.3f +- %1.3f",pull_histo->GetMean(),pull_histo->GetMeanError());
+							TLatex *textPull = new TLatex(1.1,pullHistoPlotMax*0.95,texTexPull);
+							textPull->SetTextSize(0.035);
+							textPull->Draw( "same" );
+							sprintf(texTexPull,"R.M.S. = %1.3f +- %1.3f",pull_histo->GetRMS(),pull_histo->GetRMSError());
+							TLatex *textPull2 = new TLatex(1.1,pullHistoPlotMax*0.9,texTexPull);
+							textPull2->SetTextSize(0.035);
+							textPull2->Draw( "same" );
+
+							  sprintf(savename,"Scaling/%s/eta%d_PullHisto.pdf",JobID,etaBin);
+							  pullHistoCanvas->SaveAs(savename);
+							  pullHistoCanvas->Close();
+							  delete pullHistoCanvas;
 
 
 
@@ -1348,8 +1413,97 @@ if(!DrawEasySystematicLines){
 						SystCanvas->Close();
 
 				delete SystCanvas;
-				char Date[100];
-				sprintf(Date,"May19");
+
+
+
+
+
+
+
+
+		   	    TCanvas *ApprovalCanvas = new TCanvas("ApprovalCanvas","ApprovalCanvas",1150,800);
+		   		ApprovalCanvas->SetFillColor(kWhite);
+		   		ApprovalCanvas->GetFrame()->SetFillColor(kWhite);
+		   		ApprovalCanvas->GetFrame()->SetBorderSize(0);
+		   		ApprovalCanvas->SetRightMargin(0.05) ;
+		   		ApprovalCanvas->SetTopMargin(0.05) ;
+
+		   		double plotEffminAPP=0.45;
+		   		double plotpTmaxAPP=30;
+
+		   		TH1F *ApprovalHisto = new TH1F;
+		   		ApprovalHisto = ApprovalCanvas->DrawFrame(0,plotEffminAPP,plotpTmaxAPP,1.1);
+		   		ApprovalHisto->SetXTitle("single muon transverse momentum [GeV]");
+		   		ApprovalHisto->SetYTitle("single muon efficiency");
+		   		ApprovalHisto->GetYaxis()->SetTitleSize(0.04);
+//		   		ApprovalHisto->GetYaxis()->SetTitleOffset(1.5);
+
+
+		   		TLine* RefLineApproval = new TLine( 0, 1,plotpTmaxAPP, 1 );
+		   		RefLineApproval->SetLineWidth( 2 );
+		   		RefLineApproval->SetLineStyle( 3 );
+		   		RefLineApproval->SetLineColor( kBlack );
+
+		   		RefLineApproval->Draw( "same" );
+
+		   		TLegend* ApprovalLegend=new TLegend(0.6375,0.15,0.925,0.35);
+		   		ApprovalLegend->SetFillColor(kWhite);
+		   		ApprovalLegend->SetTextFont(72);
+		   		ApprovalLegend->SetTextSize(0.0375);
+		   		ApprovalLegend->SetBorderSize(1);
+
+
+				  int j=0;
+				  int nCorrSigmas=1;
+				  for(int i=0;i<nvpar;i++){
+
+					  Ngraph_corr[j]->SetLineColor(kGreen+2);
+					  Ngraph_corr[j]->Draw("same");
+
+					  j++;
+				  }
+
+				  Ngraph->SetLineWidth(2.);
+				  graphDATA->SetMarkerSize(1.25);
+
+				  Ngraph->Draw("same");
+				  graphDATA->Draw("P");
+
+
+				  double TextAppMin;
+				  TextAppMin=12.5;
+				  if(etaBin==0) TextAppMin=TextAppMin+2.;
+
+					char texTexAPP[200];
+					sprintf(texTexAPP,"Muon efficiencies, %1.1f < |#eta(#mu)| < %1.1f",etaRange[etaBin],etaRange[etaBin+1]);
+					if(etaBin==0) sprintf(texTexAPP,"Muon efficiencies, |#eta(#mu)| < %1.1f", etaRange[etaBin+1]);
+					TLatex *textAPP = new TLatex(TextAppMin,1.035,texTexAPP);
+					textAPP->SetTextSize(0.045);
+					textAPP->Draw( "same" );
+
+					sprintf(texTexAPP,"CMS preliminary");
+					TLatex *textAPPPre = new TLatex(20.5,0.665,texTexAPP);
+					textAPPPre->SetTextSize(0.035);
+					textAPPPre->Draw( "same" );
+
+					  sprintf(legendentry,"Data T&P");
+					  ApprovalLegend->AddEntry(graphDATA,legendentry,"ple");
+					  sprintf(legendentry,"Parametrization");
+					  ApprovalLegend->AddEntry(Ngraph,legendentry,"l");
+					  sprintf(legendentry,"Error curves");
+					  ApprovalLegend->AddEntry(Ngraph_corr[0],legendentry,"l");
+					    ApprovalLegend->Draw();
+
+					  sprintf(savename,"Scaling/%s/eta%d_Approval.pdf",JobID,etaBin);
+					  ApprovalCanvas->SaveAs(savename);
+					  ApprovalCanvas->Close();
+
+			delete ApprovalCanvas;
+
+
+
+
+
 
 			   myfile << pTscaleEst << "\n";
 

@@ -3,10 +3,10 @@ macdir=/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/UpsilonPol/macros/p
 
 DataToy=Data
 
-for JobID in Data_TheGreatRun_10B_May20_NewestCentrals;do
-for nState in 3;do
-for rap_ in 2;do
-for pT_ in 7;do
+for JobID in Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand;do
+for nState in 1;do
+for rap_ in 1;do
+for pT_ in 10;do
 
 echo $JobID
 mkdir ${macdir}/Figures${DataToy}/${JobID}
@@ -25,6 +25,14 @@ cp ${storagedir}/${JobID}/Figures/lph_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.p
 cp ${storagedir}/${JobID}/Figures/lphstar_vs_lthstar_${nState}SUps_rap${rap_}_pT${pT_}.pdf ${macdir}/Figures${DataToy}/${JobID}/Figures
 cp ${storagedir}/${JobID}/Figures/ltp_vs_lph_${nState}SUps_rap${rap_}_pT${pT_}.pdf ${macdir}/Figures${DataToy}/${JobID}/Figures
 cp ${storagedir}/${JobID}/Figures/ltp_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.pdf ${macdir}/Figures${DataToy}/${JobID}/Figures
+cp ${storagedir}/${JobID}/Figures/lph_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.jpg ${macdir}/Figures${DataToy}/${JobID}/Figures
+cp ${storagedir}/${JobID}/Figures/lphstar_vs_lthstar_${nState}SUps_rap${rap_}_pT${pT_}.jpg ${macdir}/Figures${DataToy}/${JobID}/Figures
+cp ${storagedir}/${JobID}/Figures/ltp_vs_lph_${nState}SUps_rap${rap_}_pT${pT_}.jpg ${macdir}/Figures${DataToy}/${JobID}/Figures
+cp ${storagedir}/${JobID}/Figures/ltp_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.jpg ${macdir}/Figures${DataToy}/${JobID}/Figures
+cp ${storagedir}/${JobID}/Figures/lph_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.C ${macdir}/Figures${DataToy}/${JobID}/Figures
+cp ${storagedir}/${JobID}/Figures/lphstar_vs_lthstar_${nState}SUps_rap${rap_}_pT${pT_}.C ${macdir}/Figures${DataToy}/${JobID}/Figures
+cp ${storagedir}/${JobID}/Figures/ltp_vs_lph_${nState}SUps_rap${rap_}_pT${pT_}.C ${macdir}/Figures${DataToy}/${JobID}/Figures
+cp ${storagedir}/${JobID}/Figures/ltp_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.C ${macdir}/Figures${DataToy}/${JobID}/Figures
 cp ${storagedir}/${JobID}/Figures/ltilde_${nState}SUps_rap${rap_}_pT${pT_}.pdf ${macdir}/Figures${DataToy}/${JobID}/Figures
 cp ${storagedir}/${JobID}/Figures/fit_cosalpha_${nState}SUps_rap${rap_}_pT${pT_}.pdf ${macdir}/Figures${DataToy}/${JobID}/Figures
 cp ${storagedir}/${JobID}/Figures/fit_background_rap_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf ${macdir}/Figures${DataToy}/${JobID}/Figures

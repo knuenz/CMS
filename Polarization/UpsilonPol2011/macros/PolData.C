@@ -16,13 +16,14 @@ TH1F *Reco_Onia_pt[onia::kNbRapForPTBins+1];
 TH1F *Reco_Onia_rap[onia::kNbPTMaxBins+1];
 TTree *treeOut;
 TLorentzVector *lepP, *lepN;
+Int_t RunID;
 
 //polarization histos:
 // TH2F *Reco2D_Onia_pol_pT_rap[onia::kNbFrames][onia::kNbPTMaxBins+1][onia::kNbRapForPTBins+1];
 
 enum {LOOSE,TIGHT};//set of muon fiducial cuts
 //==============================================
-void PolData::Loop(Int_t selDimuType, Bool_t rejectCowboys, Int_t FidCuts, bool UpsMC, bool RequestTrigger)
+void PolData::Loop(Int_t selDimuType, Bool_t rejectCowboys, Int_t FidCuts, bool UpsMC, bool RequestTrigger, bool selectSOFT, bool selectTIGHT, bool selectMIXED, bool selectNOTMIXED)
 {
   if (fChain == 0) return;
 
@@ -32,6 +33,7 @@ void PolData::Loop(Int_t selDimuType, Bool_t rejectCowboys, Int_t FidCuts, bool 
   Long64_t nb = 0;
   printf("number of entries = %d\n", (Int_t) nentries);
 
+//  nentries=2000000;
   //loop over the events
   for (Long64_t jentry=0; jentry<nentries;jentry++) {
   //for (Long64_t jentry=0; jentry<1000000;jentry++) {
@@ -51,11 +53,76 @@ void PolData::Loop(Int_t selDimuType, Bool_t rejectCowboys, Int_t FidCuts, bool 
     if(JpsiVprob < 0.01)
       continue;
 
-//    165088 - 172868
-//	  173236 - 175970
+//		double cut_nPriVtx=7.5;
+//		if(nPriVtx>cut_nPriVtx) continue;
 
-//        if(runNb < 173236)
-//      continue;
+//    Run1: 165088 - 172868 (1a + 2a) --> 53%
+//    Run2: 175971 - 178379 (1b + 2a) --> 23%
+//    Run3: 178380 - 180252 (1b + 2b) --> 15%
+
+    if(runNb>=165088 && runNb<=172868) RunID=1;
+    if(runNb>=175971 && runNb<=178379) RunID=2;
+    if(runNb>=178380 && runNb<=180252) RunID=3;
+
+    //if(RunID!=3 && onia->Pt() > 10.) continue;
+
+
+/*    cout<<"muPosPglobalchi2"<<			muPosPglobalchi2           <<endl;
+    cout<<"muNegPglobalchi2"<<			muNegPglobalchi2           <<endl;
+    cout<<"muPosPglobalMuonHits"<<		muPosPglobalMuonHits       <<endl;
+    cout<<"muNegPglobalMuonHits"<<		muNegPglobalMuonHits       <<endl;
+    cout<<"muPosPMuonMatchedStations"<<	muPosPMuonMatchedStations   <<endl;
+    cout<<"muNegPMuonMatchedStations"<<	muNegPMuonMatchedStations   <<endl;
+    cout<<"ismuPosTMOneStationTight"<<	ismuPosTMOneStationTight   <<endl;
+    cout<<"ismuNegTMOneStationTight"<<	ismuNegTMOneStationTight   <<endl;
+*/
+    if(selectTIGHT){
+    if(
+      !(
+          (muPosPglobalchi2>-1 && muNegPglobalchi2>-1) &&
+          (muPosPglobalchi2<10 && muNegPglobalchi2<10)&&
+          (muPosPglobalMuonHits>0 && muNegPglobalMuonHits>0)
+//          && (muPosPMuonMatchedStations>1, muNegPMuonMatchedStations>1)
+      )
+    ) continue;
+    if(
+      !(
+          ismuPosTMOneStationTight==1 && ismuNegTMOneStationTight==1
+      )
+    ) continue;
+//    if(JpsiDrM1 < 0.5) continue;
+    }
+
+    if(selectSOFT){
+    if(
+      !(
+          ismuPosTMOneStationTight==1 && ismuNegTMOneStationTight==1
+      )
+    ) continue;
+    }
+
+    if(selectMIXED){
+    	if(!(ismuPosTMOneStationTight==1&&ismuNegTMOneStationTight==1))
+    	  continue;
+    	if(muPosPglobalMuonHits>0)
+    	  if( !(muPosPglobalchi2<10) )
+    	    continue;
+    	if(muNegPglobalMuonHits>0)
+    	  if( !(muNegPglobalchi2<10) )
+    	    continue;
+    	if(muPosPglobalMuonHits<=0) continue;
+    	if(muNegPglobalMuonHits<=0) continue;
+
+    }
+
+    if(selectNOTMIXED){
+    	if(!(ismuPosTMOneStationTight==1&&ismuNegTMOneStationTight==1))
+    	    continue;
+      if((muPosPglobalMuonHits>0 && muPosPglobalchi2<10) && (muNegPglobalMuonHits>0 && muNegPglobalchi2<10))
+        continue;
+    }
+
+//    if(muPosPglobalOK!=1||muNegPglobalOK!=1) continue;
 
     Reco_StatEv->Fill(0.5);//count all events
 

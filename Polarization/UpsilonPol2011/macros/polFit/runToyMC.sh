@@ -4,21 +4,21 @@
 
 nState=1
 
-JobID=Toy_TheGreatRun_May20_1S_Parametrization_effshiftMINUS
+JobID=Toy_TheGreatRun_ARC_June23_1S_PhiRejection8th
 
 nGenerations=50
 
-rapBinMin=2
-rapBinMax=2
-ptBinMin=6
-ptBinMax=10
+rapBinMin=1
+rapBinMax=1
+ptBinMin=8
+ptBinMax=8
 
 polScenSig=3
 polScenBkg=3
-frameSig=1
+frameSig=2
 frameBkg=1
 
-nEff=1036
+nEff=1030
 UseMCeff=true
 nDileptonEff=1
 UseMCDileptoneff=true
@@ -30,10 +30,10 @@ nSample=10000
 nSkipGen=0
 
 #GENERATION SETTINGS
-ConstEvents=50000
+ConstEvents=10000
 UseConstEv=true
 
-UseDifferingEff=true
+UseDifferingEff=false
 nEffRec=1030
 UseMCReceff=true
 nDileptonEffRec=1

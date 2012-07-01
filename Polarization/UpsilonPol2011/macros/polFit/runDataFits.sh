@@ -13,18 +13,18 @@ datadir_Start=${basedir}/macros/DataFiles
 #fracL=0 #in percent
 nSigma=1.00 #needed in 2 decimal accuracy (x.yz)
 
-for nState in 1 2 3;do
+for nState in 1;do
 
-JobID=Data_TheGreatRun_10B_May20_NewestCentrals #Please define nSigma and fracL yourself in the JobID, if needed
+JobID=Data_TheGreatApproval_June25_CrossCheck_Mixed_Mixed #Please define nSigma and fracL yourself in the JobID, if needed
 
 rapBinMin=1
-rapBinMax=2
-ptBinMin=6
+rapBinMax=1
+ptBinMin=8
 ptBinMax=10
 
 FidCuts=11
 
-nEff=1030
+nEff=1070					#1030=soft-1060=tight-1070=mixed-111=soft-112=tight
 UseMCeff=true
 
 nDileptonEff=1
@@ -34,10 +34,10 @@ nRhoFactor=1
 
 nSample=60000
 
-nFits=50
+nFits=3
 nSkipGen=0
 
-DataID=_May20Centrals #_FinalData_CtauSig2_RequestTrigger #_May10newData
+DataID=_June25_OLDMIXED
 
 MPValgo=3 		#1...mean,2...gauss,3...gauss-loop with chi2<2
 

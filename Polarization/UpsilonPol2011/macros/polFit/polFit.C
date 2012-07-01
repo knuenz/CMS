@@ -322,7 +322,7 @@ void polFit(int n_sampledPoints=1,
 
 
 
-  if( nEff>1019 && nEff<1040 ){
+  if( nEff>1019 && nEff<1099 ){
   const int etaBinsTotal = 8;
   double etaBinningParametrized[etaBinsTotal+1]={0.,0.2,0.3,0.6,0.8,1.0,1.2,1.4,1.6};
   int pTBinsNew = 2000;

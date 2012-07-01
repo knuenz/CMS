@@ -162,14 +162,75 @@ double TrimEventContent(Int_t iRapBin = 1,
 ////////////////// Background mass scan
 const int nMassScan=12;
 int nMassScanCurrent;
+//double MassScanBorders[nMassScan+1] = {8.6, 8.95, 9.3, 9.45, 9.6, 9.85, 10.0125, 10.175, 10.3425, 10.51, 10.8, 11.1, 11.4};
 double MassScanBorders[nMassScan+1] = {8.6, 8.95, 9.3, 9.45, 9.6, 9.85, 10.0125, 10.175, 10.3425, 10.51, 10.8, 11.1, 11.4};
 
 for(int i=1;i<nMassScan+1;i++){
 if(nSigma<i+0.5) {nMassScanCurrent=i; break;}
 }
 
+double BuffMinL=onia::massMinL;
+double BuffMaxL=mass[UPS1S] - onia::nSigmaL*sigma[UPS1S];
+double BuffMinR=mass[UPS3S] + onia::nSigmaR*sigma[UPS3S];
+double BuffMaxR=onia::massMaxR;
+
 double MassScanMin=MassScanBorders[nMassScanCurrent-1];
 double MassScanMax=MassScanBorders[nMassScanCurrent];
+
+if(nSigma==1){
+	MassScanMin=BuffMinL;
+	MassScanMax=BuffMinL+1./3.*(BuffMaxL-BuffMinL);
+}
+if(nSigma==2){
+	MassScanMin=BuffMinL+1./3.*(BuffMaxL-BuffMinL);
+	MassScanMax=BuffMinL+2./3.*(BuffMaxL-BuffMinL);
+}
+if(nSigma==3){
+	MassScanMin=BuffMinL+2./3.*(BuffMaxL-BuffMinL);
+	MassScanMax=BuffMaxL;
+}
+if(nSigma==4){
+	MassScanMin=BuffMinL;
+	MassScanMax=BuffMaxL;
+}
+
+if(nSigma==5){
+	MassScanMin=BuffMinR;
+	MassScanMax=BuffMinR+1./3.*(BuffMaxR-BuffMinR);
+}
+if(nSigma==6){
+	MassScanMin=BuffMinR+1./3.*(BuffMaxR-BuffMinR);
+	MassScanMax=BuffMinR+2./3.*(BuffMaxR-BuffMinR);
+}
+if(nSigma==7){
+	MassScanMin=BuffMinR+2./3.*(BuffMaxR-BuffMinR);
+	MassScanMax=BuffMaxR;
+}
+if(nSigma==8){
+	MassScanMin=BuffMinR;
+	MassScanMax=BuffMaxR;
+}
+if(nSigma>8){
+	BuffMaxL=mass[UPS1S] - 7*sigma[UPS1S];
+	BuffMinR=mass[UPS3S] + onia::nSigmaR*sigma[UPS3S];
+}
+if(nSigma==9){
+	MassScanMin=BuffMinL;
+	MassScanMax=BuffMinL+1./3.*(BuffMaxL-BuffMinL);
+}
+if(nSigma==10){
+	MassScanMin=BuffMinL+1./3.*(BuffMaxL-BuffMinL);
+	MassScanMax=BuffMinL+2./3.*(BuffMaxL-BuffMinL);
+}
+if(nSigma==11){
+	MassScanMin=BuffMinL+2./3.*(BuffMaxL-BuffMinL);
+	MassScanMax=BuffMaxL;
+}
+if(nSigma==12){
+	MassScanMin=BuffMinL;
+	MassScanMax=BuffMaxL;
+}
+
 
   if(MassScan){
   massMin=MassScanMin;
@@ -272,6 +333,18 @@ cout<<"Y1Sto2S_SB fBG = "<<fBG->Integral(massMin, massMax) / (fBG->Integral(mass
   hMassScanInfo->SetBinContent(1,meanMass);
   hMassScanInfo->SetBinContent(2,1-fracBG);
 
+  }
+
+  if(Y1Sto2S_SB){
+	  massMin = mass[0] + 3.*sigma[0];
+	  massMax = mass[1] - 4.*sigma[1];
+
+	  double IntCurrent = fBG->Integral(massMin, massMax);
+	  for(int i=1;i<1000000;i++){
+		  if(fBG->Integral(massMin, massMin+i*MassDistCurrent)>IntCurrent/2.) {meanMass=massMin+i*MassDistCurrent; break;}
+	  }
+	  hMassScanInfo->SetBinContent(1,meanMass);
+	  hMassScanInfo->SetBinContent(2,1-fracBG);
   }
 
   //calculate central fracL

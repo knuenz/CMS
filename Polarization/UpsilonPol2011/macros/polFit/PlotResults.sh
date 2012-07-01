@@ -9,10 +9,10 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 
 ########## INPUTS ##########
 
-for nState in 3;do
+for nState in 1;do
 
-JobID=May24
-additionalName=_BKGmodelNEW_Ups${nState}S
+JobID=June25
+additionalName=_SigFrameI_true_10GeV_Ups${nState}S
 
 PlotMatt=0
 PlotCompare=1
@@ -27,14 +27,28 @@ SBmSigPlots=0
 SteerIndividuals=0
 BGratioFits=0
 BGratioChi2Fits=0
+rapBinComb=0
 
-DefaultID=Data_TheGreatRun_10B_May11_NewestCentrals_AlteredPPD_May17_BKGlinPLUSRestSquaredGauss_10nRand
-CompareID1=Data_TheGreatRun_10B_May11_NewTTree
-CompareID2=Data_TheGreatRun_10B_Apr18_NewestCentrals
-CompareID3=Data_TheGreatRun_10B_Mar22_BkgModel_Sig0p5
+DefaultID=Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT
+CompareID1=Data_TheGreatApproval_June21_CrossCheck_TIGHT_TIGHT
+CompareID2=Data_TheGreatApproval_June25_CrossCheck_Mixed_Mixed
+CompareID3=Data_TheGreatApproval_June22_CrossCheck_Tight_Tight_Binned
 CompareID4=Data_TheGreatRun_10B_Apr18_NewestCentrals
 nComp=0
 CompareSyst=0
+SetCompStyle=1
+
+LegendEntryDefID=Soft-Soft
+LegendEntryCompID1=Tight-Tight
+LegendEntryCompID2=Mixed-Mixed
+LegendEntryCompID3=Tight-Tight_Binned
+LegendEntryCompID4=
+
+
+nSystematics=3
+
+ptBinMin=6
+ptBinMax=10
 
 ### Background Polarization plots
 #DefaultID=BG0_Mar19_HighCtauSigCheck3p0
@@ -42,11 +56,55 @@ CompareSyst=0
 #CompareID2=BG0_Mar19_RSB_LowCtauSigCheck3p0
 #PlotBG0plots=1
 
+### Background Polarization plots Split LSB
+#DefaultID=Data_TheGreatARC_1rap_June7_BG0_MassSplit3_RSB4
+#CompareID1=Data_TheGreatARC_1rap_June7_BG0_MassSplit3_RSB1
+#CompareID2=Data_TheGreatARC_1rap_June7_BG0_MassSplit3_RSB2
+#CompareID3=Data_TheGreatARC_1rap_June7_BG0_MassSplit3_RSB3
+#PlotBG0plots=1
+#rapBinComb=1
 
-nSystematics=2
 
-ptBinMin=1
-ptBinMax=10
+##### TheGreatRun_RunDependence
+#SystID1Base=TheGreatRun_RunDependence
+#SystID1Specify=SEC_Data_TheGreatCrisis_June14_2Sigma_Run2data_Run2eff_TO_Data_TheGreatCrisis_June14_2Sigma_Run1data_Run1eff
+#SystID1Title=Run2_vs_Run1
+#
+#SystID2Base=TheGreatRun_RunDependence
+#SystID2Specify=SEC_Data_TheGreatCrisis_June14_2Sigma_Run3data_Run3eff_TO_Data_TheGreatCrisis_June14_2Sigma_Run1data_Run1eff
+#SystID2Title=Run3_vs_Run1
+#
+#SystID3Base=TheGreatRun_RunDependence
+#SystID3Specify=SEC_Data_TheGreatCrisis_June14_2Sigma_Run3data_Run3eff_TO_Data_TheGreatCrisis_June14_2Sigma_Run2data_Run2eff
+#SystID3Title=Run3_vs_Run2
+
+
+##### TheGreatRun_FrameworkII
+#SystID1Base=TheGreatRun_FrameworkII
+#SystID1Specify=SigDataResults1S
+#SystID1Title=1S
+#
+#SystID2Base=TheGreatRun_FrameworkII
+#SystID2Specify=SigDataResults2S
+#SystID2Title=2S
+#
+#SystID3Base=TheGreatRun_FrameworkII
+#SystID3Specify=SigDataResults3S
+#SystID3Title=3S
+
+##### TheGreatRun_ParamMar19
+#SystID1Base=TheGreatRun_ParamMar19
+#SystID1Specify=BestSyst
+#SystID1Title=SystParam.
+#
+#SystID2Base=TheGreatRun_TnP
+#SystID2Specify=BestSyst
+#SystID2Title=SystTnP.
+
+##### DataRatioFitsNEWoverOLD
+#SystID1Base=TheGreatRun_DataRatio
+#SystID1Specify=June12_2DNEWoverOLDRatio
+#SystID1Title=FitToRatioNEWoverOLD
 
 ##### BGratioFits
 #BGratioFits
@@ -86,13 +144,13 @@ ptBinMax=10
 
 ##### NEW Background model systematics
 #BKGmodel
-SystID1Base=TheGreatRun_BKGmodel
-SystID1Specify=Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_MINUS_28_46_30_TO_Data_TheGreatRun_10B_May20_NewestCentrals_Original
-SystID1Title=f_{LSB}-0.30
-
-SystID2Base=TheGreatRun_BKGmodel
-SystID2Specify=Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_PLUS_28_46_30_TO_Data_TheGreatRun_10B_May20_NewestCentrals_Original
-SystID2Title=f_{LSB}+0.30
+#SystID1Base=TheGreatRun_BKGmodel
+#SystID1Specify=Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_MINUS_28_46_30_TO_Data_TheGreatRun_10B_May20_NewestCentrals_Original
+#SystID1Title=f_{LSB}-0.30
+#
+#SystID2Base=TheGreatRun_BKGmodel
+#SystID2Specify=Data_TheGreatRun_10B_May20_NewestCentrals_BGmodel_PLUS_28_46_30_TO_Data_TheGreatRun_10B_May20_NewestCentrals_Original
+#SystID2Title=f_{LSB}+0.30
 
 ##### Background frameworkII systematics
 #BKGframe
@@ -120,17 +178,17 @@ SystID2Title=f_{LSB}+0.30
 
 ##### FrameworkI systematics
 #SigFrameI_true
-#SystID1Base=TheGreatRun_FrameworkI
-#SystID1Specify=FrameworkI_3S
-#SystID1Title=#Upsilon3S
-#
-#SystID2Base=TheGreatRun_FrameworkI
-#SystID2Specify=FrameworkI_2S
-#SystID2Title=#Upsilon2S
-#
-#SystID3Base=TheGreatRun_FrameworkI
-#SystID3Specify=FrameworkI_1S
-#SystID3Title=#Upsilon1S
+SystID1Base=TheGreatRun_FrameworkI
+SystID1Specify=FrameworkI_3S
+SystID1Title=#Upsilon3S
+
+SystID2Base=TheGreatRun_FrameworkI
+SystID2Specify=FrameworkI_2S
+SystID2Title=#Upsilon2S
+
+SystID3Base=TheGreatRun_FrameworkI
+SystID3Specify=FrameworkI_1S
+SystID3Title=#Upsilon1S
 #
 #SystID4Base=TheGreatRun_FrameworkI
 #SystID4Specify=FrameworkI_3S_Median
@@ -159,15 +217,15 @@ SystID2Title=f_{LSB}+0.30
 ##### DeltaTilde
 #DeltaTilde
 #SystID1Base=TheGreatRun_DeltaTilde
-#SystID1Specify=CStoHX_May20
+#SystID1Specify=CStoHX
 #SystID1Title=#tilde{#lambda}_{CS}-#tilde{#lambda}_{HX}
 #
 #SystID2Base=TheGreatRun_DeltaTilde
-#SystID2Specify=PXtoCS_May20
+#SystID2Specify=PXtoCS
 #SystID2Title=#tilde{#lambda}_{PX}-#tilde{#lambda}_{CS}
 #
 #SystID3Base=TheGreatRun_DeltaTilde
-#SystID3Specify=HXtoPX_May20
+#SystID3Specify=HXtoPX
 #SystID3Title=#tilde{#lambda}_{HX}-#tilde{#lambda}_{PX}
 #
 #SystID4Base=TotalSyst
@@ -274,7 +332,7 @@ JobIDDir=FinalResults/${JobID}
 mkdir ${JobIDDir}
 
 
-./PlotFinalResults ${DefaultID}=DefaultID ${CompareID1}=CompareID1 ${CompareID2}=CompareID2 ${CompareID3}=CompareID3 ${CompareID4}=CompareID4 ${JobID}=JobID ${SystID1Base}=SystID1Base ${SystID1Specify}=SystID1Specify ${SystID1Title}=SystID1Title ${SystID2Base}=SystID2Base ${SystID2Specify}=SystID2Specify ${SystID2Title}=SystID2Title ${basedir}=basedir ${storagedir}=storagedir ${ptBinMin}ptBinMin ${ptBinMax}ptBinMax ${nSystematics}nSystematics ${nComp}nComp ${nState}nState ${SystID3Base}=SystID3Base ${SystID3Specify}=SystID3Specify ${SystID3Title}=SystID3Title ${SystID4Base}=SystID4Base ${SystID4Specify}=SystID4Specify ${SystID4Title}=SystID4Title ${SystID5Base}=SystID5Base ${SystID5Specify}=SystID5Specify ${SystID5Title}=SystID5Title ${SystID6Base}=SystID6Base ${SystID6Specify}=SystID6Specify ${SystID6Title}=SystID6Title ${SystID7Base}=SystID7Base ${SystID7Specify}=SystID7Specify ${SystID7Title}=SystID7Title ${SystID8Base}=SystID8Base ${SystID8Specify}=SystID8Specify ${SystID8Title}=SystID8Title PlotMatt=${PlotMatt} PlotAsymm=${PlotAsymm} PlotCompare=${PlotCompare} PlotFinalData=${PlotFinalData} PlotSystematics=${PlotSystematics} PlotLegend=${PlotLegend} PlotBG0plots=${PlotBG0plots} DeltaTildeplots=${DeltaTildeplots} SBmSigPlots=${SBmSigPlots} CompareSyst=${CompareSyst} SteerIndividuals=${SteerIndividuals} BGratioFits=${BGratioFits} BGratioChi2Fits=${BGratioChi2Fits}
+./PlotFinalResults ${DefaultID}=DefaultID ${CompareID1}=CompareID1 ${CompareID2}=CompareID2 ${CompareID3}=CompareID3 ${CompareID4}=CompareID4 ${JobID}=JobID ${SystID1Base}=SystID1Base ${SystID1Specify}=SystID1Specify ${SystID1Title}=SystID1Title ${SystID2Base}=SystID2Base ${SystID2Specify}=SystID2Specify ${SystID2Title}=SystID2Title ${basedir}=basedir ${storagedir}=storagedir ${ptBinMin}ptBinMin ${ptBinMax}ptBinMax ${nSystematics}nSystematics ${nComp}nComp ${nState}nState ${SystID3Base}=SystID3Base ${SystID3Specify}=SystID3Specify ${SystID3Title}=SystID3Title ${SystID4Base}=SystID4Base ${SystID4Specify}=SystID4Specify ${SystID4Title}=SystID4Title ${SystID5Base}=SystID5Base ${SystID5Specify}=SystID5Specify ${SystID5Title}=SystID5Title ${SystID6Base}=SystID6Base ${SystID6Specify}=SystID6Specify ${SystID6Title}=SystID6Title ${SystID7Base}=SystID7Base ${SystID7Specify}=SystID7Specify ${SystID7Title}=SystID7Title ${SystID8Base}=SystID8Base ${SystID8Specify}=SystID8Specify ${SystID8Title}=SystID8Title PlotMatt=${PlotMatt} PlotAsymm=${PlotAsymm} PlotCompare=${PlotCompare} PlotFinalData=${PlotFinalData} PlotSystematics=${PlotSystematics} PlotLegend=${PlotLegend} PlotBG0plots=${PlotBG0plots} DeltaTildeplots=${DeltaTildeplots} SBmSigPlots=${SBmSigPlots} CompareSyst=${CompareSyst} SteerIndividuals=${SteerIndividuals} BGratioFits=${BGratioFits} BGratioChi2Fits=${BGratioChi2Fits} rapBinComb=${rapBinComb} SetCompStyle=${SetCompStyle} ${LegendEntryDefID}=LegendEntryDefID ${LegendEntryCompID1}=LegendEntryCompID1 ${LegendEntryCompID2}=LegendEntryCompID2 ${LegendEntryCompID3}=LegendEntryCompID3 ${LegendEntryCompID4}=LegendEntryCompID4
 
 cd ${homedir}/FinalResults/${JobID}/${nState}SUps
 if [ ${PlotFinalData} -eq 1 ]

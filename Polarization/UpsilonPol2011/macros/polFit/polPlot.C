@@ -81,10 +81,14 @@ inline void setContourHistogram ( TH2D *h ) {
   double cont0 = contourHeight2D( h, 0.997 );
   double cont1 = contourHeight2D( h, 0.955 );
   double cont2 = contourHeight2D( h, 0.683 );
-  h->SetContour(3);
+/*  h->SetContour(3);
   h->SetContourLevel(0,cont0);
   h->SetContourLevel(1,cont1);
   h->SetContourLevel(2,cont2);
+*/
+  h->SetContour(2);
+  h->SetContourLevel(0,cont0);
+  h->SetContourLevel(1,cont2);
 
 /*  h->SetContour(1);
 //  h->SetContourLevel(0,cont1);
@@ -241,7 +245,12 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 		bool RealData=false,
 		int MPValgo=0,
 		bool scalePlots=false,
-		int nTotalFits=1){
+		int nTotalFits=1,
+		int nState=999,
+		double ptlow=999.,
+		double pthigh=999.,
+		double raplow=999.,
+		double raphigh=999.){
 
   gROOT->Reset();
   gROOT->SetStyle("Plain");
@@ -249,6 +258,8 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   gStyle->SetOptStat(0);
 
   char filename [500];
+
+  cout<<"nState: "<<nState<<endl;
 
   // input file:
 
@@ -442,10 +453,15 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
   cout << endl << endl;
 
+  bool CMSprelim=true;
+  bool TreeBinIDTextAdd=true;
 
   TLatex *CentralsText1_2D;
   TLatex *CentralsText2_2D;
   TLatex *CentralsText3_2D;
+  TLatex *TreeBinIDText1_2D;
+  TLatex *TreeBinIDText2_2D;
+  TLatex *TreeBinIDText3_2D;
   double xCentrals2D;
   char text[200];
   double CentralsFontSize;
@@ -540,7 +556,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   // CS frame
 
   setContourHistogram ( h_lph_vs_lth_CS );
-  h_lph_vs_lth_CS->SetLineColor( kBlue );
+  h_lph_vs_lth_CS->SetLineColor( kGreen+2 );
   h_lph_vs_lth_CS->SetLineWidth( 2 );
   h_lph_vs_lth_CS->SetLineStyle( 1 );
   h_lph_vs_lth_CS->Draw( "cont2, same" );
@@ -556,7 +572,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   // PX frame
 
   setContourHistogram ( h_lph_vs_lth_PX );
-  h_lph_vs_lth_PX->SetLineColor( kGreen+2 );
+  h_lph_vs_lth_PX->SetLineColor( kBlue );
   h_lph_vs_lth_PX->SetLineWidth( 2 );
   h_lph_vs_lth_PX->SetLineStyle( 1 );
   h_lph_vs_lth_PX->Draw( "cont2, same" );
@@ -579,20 +595,44 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 		xCentrals2D=-0.75;
 	    CentralsFontSize=0.035;
 	    sprintf(text,"CMS preliminary");
+	    if(!CMSprelim) sprintf(text,"CMS");
 	    CentralsText1_2D = new TLatex(xCentrals2D,0.91,text);
 	    CentralsText1_2D->SetTextSize(CentralsFontSize);
 	    sprintf(text,"L = 4.9 fb^{-1}");
 	    CentralsText2_2D = new TLatex(xCentrals2D,0.65,text);
+//	    if(!CMSprelim) CentralsText2_2D = new TLatex(xCentrals2D,0.72,text);
 	    CentralsText2_2D->SetTextSize(CentralsFontSize);
 	    sprintf(text,"pp    #sqrt{s} = 7 TeV");
 	    CentralsText3_2D = new TLatex(xCentrals2D,0.78,text);
+//	    if(!CMSprelim) CentralsText3_2D = new TLatex(xCentrals2D,0.85,text);
 	    CentralsText3_2D->SetTextSize(CentralsFontSize);
 
 	    CentralsText1_2D->Draw( "same" );
 	    CentralsText2_2D->Draw( "same" );
 	    CentralsText3_2D->Draw( "same" );
 
+	    sprintf(text,"#Upsilon(%dS)",nState);
+	    TreeBinIDText1_2D = new TLatex(xCentrals2D,-0.73,text);
+	    TreeBinIDText1_2D->SetTextSize(CentralsFontSize);
+	    if(raplow<0.3) sprintf(text,"|y| < 0.6");
+	    if(raplow>0.3) sprintf(text,"0.6 < |y| < 1.2");
+	    TreeBinIDText2_2D = new TLatex(xCentrals2D,-0.84,text);
+	    TreeBinIDText2_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"%1.0f < p_{T} < %1.0f GeV",ptlow,pthigh);
+	    TreeBinIDText3_2D = new TLatex(xCentrals2D,-0.95,text);
+	    TreeBinIDText3_2D->SetTextSize(CentralsFontSize);
+
+	    if(TreeBinIDTextAdd){
+	    TreeBinIDText1_2D->Draw( "same" );
+	    TreeBinIDText2_2D->Draw( "same" );
+	    TreeBinIDText3_2D->Draw( "same" );
+	    }
+
   sprintf(filename,"%s/lph_vs_lth_%s.pdf",dirstruct,TreeBinID);
+  c1->Print( filename );
+  sprintf(filename,"%s/lph_vs_lth_%s.C",dirstruct,TreeBinID);
+  c1->Print( filename );
+  sprintf(filename,"%s/lph_vs_lth_%s.jpg",dirstruct,TreeBinID);
   c1->Print( filename );
 
 
@@ -631,7 +671,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   // CS frame
 
   setContourHistogram ( h_lphstar_vs_lthstar_CS );
-  h_lphstar_vs_lthstar_CS->SetLineColor( kBlue );
+  h_lphstar_vs_lthstar_CS->SetLineColor( kGreen+2 );
   h_lphstar_vs_lthstar_CS->SetLineWidth( 2 );
   h_lphstar_vs_lthstar_CS->SetLineStyle( 1 );
   h_lphstar_vs_lthstar_CS->Draw( "cont2, same" );
@@ -647,7 +687,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   // PX frame
 
   setContourHistogram ( h_lphstar_vs_lthstar_PX );
-  h_lphstar_vs_lthstar_PX->SetLineColor( kGreen+2 );
+  h_lphstar_vs_lthstar_PX->SetLineColor( kBlue );
   h_lphstar_vs_lthstar_PX->SetLineWidth( 2 );
   h_lphstar_vs_lthstar_PX->SetLineStyle( 1 );
   h_lphstar_vs_lthstar_PX->Draw( "cont2, same" );
@@ -659,7 +699,17 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   CentralsText2_2D->Draw( "same" );
   CentralsText3_2D->Draw( "same" );
 
+  if(TreeBinIDTextAdd){
+  TreeBinIDText1_2D->Draw( "same" );
+  TreeBinIDText2_2D->Draw( "same" );
+  TreeBinIDText3_2D->Draw( "same" );
+  }
+
   sprintf(filename,"%s/lphstar_vs_lthstar_%s.pdf",dirstruct,TreeBinID);
+  c1->Print( filename );
+  sprintf(filename,"%s/lphstar_vs_lthstar_%s.C",dirstruct,TreeBinID);
+  c1->Print( filename );
+  sprintf(filename,"%s/lphstar_vs_lthstar_%s.jpg",dirstruct,TreeBinID);
   c1->Print( filename );
 
 
@@ -737,7 +787,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   // CS frame
 
   setContourHistogram ( h_ltp_vs_lth_CS );
-  h_ltp_vs_lth_CS->SetLineColor( kBlue );
+  h_ltp_vs_lth_CS->SetLineColor( kGreen+2 );
   h_ltp_vs_lth_CS->SetLineWidth( 2 );
   h_ltp_vs_lth_CS->SetLineStyle( 1 );
   h_ltp_vs_lth_CS->Draw( "cont2, same" );
@@ -753,7 +803,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   // PX frame
 
   setContourHistogram ( h_ltp_vs_lth_PX );
-  h_ltp_vs_lth_PX->SetLineColor( kGreen+2 );
+  h_ltp_vs_lth_PX->SetLineColor( kBlue );
   h_ltp_vs_lth_PX->SetLineWidth( 2 );
   h_ltp_vs_lth_PX->SetLineStyle( 1 );
   h_ltp_vs_lth_PX->Draw( "cont2, same" );
@@ -776,20 +826,44 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 	xCentrals2D=-0.75;
   CentralsFontSize=0.035;
   sprintf(text,"CMS preliminary");
+  if(!CMSprelim) sprintf(text,"CMS");
   CentralsText1_2D = new TLatex(xCentrals2D,0.98,text);
   CentralsText1_2D->SetTextSize(CentralsFontSize);
   sprintf(text,"L = 4.9 fb^{-1}");
   CentralsText2_2D = new TLatex(xCentrals2D,0.74,text);
+//  if(!CMSprelim) CentralsText2_2D = new TLatex(xCentrals2D,0.81,text);
   CentralsText2_2D->SetTextSize(CentralsFontSize);
   sprintf(text,"pp    #sqrt{s} = 7 TeV");
   CentralsText3_2D = new TLatex(xCentrals2D,0.86,text);
+//  if(!CMSprelim) CentralsText3_2D = new TLatex(xCentrals2D,0.93,text);
   CentralsText3_2D->SetTextSize(CentralsFontSize);
 
   CentralsText1_2D->Draw( "same" );
   CentralsText2_2D->Draw( "same" );
   CentralsText3_2D->Draw( "same" );
 
+  sprintf(text,"#Upsilon(%dS)",nState);
+  TreeBinIDText1_2D = new TLatex(xCentrals2D,-0.80,text);
+  TreeBinIDText1_2D->SetTextSize(CentralsFontSize);
+  if(raplow<0.3) sprintf(text,"|y| < 0.6");
+  if(raplow>0.3) sprintf(text,"0.6 < |y| < 1.2");
+  TreeBinIDText2_2D = new TLatex(xCentrals2D,-0.91,text);
+  TreeBinIDText2_2D->SetTextSize(CentralsFontSize);
+  sprintf(text,"%1.0f < p_{T} < %1.0f GeV",ptlow,pthigh);
+  TreeBinIDText3_2D = new TLatex(xCentrals2D,-1.02,text);
+  TreeBinIDText3_2D->SetTextSize(CentralsFontSize);
+
+  if(TreeBinIDTextAdd){
+  TreeBinIDText1_2D->Draw( "same" );
+  TreeBinIDText2_2D->Draw( "same" );
+  TreeBinIDText3_2D->Draw( "same" );
+  }
+
   sprintf(filename,"%s/ltp_vs_lth_%s.pdf",dirstruct,TreeBinID);
+  c1->Print( filename );
+  sprintf(filename,"%s/ltp_vs_lth_%s.C",dirstruct,TreeBinID);
+  c1->Print( filename );
+  sprintf(filename,"%s/ltp_vs_lth_%s.jpg",dirstruct,TreeBinID);
   c1->Print( filename );
 
 
@@ -871,7 +945,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   // CS frame
 
   setContourHistogram ( h_ltp_vs_lph_CS );
-  h_ltp_vs_lph_CS->SetLineColor( kBlue );
+  h_ltp_vs_lph_CS->SetLineColor( kGreen+2 );
   h_ltp_vs_lph_CS->SetLineWidth( 2 );
   h_ltp_vs_lph_CS->SetLineStyle( 1 );
   h_ltp_vs_lph_CS->Draw( "cont2, same" );
@@ -887,7 +961,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   // PX frame
 
   setContourHistogram ( h_ltp_vs_lph_PX );
-  h_ltp_vs_lph_PX->SetLineColor( kGreen+2 );
+  h_ltp_vs_lph_PX->SetLineColor( kBlue );
   h_ltp_vs_lph_PX->SetLineWidth( 2 );
   h_ltp_vs_lph_PX->SetLineStyle( 1 );
   h_ltp_vs_lph_PX->Draw( "cont2, same" );
@@ -899,7 +973,17 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   CentralsText2_2D->Draw( "same" );
   CentralsText3_2D->Draw( "same" );
 
+  if(TreeBinIDTextAdd){
+  TreeBinIDText1_2D->Draw( "same" );
+  TreeBinIDText2_2D->Draw( "same" );
+  TreeBinIDText3_2D->Draw( "same" );
+  }
+
   sprintf(filename,"%s/ltp_vs_lph_%s.pdf",dirstruct,TreeBinID);
+  c1->Print( filename );
+  sprintf(filename,"%s/ltp_vs_lph_%s.C",dirstruct,TreeBinID);
+  c1->Print( filename );
+  sprintf(filename,"%s/ltp_vs_lph_%s.jpg",dirstruct,TreeBinID);
   c1->Print( filename );
 
 

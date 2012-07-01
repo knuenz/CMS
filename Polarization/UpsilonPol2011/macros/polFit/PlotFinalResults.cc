@@ -90,6 +90,12 @@ int main(int argc, char** argv) {
   	Char_t *CompareID3 = "CompareID3";
   	Char_t *CompareID4 = "CompareID4";
 
+  	Char_t *LegendEntryDefID  = "Default";
+  	Char_t *LegendEntryCompID1= "Default";
+  	Char_t *LegendEntryCompID2= "Default";
+  	Char_t *LegendEntryCompID3= "Default";
+  	Char_t *LegendEntryCompID4= "Default";
+
   	Char_t *MPCentralsWithTotalSystID = "MPCentralsWithTotalSystID";
 
 	int ptBinMin=1;
@@ -116,6 +122,10 @@ int main(int argc, char** argv) {
 	bool SteerIndividuals(false);
 	bool BGratioFits(false);
 	bool BGratioChi2Fits(false);
+	bool rapBinComb(false);
+	bool SetCompStyle(false);
+	bool DrawPreliminary(true);
+	bool PlotMattForICHEP(false);
 
 	  for( int i=0;i < argc; ++i ) {
 
@@ -154,6 +164,12 @@ int main(int argc, char** argv) {
 		    if(std::string(argv[i]).find("CompareID4") != std::string::npos) {char* CompareID4char = argv[i]; char* CompareID4char2 = strtok (CompareID4char, "="); CompareID4 = CompareID4char2; cout<<"CompareID4 = "<<CompareID4<<endl;}
 		    if(std::string(argv[i]).find("MPCentralsWithTotalSystID") != std::string::npos) {char* MPCentralsWithTotalSystIDchar = argv[i]; char* MPCentralsWithTotalSystIDchar2 = strtok (MPCentralsWithTotalSystIDchar, "="); MPCentralsWithTotalSystID = MPCentralsWithTotalSystIDchar2; cout<<"MPCentralsWithTotalSystID = "<<MPCentralsWithTotalSystID<<endl;}
 
+		    if(std::string(argv[i]).find("LegendEntryDefID") != std::string::npos) {char* LegendEntryDefIDchar = argv[i]; char* LegendEntryDefIDchar2 = strtok (LegendEntryDefIDchar, "="); LegendEntryDefID = LegendEntryDefIDchar2; cout<<"LegendEntryDefID = "<<LegendEntryDefID<<endl;}
+		    if(std::string(argv[i]).find("LegendEntryCompID1") != std::string::npos) {char* LegendEntryCompID1char = argv[i]; char* LegendEntryCompID1char2 = strtok (LegendEntryCompID1char, "="); LegendEntryCompID1 = LegendEntryCompID1char2; cout<<"LegendEntryCompID1 = "<<LegendEntryCompID1<<endl;}
+		    if(std::string(argv[i]).find("LegendEntryCompID2") != std::string::npos) {char* LegendEntryCompID2char = argv[i]; char* LegendEntryCompID2char2 = strtok (LegendEntryCompID2char, "="); LegendEntryCompID2 = LegendEntryCompID2char2; cout<<"LegendEntryCompID2 = "<<LegendEntryCompID2<<endl;}
+		    if(std::string(argv[i]).find("LegendEntryCompID3") != std::string::npos) {char* LegendEntryCompID3char = argv[i]; char* LegendEntryCompID3char2 = strtok (LegendEntryCompID3char, "="); LegendEntryCompID3 = LegendEntryCompID3char2; cout<<"LegendEntryCompID3 = "<<LegendEntryCompID3<<endl;}
+		    if(std::string(argv[i]).find("LegendEntryCompID4") != std::string::npos) {char* LegendEntryCompID4char = argv[i]; char* LegendEntryCompID4char2 = strtok (LegendEntryCompID4char, "="); LegendEntryCompID4 = LegendEntryCompID4char2; cout<<"LegendEntryCompID4 = "<<LegendEntryCompID4<<endl;}
+
 		    if(std::string(argv[i]).find("ptBinMin") != std::string::npos) {char* ptBinMinchar = argv[i]; char* ptBinMinchar2 = strtok (ptBinMinchar, "p"); ptBinMin = atof(ptBinMinchar2); cout<<"ptBinMin = "<<ptBinMin<<endl;}
 		    if(std::string(argv[i]).find("ptBinMax") != std::string::npos) {char* ptBinMaxchar = argv[i]; char* ptBinMaxchar2 = strtok (ptBinMaxchar, "p"); ptBinMax = atof(ptBinMaxchar2); cout<<"ptBinMax = "<<ptBinMax<<endl;}
 		    if(std::string(argv[i]).find("nSystematics") != std::string::npos) {char* nSystematicschar = argv[i]; char* nSystematicschar2 = strtok (nSystematicschar, "p"); nSystematics = atof(nSystematicschar2); cout<<"nSystematics = "<<nSystematics<<endl;}
@@ -178,17 +194,26 @@ int main(int argc, char** argv) {
 		    if(std::string(argv[i]).find("SteerIndividuals=1") != std::string::npos) {SteerIndividuals=true; cout<<"SteerIndividuals"<<endl;}
 		    if(std::string(argv[i]).find("BGratioFits=1") != std::string::npos) {BGratioFits=true; cout<<"BGratioFits"<<endl;}
 		    if(std::string(argv[i]).find("BGratioChi2Fits=1") != std::string::npos) {BGratioChi2Fits=true; cout<<"BGratioChi2Fits"<<endl;}
+		    if(std::string(argv[i]).find("rapBinComb=1") != std::string::npos) {rapBinComb=true; cout<<"rapBinComb"<<endl;}
+		    if(std::string(argv[i]).find("SetCompStyle=1") != std::string::npos) {SetCompStyle=true; cout<<"SetCompStyle"<<endl;}
+		    if(std::string(argv[i]).find("DrawPreliminary=0") != std::string::npos) {DrawPreliminary=false; cout<<"DrawPreliminary"<<endl;}
+		    if(std::string(argv[i]).find("PlotMattForICHEP=1") != std::string::npos) {PlotMattForICHEP=true; cout<<"PlotMattForICHEP"<<endl;}
 
 	    }
 
 	    gStyle->SetFrameBorderMode(0);
 	    double ColordBandWidth=1.;
-	    double DeltaXminOVERALL=0.9999;
+	    double DeltaXminOVERALL=0.;//0.9999;
+	    if(!PlotSystematics) DeltaXminOVERALL=0.9999;
 	    bool ShiftXminOVERALL=true;
+
+	    int OneSigColor=416;
+		int TwoSigColor=400;//858,898
+		int ThreeSigColor=423;//423
 
 		char filename[200];
 		sprintf(filename,"%s/%s/TGraphResults_%dSUps.root",storagedir,DefaultID,nState);
-		if(CompareSyst)sprintf(filename,"%s/macros/polFit/Systematics/%s/%s/TGraphResults_1SUps.root",basedir,SystID1Base,SystID1Specify,nState);
+		if(CompareSyst)sprintf(filename,"%s/macros/polFit/Systematics/%s/%s/TGraphResults_%dSUps.root",basedir,SystID1Base,SystID1Specify,nState);
 		TFile *infileRes = new TFile(filename,"READ");
 
 		sprintf(filename,"%s/%s/TGraphResults_%dSUps_2sigma.root",storagedir,DefaultID,nState);
@@ -196,6 +221,13 @@ int main(int argc, char** argv) {
 
 		sprintf(filename,"%s/%s/TGraphResults_%dSUps_3sigma.root",storagedir,DefaultID,nState);
 		TFile *infileRes3sigma = new TFile(filename,"READ");
+
+		if(!PlotBrazilian){
+			infileRes2sigma=infileRes;
+			infileRes3sigma=infileRes;
+		}
+
+		if(PlotMattForICHEP) PlotBrazilian=false;
 
 		sprintf(filename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/UpsilonPol/macros/polFit/Systematics/TotalSyst/%s/TGraphResults_%dSUps.root",MPCentralsWithTotalSystID,nState);
 		TFile *infileStat = new TFile(filename,"READ");
@@ -554,17 +586,17 @@ int main(int argc, char** argv) {
 // Background Pol Fits:
 
 		if(PlotBG0plots){
-		yMin=-1;
+		yMin=-2;
 		yMax=5;
 
 		if(iLam==2||iLam==8||iLam==14||iLam==3||iLam==9||iLam==15){
-			yMin=-1;
-			yMax=1;
+			yMin=-1.5;
+			yMax=1.5;
 		}
 
 		if(iLam==6||iLam==12||iLam==18){
-			yMin=-5;
-			yMax=25;
+			yMin=-7.5;
+			yMax=20;
 		}
 		}
 
@@ -603,7 +635,8 @@ int main(int argc, char** argv) {
 				}
 */
 
-		if(CompareSyst||BGratioFits){
+//		if(CompareSyst||BGratioFits){
+			if(BGratioFits){
 		yMin=-2.5;
 		yMax=2.5;
 
@@ -831,6 +864,7 @@ int main(int argc, char** argv) {
 //////////////Actual FinalDataResults Plotting ////////////////
 ///////////////////////////////////////////////////////////////
 
+		double BG0MarkerSize=1.;
 
 
 		if(!PlotBrazilian&&!SBmSigPlots&&!BGratioFits&&!SteerIndividuals&&!PlotMatt) graphSyst->Draw("2");//Comment if PlotBG0plots Low
@@ -838,6 +872,16 @@ int main(int argc, char** argv) {
 		graphDefaultRes->SetLineColor(ToyMC::MarkerColor[nFrame]);
 		graphDefaultRes->SetMarkerStyle(ToyMC::MarkerStyle[nState][rapBin]);
 		graphDefaultRes->SetMarkerSize(ToyMC::MarkerSize[nState][rapBin]);
+		if(PlotBG0plots){
+			graphDefaultRes->SetMarkerStyle(20);
+			graphDefaultRes->SetMarkerSize(BG0MarkerSize);
+
+		}
+		if(SetCompStyle){
+			graphDefaultRes->SetMarkerStyle(24);
+			graphDefaultRes->SetMarkerSize(BG0MarkerSize);
+
+		}
 		if(!PlotBrazilian&&!SBmSigPlots&&!BGratioFits&&!SteerIndividuals&&!PlotMatt) graphDefaultRes->Draw(drawGraphStyle);//Comment if PlotBG0plots Low
 
 		if(PlotBrazilian&&!SteerIndividuals){
@@ -940,11 +984,11 @@ int main(int argc, char** argv) {
 			}
 			graphDefaultRes3sigma = new TGraphAsymmErrors(nBinsOriginal,ptCentre_Original,lmean_Original,ptCentre_errlow_Original,ptCentre_errhigh_Original,lmean_errlow_Original,lmean_errhigh_Original);
 
-			graphDefaultRes->SetFillColor(kGreen);
+			graphDefaultRes->SetFillColor(OneSigColor);
 			graphDefaultRes->SetFillStyle(1001);
-			graphDefaultRes2sigma->SetFillColor(kYellow);
+			graphDefaultRes2sigma->SetFillColor(TwoSigColor);
 			graphDefaultRes2sigma->SetFillStyle(1001);
-			graphDefaultRes3sigma->SetFillColor(kCyan-9);
+			graphDefaultRes3sigma->SetFillColor(ThreeSigColor);
 			graphDefaultRes3sigma->SetFillStyle(1001);
 			graphDefaultRes3sigma->Draw("2");
 			graphDefaultRes2sigma->Draw("2");
@@ -1208,7 +1252,7 @@ int main(int argc, char** argv) {
 
 		}
 
-		if(PlotMatt){
+		if(PlotMatt&&!PlotMattForICHEP){
 		graphMattTotal->SetLineColor(kCyan);
 		graphMattTotal->SetFillColor(kCyan);
 		graphMattTotal->SetFillStyle(3002);//3002
@@ -1251,6 +1295,23 @@ int main(int argc, char** argv) {
 		plotMattLegend->Draw();
 		}
 
+		if(PlotMatt&&PlotMattForICHEP){
+
+		graphMattTotal->SetMarkerColor(kGreen+2);
+		graphMattTotal->SetLineColor(kGreen+2);
+		graphMattTotal->SetMarkerStyle(20);
+		graphMattTotal->SetMarkerSize(1.5);
+
+		graphDefaultRes->SetLineColor(kBlue);
+		graphDefaultRes->SetMarkerColor(kBlue);
+		graphDefaultRes->SetMarkerStyle(20);
+		graphDefaultRes->SetMarkerSize(1.5);
+
+//		graphMattTotal->Draw(drawGraphStyle);
+		graphDefaultRes->Draw(drawGraphStyle);
+
+		}
+
 		if(CompareSyst){
 			TLine* extreme0 = new TLine( onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL, 0, onia::pTRange[rapBin][ptBinMax] ,0);
 			extreme0->SetLineWidth( 2 );
@@ -1259,7 +1320,7 @@ int main(int argc, char** argv) {
 			extreme0->Draw( "same" );
 		}
 
-		sprintf(complegendentry,"BGratio 1S");
+		sprintf(complegendentry,"%s",LegendEntryDefID);//FindLegend
 		if(!SBmSigPlots&&!BGratioFits) plotcompLegend->AddEntry(graphDefaultRes,complegendentry,"lp");
 
 		if(FitGraph){
@@ -2021,27 +2082,38 @@ int main(int argc, char** argv) {
 		graphCompareFile4->SetMarkerColor(kGreen+2);
 		graphCompareFile4->SetLineColor(kGreen+2);
 		graphCompareFile4->SetMarkerStyle(5);
-		if(nComp>0){
+		if(PlotBG0plots||SetCompStyle){
+			graphCompareFile1->SetMarkerStyle(24);
+			graphCompareFile2->SetMarkerStyle(24);
+			graphCompareFile3->SetMarkerStyle(24);
+			graphCompareFile4->SetMarkerStyle(24);
+			graphCompareFile1->SetMarkerSize(BG0MarkerSize);
+			graphCompareFile2->SetMarkerSize(BG0MarkerSize);
+			graphCompareFile3->SetMarkerSize(BG0MarkerSize);
+			graphCompareFile4->SetMarkerSize(BG0MarkerSize);
+
+		}
+		if(nComp>0){//FindLegend
 		graphCompareFile1->Draw(drawGraphStyle);
 		sprintf(complegendentry,"#lambda(LSB)-#lambda(sig. region)");
-		sprintf(complegendentry,"BGratio 1S");
+		sprintf(complegendentry,"%s",LegendEntryCompID1);
 		plotcompLegend->AddEntry(graphCompareFile1,complegendentry,"lp");
 		}
 		if(nComp>1){
 			graphCompareFile2->Draw(drawGraphStyle);
 			sprintf(complegendentry,"#lambda(RSB)-#lambda(sig. region)");
-			sprintf(complegendentry,"BGratio 2S");
+			sprintf(complegendentry,"%s",LegendEntryCompID2);
 		plotcompLegend->AddEntry(graphCompareFile2,complegendentry,"lp");
 		}
 		if(nComp>2){
 			graphCompareFile3->Draw(drawGraphStyle);
 		sprintf(complegendentry,"Right sided 1.5 sigma");
-		sprintf(complegendentry,"BGratio 3S");
+		sprintf(complegendentry,"%s",LegendEntryCompID3);
 		plotcompLegend->AddEntry(graphCompareFile3,complegendentry,"lp");
 		}
 		if(nComp>3){
 			graphCompareFile4->Draw(drawGraphStyle);
-		sprintf(complegendentry,"c#tau sign. > 3.5");
+		sprintf(complegendentry,"%s",LegendEntryCompID4);
 		plotcompLegend->AddEntry(graphCompareFile4,complegendentry,"lp");
 		}
 		}
@@ -2049,21 +2121,22 @@ int main(int argc, char** argv) {
 		char texTex[200];
 		if(rapBin==1) sprintf(texTex,"      |y| < 0.6");
 		if(rapBin==2) sprintf(texTex,"0.6 < |y| < 1.2");
+		if(rapBinComb) sprintf(texTex,"      |y| < 1.2");
 		 TLatex *text = new TLatex(onia::pTRange[rapBin][ptBinMax]*0.8,yMin+(yMax-yMin)*0.066,texTex);
 		 text->SetTextSize(0.035);
-		 if(!SteerIndividuals) text->Draw( "same" );
+		 if(!SteerIndividuals&&!PlotMattForICHEP) text->Draw( "same" );
 
 		 if(PlotBG0plots){
 			char texTex2[200];
-			sprintf(texTex2,"      |c#tau/#sigma_{c#tau}| < 3");
-			 TLatex *text2 = new TLatex(onia::pTRange[rapBin][ptBinMax]*0.25,yMin+(yMax-yMin)*0.066,texTex2);
+			sprintf(texTex2,"      |c#tau/#sigma_{c#tau}| < 2");
+			 TLatex *text2 = new TLatex(onia::pTRange[rapBin][ptBinMax]*0.7,yMin+(yMax-yMin)*0.122,texTex2);
 			 text2->SetTextSize(0.05);
 			 text2->Draw( "same" );
 		 }
 
 
 
-		 if(PlotFinalData&&DrawLatexStuff){
+		 if(PlotFinalData&&DrawLatexStuff&&!PlotMattForICHEP){
 			 cout<<"DRAW CMS preliminary Latex"<<endl;
 		 double CentralsFontSize=0.035;
 		 char text[200];
@@ -2071,7 +2144,7 @@ int main(int argc, char** argv) {
 		 cout<<text<<endl;
 		 TLatex *CentralsText1 = new TLatex(11.5-DeltaXminOVERALL,yMin+(yMax-yMin)*0.76,text);
 		 CentralsText1->SetTextSize(CentralsFontSize*1.25);
-		 CentralsText1->Draw( "same" );
+		 if(DrawPreliminary) CentralsText1->Draw( "same" );
 		 sprintf(text,"L_{int} = 4.9 fb^{-1}");
 		 cout<<text<<endl;
 		 TLatex *CentralsText2 = new TLatex(11.5-DeltaXminOVERALL,yMin+(yMax-yMin)*0.935,text);
@@ -3230,13 +3303,14 @@ int main(int argc, char** argv) {
 				   MPhist->GetYaxis()->SetTicks("+");
 
 
+				   double SpecialShift=0.01;
 				   TLegend* MPframedepLegend;
 				   MPframedepLegend=new TLegend(errorLegendX1,errorLegendY1,errorLegendX2,errorLegendY2);
-//				   if((nState==2||nState==3)&&MPframe==1) MPframedepLegend=new TLegend(errorLegendX1,errorLegendY2-(errorLegendY2-errorLegendY1)*(1-lowestBottomMargin),errorLegendX2,errorLegendY2);
+				   if(MPframe==1) MPframedepLegend=new TLegend(errorLegendX1,errorLegendY2-(errorLegendY2-errorLegendY1)*(1-lowestBottomMargin)+SpecialShift,errorLegendX2,errorLegendY2+SpecialShift);
 				   MPframedepLegend->SetFillColor(0);
 				   MPframedepLegend->SetTextFont(72);
 				   MPframedepLegend->SetTextSize(errorLegendFontSize);
-//				   if((nState==2||nState==3)&&MPframe==1) MPframedepLegend->SetTextSize(errorLegendFontSize*(1-lowestBottomMargin));
+				   if(MPframe==1) MPframedepLegend->SetTextSize(errorLegendFontSize*(1-lowestBottomMargin));
 				   MPframedepLegend->SetBorderSize(0);
 
 				   char MPframedepLegendEntry[200];
@@ -3336,11 +3410,12 @@ int main(int argc, char** argv) {
 					graphMP_MPnew->SetMarkerStyle(MarkerStyleMP[0]);
 					graphMP_MPnew->SetMarkerColor(MarkerColorMP[0]);
 
-					graphMP_1sig_MPnew->SetFillColor(kGreen);
+
+					graphMP_1sig_MPnew->SetFillColor(OneSigColor);
 					graphMP_1sig_MPnew->SetFillStyle(1001);
-					graphMP_2sig_MPnew->SetFillColor(kYellow);
+					graphMP_2sig_MPnew->SetFillColor(TwoSigColor);
 					graphMP_2sig_MPnew->SetFillStyle(1001);
-					graphMP_3sig_MPnew->SetFillColor(kCyan-9);
+					graphMP_3sig_MPnew->SetFillColor(ThreeSigColor);
 					graphMP_3sig_MPnew->SetFillStyle(1001);
 
 
@@ -3353,9 +3428,9 @@ int main(int argc, char** argv) {
 					}
 
 
-				   graphMP_1sig_MPnew->SetLineColor(kGreen);
-				   graphMP_2sig_MPnew->SetLineColor(kYellow);
-				   graphMP_3sig_MPnew->SetLineColor(kCyan-9);
+				   graphMP_1sig_MPnew->SetLineColor(OneSigColor);
+				   graphMP_2sig_MPnew->SetLineColor(TwoSigColor);
+				   graphMP_3sig_MPnew->SetLineColor(ThreeSigColor);
 
 				   if(PlotAlteredPPDResults) sprintf(MPframedepLegendEntry,"Stat. uncert., 68.3 %% CL");
 				   if(!PlotAlteredPPDResults) sprintf(MPframedepLegendEntry,"Tot. sys. uncert.");
@@ -3416,6 +3491,9 @@ int main(int argc, char** argv) {
 
 
 
+				   double increaseSize=1.45;
+				   double SpecialShiftUpsilonLabel=0.9;
+				   double SpecialShiftUpsilonLabelx=-3;
 
 				   char frameMPtex[200];
 				   if(MPframe==1) sprintf(frameMPtex,"CS");
@@ -3423,9 +3501,9 @@ int main(int argc, char** argv) {
 				   if(MPframe==3) sprintf(frameMPtex,"PX");
 				   char texTexMP[200];
 				   sprintf(texTexMP,"#Upsilon(%dS)", iStateMP);
-				   TLatex *textMP = new TLatex(xRapText_MPnew,yMin+(yMax-yMin)*yRapText,texTexMP);
-				   textMP->SetTextSize(textSizeRap);
-				   if(iPanel==nPanels) textMP->SetTextSize(textSizeRap*(1-lowestBottomMargin));
+				   TLatex *textMP = new TLatex(xRapText_MPnew+SpecialShiftUpsilonLabelx,yMin+(yMax-yMin)*yRapText*SpecialShiftUpsilonLabel,texTexMP);
+				   textMP->SetTextSize(textSizeRap*increaseSize);
+				   if(iPanel==nPanels) textMP->SetTextSize(textSizeRap*(1-lowestBottomMargin)*increaseSize);
 				   textMP->Draw( "same" );
 
 				   char abcdef[200];
@@ -3479,7 +3557,7 @@ int main(int argc, char** argv) {
 					 sprintf(text,"preliminary");
 					 CentralsText1MP = new TLatex(MPlatexX-DeltaXminOVERALL,(yMax-yMin)*0.72+yMin,text);
 					 CentralsText1MP->SetTextSize(CentralsFontSizeMP);
-					 CentralsText1MP->Draw( "same" );
+					 if(DrawPreliminary) CentralsText1MP->Draw( "same" );
 		/*			 sprintf(text,"L = 4.9 fb^{-1}");
 					 TLatex *CentralsText2MP = new TLatex(MPlatexX,MPlatexYmax-2*MPlatexDeltaYmax,text);
 					 CentralsText2MP->SetTextSize(CentralsFontSizeMP);
@@ -3491,7 +3569,22 @@ int main(int argc, char** argv) {
 		*/
 					 }
 
-					 if(iStateMP==1&&iPanel==2){
+					 if(iStateMP==1&&iPanel==2&&MPframe!=1){
+						 MPframedepLegend->Draw("same");
+						 double xStatErrorLine=13.06-DeltaXminOVERALL+DeltaXminOVERALL*0.075;
+						 double StatErrorLineShift=0.1575;
+						 double StatErrorLineLength=(errorLegendY2-errorLegendY1)*0.25;
+						 double yMeanStatErrorLine=yMin+(yMax-yMin)*errorLegendY2-(errorLegendY2-errorLegendY1)*StatErrorLineShift;
+
+
+							TLine* StatErrorLine = new TLine( xStatErrorLine, yMeanStatErrorLine-StatErrorLineLength/2., xStatErrorLine ,yMeanStatErrorLine+StatErrorLineLength/2.);
+							StatErrorLine->SetLineWidth( 1 );
+							StatErrorLine->SetLineStyle( 1 );
+							StatErrorLine->SetLineColor( kBlack );
+							StatErrorLine->Draw( "same" );
+
+					 }
+					 if(iStateMP==1&&iPanel==3&&MPframe==1){
 						 MPframedepLegend->Draw("same");
 						 double xStatErrorLine=13.06-DeltaXminOVERALL+DeltaXminOVERALL*0.075;
 						 double StatErrorLineShift=0.1575;
@@ -3553,26 +3646,38 @@ int main(int argc, char** argv) {
 
 					if(iLam==3&&rapBin==1){  sprintf(filename,"%s/FinalResultsCS_rap%d.pdf",FigDir,rapBin);
 					if(PlotFinalData) MPcanvasCS_rap1->SaveAs(filename);
+					sprintf(filename,"%s/FinalResultsCS_rap%d.C",FigDir,rapBin);
+					if(PlotFinalData) MPcanvasCS_rap1->SaveAs(filename);
 					MPcanvasCS_rap1->Close();
 					}
 					if(iLam==9&&rapBin==1){  sprintf(filename,"%s/FinalResultsHX_rap%d.pdf",FigDir,rapBin);
 					if(PlotFinalData) MPcanvasHX_rap1->SaveAs(filename);
+					sprintf(filename,"%s/FinalResultsHX_rap%d.C",FigDir,rapBin);
+					if(PlotFinalData) MPcanvasHX_rap1->SaveAs(filename);
 					MPcanvasHX_rap1->Close();
 					}
 					if(iLam==15&&rapBin==1){  sprintf(filename,"%s/FinalResultsPX_rap%d.pdf",FigDir,rapBin);
+					if(PlotFinalData) MPcanvasPX_rap1->SaveAs(filename);
+					sprintf(filename,"%s/FinalResultsPX_rap%d.C",FigDir,rapBin);
 					if(PlotFinalData) MPcanvasPX_rap1->SaveAs(filename);
 					MPcanvasPX_rap1->Close();
 					}
 
 					if(iLam==3&&rapBin==2){  sprintf(filename,"%s/FinalResultsCS_rap%d.pdf",FigDir,rapBin);
 					if(PlotFinalData) MPcanvasCS_rap2->SaveAs(filename);
+					sprintf(filename,"%s/FinalResultsCS_rap%d.C",FigDir,rapBin);
+					if(PlotFinalData) MPcanvasCS_rap2->SaveAs(filename);
 					MPcanvasCS_rap2->Close();
 					}
 					if(iLam==9&&rapBin==2){  sprintf(filename,"%s/FinalResultsHX_rap%d.pdf",FigDir,rapBin);
 					if(PlotFinalData) MPcanvasHX_rap2->SaveAs(filename);
+					sprintf(filename,"%s/FinalResultsHX_rap%d.C",FigDir,rapBin);
+					if(PlotFinalData) MPcanvasHX_rap2->SaveAs(filename);
 					MPcanvasHX_rap2->Close();
 					}
 					if(iLam==15&&rapBin==2){  sprintf(filename,"%s/FinalResultsPX_rap%d.pdf",FigDir,rapBin);
+					if(PlotFinalData) MPcanvasPX_rap2->SaveAs(filename);
+					sprintf(filename,"%s/FinalResultsPX_rap%d.C",FigDir,rapBin);
 					if(PlotFinalData) MPcanvasPX_rap2->SaveAs(filename);
 					MPcanvasPX_rap2->Close();
 					}
@@ -3996,25 +4101,25 @@ int main(int argc, char** argv) {
 
 
 
-					graphMP1_1sig->SetFillColor(kGreen);
+					graphMP1_1sig->SetFillColor(OneSigColor);
 					graphMP1_1sig->SetFillStyle(1001);
-					graphMP1_2sig->SetFillColor(kYellow);
+					graphMP1_2sig->SetFillColor(TwoSigColor);
 					graphMP1_2sig->SetFillStyle(1001);
-					graphMP1_3sig->SetFillColor(kCyan-9);
+					graphMP1_3sig->SetFillColor(ThreeSigColor);
 					graphMP1_3sig->SetFillStyle(1001);
 
-					graphMP2_1sig->SetFillColor(kGreen);
+					graphMP2_1sig->SetFillColor(OneSigColor);
 					graphMP2_1sig->SetFillStyle(1001);
-					graphMP2_2sig->SetFillColor(kYellow);
+					graphMP2_2sig->SetFillColor(TwoSigColor);
 					graphMP2_2sig->SetFillStyle(1001);
-					graphMP2_3sig->SetFillColor(kCyan-9);
+					graphMP2_3sig->SetFillColor(ThreeSigColor);
 					graphMP2_3sig->SetFillStyle(1001);
 
-					graphMP3_1sig->SetFillColor(kGreen);
+					graphMP3_1sig->SetFillColor(OneSigColor);
 					graphMP3_1sig->SetFillStyle(1001);
-					graphMP3_2sig->SetFillColor(kYellow);
+					graphMP3_2sig->SetFillColor(TwoSigColor);
 					graphMP3_2sig->SetFillStyle(1001);
-					graphMP3_3sig->SetFillColor(kCyan-9);
+					graphMP3_3sig->SetFillColor(ThreeSigColor);
 					graphMP3_3sig->SetFillStyle(1001);
 
 		   if(iStateMP==1){
@@ -4152,13 +4257,16 @@ int main(int argc, char** argv) {
 
 
 
+		   double increaseSize=1.25;
+		   double SpecialShiftUpsilonLabel=0.9;
+		   double SpecialShiftUpsilonLabelx=-3;
 
 		   char texTexMP[200];
 		   if(rapBin==1) sprintf(texTexMP,"#Upsilon(%dS), |y| < 0.6", iStateMP);
 		   if(rapBin==2) sprintf(texTexMP,"#Upsilon(%dS), 0.6 < |y| < 1.2", iStateMP);
-		   TLatex *textMP = new TLatex(xRapTextTilde-DeltaXminOVERALL,yMin+(yMax-yMin)*yRapText*0.92,texTexMP);
-		   textMP->SetTextSize(textSizeRap);
-		   if(iPanel==nPanels_MPnew) textMP->SetTextSize(textSizeRap*(1-lowestBottomMargin));
+		   TLatex *textMP = new TLatex(xRapTextTilde-DeltaXminOVERALL+SpecialShiftUpsilonLabelx,yMin+(yMax-yMin)*yRapText*0.92*SpecialShiftUpsilonLabel,texTexMP);
+		   textMP->SetTextSize(textSizeRap*increaseSize);
+		   if(iPanel==nPanels_MPnew) textMP->SetTextSize(textSizeRap*(1-lowestBottomMargin)*increaseSize);
 		   textMP->Draw( "same" );
 
 		   char abcdef[200];
@@ -4208,7 +4316,7 @@ int main(int argc, char** argv) {
 			 sprintf(text,"preliminary");
 			 CentralsText1MP = new TLatex(MPlatexX-DeltaXminOVERALL,(yMax-yMin)*0.72+yMin,text);
 			 CentralsText1MP->SetTextSize(CentralsFontSizeMP);
-			 CentralsText1MP->Draw( "same" );
+			 if(DrawPreliminary) CentralsText1MP->Draw( "same" );
 /*			 sprintf(text,"L = 4.9 fb^{-1}");
 			 TLatex *CentralsText2MP = new TLatex(MPlatexX,MPlatexYmax-2*MPlatexDeltaYmax,text);
 			 CentralsText2MP->SetTextSize(CentralsFontSizeMP);
@@ -4222,9 +4330,9 @@ int main(int argc, char** argv) {
 			 }
 
 			 if(iStateMP==1&&iPanel==2){
-				   graphMP1_1sig->SetLineColor(kGreen);
-				   graphMP1_2sig->SetLineColor(kYellow);
-				   graphMP1_3sig->SetLineColor(kCyan-9);
+				   graphMP1_1sig->SetLineColor(OneSigColor);
+				   graphMP1_2sig->SetLineColor(TwoSigColor);
+				   graphMP1_3sig->SetLineColor(ThreeSigColor);
 
 				   TGraphAsymmErrors *legendPhantom = (TGraphAsymmErrors*) infileMP3_3sig->Get("ltilde_CS_rap1");
 
@@ -4311,6 +4419,10 @@ int main(int argc, char** argv) {
 					if(mainframe==2) sprintf(filename,"%s/FinalResultsTildeHX.pdf",FigDir);
 					if(mainframe==3) sprintf(filename,"%s/FinalResultsTildePX.pdf",FigDir);
 			if(PlotFinalData) MPcanvasTilde->SaveAs(filename);
+			if(mainframe==1) sprintf(filename,"%s/FinalResultsTildeCS.C",FigDir);
+			if(mainframe==2) sprintf(filename,"%s/FinalResultsTildeHX.C",FigDir);
+			if(mainframe==3) sprintf(filename,"%s/FinalResultsTildePX.C",FigDir);
+	if(PlotFinalData) MPcanvasTilde->SaveAs(filename);
 			MPcanvasTilde->Close();
 			}
 	}//end Frame independent plots NEW
@@ -4738,7 +4850,7 @@ int CDFFillStyle=1001;//3002
 			sprintf(Mattlegendentry,"CDF stat. uncert., 68.3%% CL");
 			plotCDFLegend->AddEntry(graphCDF_Stat,Mattlegendentry,"elp");
 */
-			sprintf(Mattlegendentry,"CMS preliminary");
+			sprintf(Mattlegendentry,"CMS");
 			plotCDFLegend->AddEntry(graphCMS_Stat,Mattlegendentry,"elp");
 			sprintf(Mattlegendentry,"CDF");
 			plotCDFLegend->AddEntry(graphCDF_Stat,Mattlegendentry,"elp");
@@ -5236,11 +5348,11 @@ MPcanvasCDF->cd();
 				fprintf(SuppFile,"These tables list the results of the angular anisotropy parameters Lambda-Theta, Lambda-Phi, Lambda-Theta-Phi and the frame invariant parameter Lambda-Tilde, for the Y(nS)\nstates in the Collins-Soper (CS), helicity (HX) and perpendicular helicity (PX) frames, along with their total uncertainties (68.3%%, 95.5%% and 99.7%% CL) and uncertainties\nof statistical nature (68.3%%CL).\n\n");
 
 				fprintf(SuppFile,"Column headings are:\n");
-				fprintf(SuppFile,"       pT-min: lower border of dimuon transverse momentum (GeV)\n");
-				fprintf(SuppFile,"       pT-max: upper border of dimuon transverse momentum (GeV)\n");
-				fprintf(SuppFile,"      |y|-min: lower border of dimuon rapidity\n");
-				fprintf(SuppFile,"      |y|-max: upper border of dimuon rapidity\n");
-				fprintf(SuppFile,"     Lambda-*: central value of the result\n");
+				fprintf(SuppFile,"      pT-min: lower border of dimuon transverse momentum (GeV)\n");
+				fprintf(SuppFile,"      pT-max: upper border of dimuon transverse momentum (GeV)\n");
+				fprintf(SuppFile,"     |y|-min: lower border of dimuon rapidity\n");
+				fprintf(SuppFile,"     |y|-max: upper border of dimuon rapidity\n");
+				fprintf(SuppFile,"    Lambda-*: central value of the result\n");
 				fprintf(SuppFile,"-T.U.68.3%%CL: negative total uncertainty, 68.3%% CL\n");
 				fprintf(SuppFile,"+T.U.68.3%%CL: positive total uncertainty, 68.3%% CL\n");
 				fprintf(SuppFile,"-T.U.95.5%%CL: negative total uncertainty, 95.5%% CL\n");
@@ -5272,7 +5384,7 @@ MPcanvasCDF->cd();
 
 
 		    	for(int iLam=1;iLam<19;iLam++){
-		    		if(iLam==4||iLam==5||iLam==10||iLam==11||iLam==16||iLam==16) continue;
+		    		if(iLam==4||iLam==5||iLam==10||iLam==11||iLam==16||iLam==17) continue;
 
 		    		int Tabframe;
 		    		if(iLam>0&&iLam<7) Tabframe=1;
