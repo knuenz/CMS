@@ -9,7 +9,7 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 
 ########## INPUTS ##########
 
-for JobID in Data_TheGreatApproval_June25_CrossCheck_Mixed_Mixed;do
+for JobID in MCclosure_July25_Ups1S_MCTnPparam;do
 
 #Take Care of Mean pT in ToyMC.h
 for nState in 1;do

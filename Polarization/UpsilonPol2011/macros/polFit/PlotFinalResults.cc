@@ -522,6 +522,7 @@ int main(int argc, char** argv) {
 		if(iLam==18) sprintf(axislabel,"%s#tilde{#lambda}^{PX}%s",beginLamLabel,endLamLabel);//IfLamTildeClosure no PX
 		if(iLam==18&&DeltaTildeplots) sprintf(axislabel,"%s#tilde{#lambda}%s",beginLamLabel,endLamLabel);
 
+
 		if(iLam==1)  sprintf(filename,"%s/FinalResults_CS_lth_rap%d.pdf",FigDir,rapBin);
 		if(iLam==2)  sprintf(filename,"%s/FinalResults_CS_lph_rap%d.pdf",FigDir,rapBin);
 		if(iLam==3)  sprintf(filename,"%s/FinalResults_CS_ltp_rap%d.pdf",FigDir,rapBin);
@@ -651,6 +652,24 @@ int main(int argc, char** argv) {
 		}
 		}
 
+			if(PlotMatt&&PlotMattForICHEP){
+				yMin=-1.85;
+				yMax=1.85;
+				if(nState==1) yMin=-1.1;
+				if(nState==1) yMax=1.1;
+
+				if(iLam==2||iLam==8||iLam==14||iLam==3||iLam==9||iLam==15){
+					yMin=-0.5;
+					yMax=0.5;
+				}
+
+				if(iLam==6||iLam==12||iLam==18){
+					yMin=-1.3;
+					yMax=1.3;
+				}
+				}
+
+
 		TGraphAsymmErrors* graphDefaultRes = (TGraphAsymmErrors*) infileRes->Get(GraphName);
 		TGraphAsymmErrors* graphDefaultRes2sigma = (TGraphAsymmErrors*) infileRes2sigma->Get(GraphName);
 		TGraphAsymmErrors* graphDefaultRes3sigma = (TGraphAsymmErrors*) infileRes3sigma->Get(GraphName);
@@ -672,6 +691,8 @@ int main(int argc, char** argv) {
 		TGraphAsymmErrors* graphCompareFile3 = (TGraphAsymmErrors*) CompareFile3->Get(GraphName);
 		TGraphAsymmErrors* graphCompareFile4 = (TGraphAsymmErrors*) CompareFile4->Get(GraphName);
 
+		TGraphAsymmErrors* graphNLONRQCD = (TGraphAsymmErrors*) MattFileTotal->Get(GraphName);
+		TGraphAsymmErrors* graphNNLO = (TGraphAsymmErrors*) MattFileTotal->Get(GraphName);
 
 
 		int nBinspT=ptBinMax-ptBinMin+1;
@@ -1297,6 +1318,15 @@ int main(int argc, char** argv) {
 
 		if(PlotMatt&&PlotMattForICHEP){
 
+			plotCanvas->SetRightMargin(0.05);
+			plotCanvas->SetTopMargin(0.05);
+
+			TLine* extreme0 = new TLine( 0, 0, onia::pTRange[rapBin][ptBinMax] ,0);
+			extreme0->SetLineWidth( 2 );
+			extreme0->SetLineStyle( 2 );
+			extreme0->SetLineColor( kBlack );
+			extreme0->Draw( "same" );
+
 		graphMattTotal->SetMarkerColor(kGreen+2);
 		graphMattTotal->SetLineColor(kGreen+2);
 		graphMattTotal->SetMarkerStyle(20);
@@ -1307,8 +1337,75 @@ int main(int argc, char** argv) {
 		graphDefaultRes->SetMarkerStyle(20);
 		graphDefaultRes->SetMarkerSize(1.5);
 
-//		graphMattTotal->Draw(drawGraphStyle);
+		graphNLONRQCD->SetLineColor(kRed);
+		graphNNLO->SetLineColor(616);
+		graphNNLO->SetLineStyle(2);
+
+		graphMattTotal->Draw(drawGraphStyle);
 		graphDefaultRes->Draw(drawGraphStyle);
+
+		double ICHEPlegendYMin=0.15;
+		double ICHEPlegendYMax=0.275;
+		if(nFrame==3) ICHEPlegendYMax=ICHEPlegendYMin+(ICHEPlegendYMax-ICHEPlegendYMin)*1/3;
+		if(nState==3) ICHEPlegendYMax=ICHEPlegendYMin+(ICHEPlegendYMax-ICHEPlegendYMin)*4/3;
+		if(nState==1) ICHEPlegendYMax=ICHEPlegendYMin+(ICHEPlegendYMax-ICHEPlegendYMin)*2/3;
+
+		TLegend* plotICHEPLegend=new TLegend(0.1375,ICHEPlegendYMin-0.025,0.75,ICHEPlegendYMax);
+		plotICHEPLegend->SetFillColor(0);
+		plotICHEPLegend->SetTextFont(72);
+		plotICHEPLegend->SetTextSize(0.039);
+		plotICHEPLegend->SetBorderSize(0);
+		//plotICHEPLegend->SetHeader("Data error bars: tot. uncert., 68.3% CL");
+		char ICHEPlegendentry[200];
+		sprintf(ICHEPlegendentry,"CMS preliminary, tot. uncert., 68.3%% CL");
+		plotICHEPLegend->AddEntry(graphDefaultRes,ICHEPlegendentry,"elp");
+		sprintf(ICHEPlegendentry,"CDF PRL 108, 151802 (2012), tot. uncert., 68.3%% CL");
+		if(nFrame!=3) plotICHEPLegend->AddEntry(graphMattTotal,ICHEPlegendentry,"elp");
+		sprintf(ICHEPlegendentry,"NLO NRQCD at  #sqrt{s} = 1.96 TeV,  PRD83, 114021 (2011)");
+		if(nState==3) plotICHEPLegend->AddEntry(graphNLONRQCD,ICHEPlegendentry,"l");
+		sprintf(ICHEPlegendentry,"NNLO* CSM at  #sqrt{s} = 1.8 TeV, PRL101, 152001 (2008)");
+		if(nState==3) plotICHEPLegend->AddEntry(graphNNLO,ICHEPlegendentry,"l");
+		plotICHEPLegend->SetMargin(0.135);
+		plotICHEPLegend->Draw();
+
+		double ICHEPFontSize=0.04;
+
+	      char ICHEPtext[200];
+	      sprintf(ICHEPtext,"#Upsilon(%dS)",nState);
+	      TLatex *texICHEP1 = new TLatex(40.5,yMin+(yMax-yMin)*0.8125,ICHEPtext);
+	      texICHEP1->SetTextSize(ICHEPFontSize*1.75)                                                                                                                                                                                                                                             ;
+	      texICHEP1->Draw( "same" )                                                                                                                                                                                                                                                 ;
+
+	      sprintf(ICHEPtext,"CMS  pp  #sqrt{s} = 7 TeV  L = 4.9 fb^{-1}");
+	      TLatex *texICHEP2 = new TLatex(2,yMin+(yMax-yMin)*0.925,ICHEPtext);
+	      texICHEP2->SetTextSize(ICHEPFontSize)                                                                                                                                                                                                                                             ;
+	      texICHEP2->Draw( "same" )                                                                                                                                                                                                                                                 ;
+
+	      sprintf(ICHEPtext,"CDF  p#bar{p}  #sqrt{s} = 1.96 TeV");
+	      TLatex *texICHEP3 = new TLatex(2,yMin+(yMax-yMin)*0.85,ICHEPtext);
+	      texICHEP3->SetTextSize(ICHEPFontSize)                                                                                                                                                                                                                                             ;
+	      if(nFrame!=3) texICHEP3->Draw( "same" )                                                                                                                                                                                                                                                 ;
+
+	      double xICHEPrap=33.5;
+	      if(rapBin==2) xICHEPrap=28.;
+
+	      if(nFrame==1&&rapBin==1) sprintf(ICHEPtext,"CS frame, |y| < 0.6");
+	      if(nFrame==2&&rapBin==1) sprintf(ICHEPtext,"HX frame, |y| < 0.6");
+	      if(nFrame==3&&rapBin==1) sprintf(ICHEPtext,"PX frame, |y| < 0.6");
+	      if(nFrame==1&&rapBin==2) sprintf(ICHEPtext,"CS frame, 0.6<|y|<1.2");
+	      if(nFrame==2&&rapBin==2) sprintf(ICHEPtext,"HX frame, 0.6<|y|<1.2");
+	      if(nFrame==3&&rapBin==2) sprintf(ICHEPtext,"PX frame, 0.6<|y|<1.2");
+	      TLatex *texICHEP4 = new TLatex(xICHEPrap,yMin+(yMax-yMin)*0.925,ICHEPtext);
+	      texICHEP4->SetTextSize(ICHEPFontSize)                                                                                                                                                                                                                                             ;
+	      texICHEP4->Draw( "same" )                                                                                                                                                                                                                                                 ;
+
+			plotHisto->GetYaxis()->SetTitleOffset(15);
+
+		  //sprintf(ICHEPtext,"%s",axislabel);
+		  sprintf(ICHEPtext,"#lambda_{#theta}");
+		  TLatex *texICHEP5 = new TLatex(-7.65,yMin+(yMax-yMin)*0.485,ICHEPtext);
+		  texICHEP5->SetTextSize(ICHEPFontSize*1.75)                                                                                                                                                                                                                                             ;
+		  texICHEP5->Draw( "same" )                                                                                                                                                                                                                                                 ;
 
 		}
 

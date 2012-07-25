@@ -208,9 +208,17 @@ void PolData::Loop(Int_t selDimuType, Bool_t rejectCowboys, Int_t FidCuts, bool 
     Double_t pMuPos = muPos->P();
     Double_t pMuNeg = muNeg->P();
 
-    if(rejectCowboys)
-      if((muNeg->Phi() - muPos->Phi()) < 0.)
-	continue;
+
+	Double_t deltaPhi = muNeg->Phi() - muPos->Phi();
+	if(deltaPhi > TMath::Pi()) deltaPhi -= 2.*TMath::Pi();
+	else if(deltaPhi < -TMath::Pi()) deltaPhi += 2.*TMath::Pi();
+
+	if(rejectCowboys)
+		  if(deltaPhi < 0.) continue;
+
+	//if(rejectCowboys)
+	//	if((muNeg->Phi() - muPos->Phi()) < 0.)
+	//		continue;
 
     Reco_StatEv->Fill(3.5);
 

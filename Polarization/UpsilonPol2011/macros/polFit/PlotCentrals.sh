@@ -9,13 +9,13 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 
 ########## INPUTS ##########
 
-for nState in 1 2 3;do
+for nState in 1 3;do
 
-JobID=July1
-additionalName=_FinalPlots_Ups${nState}S #SystBkgNew for centrals
+JobID=July4
+additionalName=_ICHEPnew_Ups${nState}S #SystBkgNew for centrals
 
-PlotMatt=0
-PlotMattForICHEP=0
+PlotMatt=1
+PlotMattForICHEP=1
 PlotCompare=1
 
 PlotAsymm=0

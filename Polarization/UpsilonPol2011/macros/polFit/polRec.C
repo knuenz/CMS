@@ -167,6 +167,42 @@ void polRec(double rapdilepton_min = 1,
 //  hEvalEff1D->SaveAs(hEvalEffName);
 }
 
+
+  if( nEff==1101 ){
+  const int etaBinsTotal = 16;
+  double etaBinningParametrized[etaBinsTotal+1]={0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6};
+  int pTBinsNew = 2000;
+  int etaBinsNew = 200;
+  hEvalEff1D   = new TH2D( "hEvalEff1D", "hEvalEff1D", etaBinsNew, 0,1.6, pTBinsNew,  0, 100);
+  double eff;
+  double effBuffer;
+  char graphName[200];
+
+
+  int currentEtaBin;
+  for(int etaBin=0;etaBin<etaBinsNew;etaBin++){
+	  for(int etaSearch=0;etaSearch<etaBinsTotal;etaSearch++){
+	  if(hEvalEff1D->GetXaxis()->GetBinCenter(etaBin+1)>etaBinningParametrized[etaSearch] && hEvalEff1D->GetXaxis()->GetBinCenter(etaBin+1)<etaBinningParametrized[etaSearch+1])
+		  currentEtaBin=etaSearch+1;
+	  }
+	  sprintf(graphName,"gEff_DATA_PT_AETA%d",currentEtaBin-1);
+	  TGraphAsymmErrors *graph = new TGraphAsymmErrors(*((TGraphAsymmErrors *) fInEff->Get(graphName)));
+
+		  for(int pTBin=0;pTBin<pTBinsNew;pTBin++){
+			  eff = graph->Eval(hEvalEff1D->GetYaxis()->GetBinCenter(pTBin+1));
+		  	  if(eff<0) eff=0;
+		  	  hEvalEff1D->SetBinContent(etaBin+1,pTBin+1,eff); effBuffer=eff;
+  }
+
+  }
+  sprintf(hEvalEffName,"%s/EvalHisto1D.root",dirstruct);
+//  hEvalEff1D->SaveAs(hEvalEffName);
+}
+
+
+
+
+
 TEfficiency* TEff;
 TH2D* hEvalEff;
 if(nEff==105 || nEff==106){

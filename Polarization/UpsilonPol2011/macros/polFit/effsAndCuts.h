@@ -162,6 +162,12 @@ void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff)
 
 		if(nEff==1060) sprintf(EffFileName,"ParametrizedFactDataEff_June21_Central.root");//'almost tight'
 		if(nEff==1070) sprintf(EffFileName,"ParametrizedFactDataEff_June25_Central.root");//'mixed'
+		if(nEff==1080) sprintf(EffFileName,"ParametrizedFactMCEff_July19_Central_fixed.root");//'MC TnP Parametrized'
+
+
+
+		if(nEff==1101) sprintf(EffFileName,"MCTruthEfficiency_coarsePT_18July2012.root");
+
 
 	}
 

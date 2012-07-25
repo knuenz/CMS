@@ -265,6 +265,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
   sprintf(filename,"%s/results.root",dirstruct);
   if(RealData) sprintf(filename,"%s/results_%s.root",dirstruct,TreeBinID);
+  cout<<filename<<endl;
   TFile* results = new TFile(filename);
 
   sprintf(dirstruct,"%s/Figures",dirstruct); gSystem->mkdir(dirstruct);

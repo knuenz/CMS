@@ -33,7 +33,7 @@ Double_t fracBG[kNbSpecies];
 Double_t nY[kNbSpecies];
 
 void GetHisto(Char_t *fileNameIn, Int_t iRapBin, Int_t iPTBin);
-void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin);
+void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin, Int_t nState);
 Double_t fitPolyCrystal3(Double_t *x, Double_t *par);
 Double_t fitContinuum(Double_t *x, Double_t *par);
 Double_t DrawContinuum(Double_t *x, Double_t *par);
@@ -44,14 +44,15 @@ void SaveFitPars(Int_t iRapBin, Int_t iPTBin);
 void upsilon_MCMassFit(Int_t iRapBin = 0,
 		      Int_t iPTBin = 0,
 		      Double_t nSigma = 2.,
-		      Char_t *fileNameIn = "RootFiles/selEvents_data_Ups_2Aug2011.root"){
+		      Char_t *fileNameIn = "RootFiles/selEvents_data_Ups_2Aug2011.root",
+		      Int_t nState = 0){
 
   GetHisto(fileNameIn, iRapBin, iPTBin);
   if(hMass->GetEntries() < 200.){
     printf("\n\n\nskip processing this bin, because the number of entries is smaller than 200\n\n\n");
     return;
   }
-  FitSignalBG(nSigma, iRapBin, iPTBin);
+  FitSignalBG(nSigma, iRapBin, iPTBin,nState);
   DrawFit(nSigma, iRapBin, iPTBin);
 }
 
@@ -123,7 +124,7 @@ void DrawFit(Double_t nSigma, Int_t iRapBin, Int_t iPTBin){
 }
 
 //===============================
-void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin){
+void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin, Int_t nState){
 
   gStyle->SetOptFit(kTRUE);
   gStyle->SetOptStat(kFALSE);
@@ -144,7 +145,22 @@ void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin){
   Double_t normY2S = 0;
   Double_t normY3S = 0;
   Double_t sigma1S = 0.1, mean1S = 9.45;
+  Double_t mean2S = mean1S*(massPDG2S/massPDG1S);
+  Double_t sigma2S = sigma1S*(massPDG2S/massPDG1S);
+  Double_t mean3S = mean1S*(massPDG3S/massPDG1S);
+  Double_t sigma3S = sigma1S*(massPDG3S/massPDG1S);
   Double_t alpha = 1.33, n = 6.6; //CB-tail parameters
+
+  if(nState==2){
+	  normY1S = 0;
+	  normY2S = hMass->GetMaximum() / binWidth;
+	  normY3S = 0;
+  }
+  if(nState==3){
+	  normY1S = 0;
+	  normY2S = 0;
+	  normY3S = hMass->GetMaximum() / binWidth;
+  }
 
   printf("will be fitting the continuum between %1.2f < M < %1.2f\n", range_min, range_max);
   sprintf(name, "fCont");
@@ -164,8 +180,18 @@ void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin){
   sprintf(name,"fPeaks");
   Int_t const npar = 10;
   fRECO = new TF1(name, fitPolyCrystal3, peak_min, peak_max, npar);
+  if(nState==1){
   fRECO->SetParNames("normY1S", "mass_Ups1S", "sigma_Ups1S", "normY2S", "normY3S", "n", "alpha", "a", "b", "c");
   fRECO->SetParameters(normY1S, mean1S, sigma1S, normY2S, normY3S, n, alpha, a, b, c);
+  }
+  if(nState==2){
+  fRECO->SetParNames("normY2S", "mass_Ups2S", "sigma_Ups2S", "normY1S", "normY3S", "n", "alpha", "a", "b", "c");
+  fRECO->SetParameters(normY2S, mean2S, sigma2S, normY1S, normY3S, n, alpha, a, b, c);
+  }
+  if(nState==3){
+  fRECO->SetParNames("normY3S", "mass_Ups3S", "sigma_Ups3S", "normY2S", "normY1S", "n", "alpha", "a", "b", "c");
+  fRECO->SetParameters(normY3S, mean3S, sigma3S, normY2S, normY1S, n, alpha, a, b, c);
+  }
   fRECO->FixParameter(7,a);
   fRECO->FixParameter(8,b);
   fRECO->FixParameter(9,c);
@@ -201,13 +227,52 @@ void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin){
 
   Double_t fitParTot[npar];
   fRECO->GetParameters(fitParTot);
-  normY1S = fitParTot[0];   printf("normY1S = %1.3e\n", normY1S);
+
+  if(nState==1){
   mean1S = fitParTot[1];
   sigma1S = fitParTot[2];
-  normY2S = 0;
-  normY3S = 0;
+  mean2S = mean1S*(massPDG2S/massPDG1S);
+  mean3S = mean1S*(massPDG3S/massPDG1S);
+  sigma2S = sigma1S*(massPDG2S/massPDG1S);
+  sigma3S = sigma1S*(massPDG3S/massPDG1S);
+  }
+  if(nState==2){
+  mean2S = fitParTot[1];
+  sigma2S = fitParTot[2];
+  mean1S = mean2S/(massPDG2S/massPDG1S);
+  mean3S = mean1S*(massPDG3S/massPDG1S);
+  sigma1S = sigma2S/(massPDG2S/massPDG1S);
+  sigma3S = sigma1S*(massPDG3S/massPDG1S);
+  }
+  if(nState==3){
+  mean3S = fitParTot[1];
+  sigma3S = fitParTot[2];
+  mean2S = mean3S/(massPDG3S/massPDG2S);
+  mean1S = mean3S/(massPDG3S/massPDG1S);
+  sigma2S = sigma3S/(massPDG3S/massPDG2S);
+  sigma1S = sigma3S/(massPDG3S/massPDG1S);
+  }
+
+
   n = fitParTot[5];  printf("n = %1.3f\n", n);
   alpha = fitParTot[6];  printf("alpha = %1.3f\n", alpha);
+
+  if(nState==1){
+  normY1S = fitParTot[0];   printf("normY1S = %1.3e\n", normY1S);
+  normY2S = 0;
+  normY3S = 0;
+  }
+  if(nState==2){
+  normY2S = fitParTot[0];   printf("normY2S = %1.3e\n", normY1S);
+  normY1S = 0;
+  normY3S = 0;
+  }
+  if(nState==3){
+  normY3S = fitParTot[0];   printf("normY3S = %1.3e\n", normY1S);
+  normY1S = 0;
+  normY2S = 0;
+  }
+
 
   chisqrd = fRECO->GetChisquare();
   NDF = fRECO->GetNDF();
@@ -219,10 +284,6 @@ void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin){
   if(iPTBin == 0)
     SaveCBParameters(iRapBin, iPTBin, alpha, n, fRECO->GetParError(6), fRECO->GetParError(5));
 
-  Double_t mean2S = mean1S*(massPDG2S/massPDG1S);
-  Double_t mean3S = mean1S*(massPDG3S/massPDG1S);
-  Double_t sigma2S = sigma1S*(massPDG2S/massPDG1S);
-  Double_t sigma3S = sigma1S*(massPDG3S/massPDG1S);
 
   printf("=========================================\n");
   printf("Calculate the number of Y's in the sample\n");
@@ -325,7 +386,7 @@ void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin){
 	   iPTBin, onia::pTRange[iRapBin][iPTBin-1], onia::pTRange[iRapBin][iPTBin]);
   }
   for(int iSpecies = 0; iSpecies < kNbSpecies; iSpecies++){
-    fracBG[iSpecies] = 0.01;
+    fracBG[iSpecies] = 0.001;
     // printf("nUps = %1.3f\n", nUps[iSpecies]);
     // printf("nBG = %1.3f\n", nBG[iSpecies]);
     printf("%s: fraction of BG in a +- %1.1f sigma window is %1.3f\n",
@@ -335,7 +396,7 @@ void FitSignalBG(Double_t nSigma, Int_t iRapBin, Int_t iPTBin){
   }
   fclose(fInfo);
 
-  if(iPTBin > 0 && iRapBin > 0)
+  if(iPTBin > -1 && iRapBin > -1)
     SaveFitPars(iRapBin, iPTBin);
 
 }

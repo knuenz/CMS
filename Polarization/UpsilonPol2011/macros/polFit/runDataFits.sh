@@ -10,22 +10,22 @@ datadir_Start=${basedir}/macros/DataFiles
 
 ########## INPUTS ##########
 
-#fracL=0 #in percent
-nSigma=1.00 #needed in 2 decimal accuracy (x.yz)
+fracL=50 #in percent
+nSigma=3.00 #needed in 2 decimal accuracy (x.yz)
 
 for nState in 1;do
 
-JobID=Data_TheGreatApproval_June25_CrossCheck_Mixed_Mixed #Please define nSigma and fracL yourself in the JobID, if needed
+JobID=MCclosure_July25_Ups1S_MCTnPparam #Please define nSigma and fracL yourself in the JobID, if needed
 
 rapBinMin=1
 rapBinMax=1
-ptBinMin=8
-ptBinMax=10
+ptBinMin=6
+ptBinMax=6
 
 FidCuts=11
 
-nEff=1070					#1030=soft-1060=tight-1070=mixed-111=soft-112=tight
-UseMCeff=true
+nEff=1080					#1030=soft-1060=tight-1070=mixed-111=soft-112=tight
+UseMCeff=false
 
 nDileptonEff=1
 UseMCDileptoneff=true
@@ -34,16 +34,16 @@ nRhoFactor=1
 
 nSample=60000
 
-nFits=3
+nFits=1
 nSkipGen=0
 
-DataID=_June25_OLDMIXED
+DataID=_MCclosure_Ups1S_July25
 
 MPValgo=3 		#1...mean,2...gauss,3...gauss-loop with chi2<2
 
 ########################################
 
-useCentralFracL=1
+useCentralFracL=0
 
 if [ $useCentralFracL -eq 1 ]
 then
