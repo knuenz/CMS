@@ -32,7 +32,7 @@ UseMCDileptoneff=true
 
 nRhoFactor=1
 
-useAmapApproach=false
+useAmapApproach=true
 nAmap=33107                     #frame/state/sigma/ID ( ID= 2 digits )
 nDenominatorAmap=1		    #the number here corresponds to the same notation as nEff
 

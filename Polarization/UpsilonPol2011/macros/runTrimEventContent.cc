@@ -66,7 +66,7 @@ int main(int argc, char** argv){
 		    if(std::string(argv[i]).find("LeftSided=1") != std::string::npos) {LeftSided=true;}
 		    if(std::string(argv[i]).find("RightSided=1") != std::string::npos) {RightSided=true;}
 		    if(std::string(argv[i]).find("MassScan=1") != std::string::npos) {MassScan=true;}
-		    if(std::string(argv[i]).find("adjustOverlapBorders=0") != std::string::npos) {adjustOverlapBorders=false;}
+		    if(std::string(argv[i]).find("adjustOverlapBorders=0") != std::string::npos) {adjustOverlapBorders=false; cout<<"adjustOverlapBorders=false"<<endl;}
 	    }
 
 	  double fracLnS[3][onia::kNbRapForPTBins+1][onia::kNbPTMaxBins+1];
@@ -78,6 +78,21 @@ int main(int argc, char** argv){
 	  double backgroundFrac_[3][onia::kNbRapForPTBins][onia::kNbPTMaxBins];
 	  double err_backgroundFrac_[3][onia::kNbRapForPTBins][onia::kNbPTMaxBins];
 	  double SignalEvents_[3][onia::kNbRapForPTBins][onia::kNbPTMaxBins];
+	  double ActualMassMin_[3][onia::kNbRapForPTBins][onia::kNbPTMaxBins];
+	  double ActualMassMax_[3][onia::kNbRapForPTBins][onia::kNbPTMaxBins];
+
+	  double ActualMassMin_Ups1S_rap1[onia::kNbPTMaxBins];
+	  double ActualMassMin_Ups2S_rap1[onia::kNbPTMaxBins];
+	  double ActualMassMin_Ups3S_rap1[onia::kNbPTMaxBins];
+	  double ActualMassMax_Ups1S_rap1[onia::kNbPTMaxBins];
+	  double ActualMassMax_Ups2S_rap1[onia::kNbPTMaxBins];
+	  double ActualMassMax_Ups3S_rap1[onia::kNbPTMaxBins];
+	  double ActualMassMin_Ups1S_rap2[onia::kNbPTMaxBins];
+	  double ActualMassMin_Ups2S_rap2[onia::kNbPTMaxBins];
+	  double ActualMassMin_Ups3S_rap2[onia::kNbPTMaxBins];
+	  double ActualMassMax_Ups1S_rap2[onia::kNbPTMaxBins];
+	  double ActualMassMax_Ups2S_rap2[onia::kNbPTMaxBins];
+	  double ActualMassMax_Ups3S_rap2[onia::kNbPTMaxBins];
 
   gROOT->ProcessLine(".L TrimEventContent.C+");
 
@@ -86,7 +101,7 @@ int main(int argc, char** argv){
     for(int iRap = 0; iRap <= onia::kNbRapForPTBins; iRap++){
       Int_t max = onia::kNbPTBins[iRap]+1;
       for(int iPT = 0; iPT < max; iPT++){
-    	  fracLnS[iState][iRap][iPT]=TrimEventContent(iRap, iPT, fracL, nSigma, iState,UpsMC,f_BG_zero,ProjectLSBdata,ProjectRSBdata,CombineSignalPeaks,Y1Sto2S_SB,LeftSided,RightSided,MassScan);
+    	  fracLnS[iState][iRap][iPT]=TrimEventContent(iRap, iPT, fracL, nSigma, iState,UpsMC,f_BG_zero,ProjectLSBdata,ProjectRSBdata,CombineSignalPeaks,Y1Sto2S_SB,LeftSided,RightSided,MassScan,adjustOverlapBorders);
      	  if(iRap>0&&iPT>0){
      	  if(iState==0)contamination2Sin1S_[iRap-1][iPT-1]=contamination2Sin1S;
      	  if(iState==1)contamination1Sin2S_[iRap-1][iPT-1]=contamination1Sin2S;
@@ -95,6 +110,8 @@ int main(int argc, char** argv){
     	  backgroundFrac_[iState][iRap-1][iPT-1]=backgroundFrac;
     	  err_backgroundFrac_[iState][iRap-1][iPT-1]=err_backgroundFrac;
     	  SignalEvents_[iState][iRap-1][iPT-1]=SignalEvents;
+    	  ActualMassMin_[iState][iRap-1][iPT-1]=ActualMassMin;
+    	  ActualMassMax_[iState][iRap-1][iPT-1]=ActualMassMax;
     	  cout<<"Number of signal events of Y"<<iState+1<<", rap"<<iRap<<", pT"<<iPT<<": "<< SignalEvents_[iState][iRap-1][iPT-1]<<endl;
     	  cout<<"Background fraction under  Y"<<iState+1<<", rap"<<iRap<<", pT"<<iPT<<": "<< backgroundFrac_[iState][iRap-1][iPT-1]<<" +- "<<err_backgroundFrac_[iState][iRap-1][iPT-1]<<endl;
     	  }
@@ -112,6 +129,40 @@ int main(int argc, char** argv){
     }
   }
 
+
+//  const int nBinspT=5;
+//  double ptCentre_graph[nBinspT]={11.,14.,18.,25.,40.};
+
+  for(int iState = 0; iState < 3; iState++){
+    for(int iRap = 1; iRap <= onia::kNbRapForPTBins; iRap++){
+      Int_t max = onia::kNbPTBins[iRap]+1;
+      for(int iPT = 6; iPT < 11; iPT++){
+    	  cout<<"Ups"<<iState+1<<"S, rap"<<iRap<<", pT"<<iPT<<": MassMin = "<< ActualMassMin_[iState][iRap-1][iPT-1]<<", MassMax = "<<ActualMassMax_[iState][iRap-1][iPT-1]<<endl;
+      }
+    }
+  }
+
+  for(int iState = 0; iState < 3; iState++){
+    for(int iRap = 1; iRap <= onia::kNbRapForPTBins; iRap++){
+    	cout<<endl;
+  	  cout<<"MassMin - Ups"<<iState+1<<"S, "<<"rap"<<iRap<<":"<<endl;
+     Int_t max = onia::kNbPTBins[iRap]+1;
+      for(int iPT = 6; iPT < 11; iPT++){
+    	  cout<<ActualMassMin_[iState][iRap-1][iPT-1]<<", ";
+      }
+    }
+  }
+
+  for(int iState = 0; iState < 3; iState++){
+    for(int iRap = 1; iRap <= onia::kNbRapForPTBins; iRap++){
+    	cout<<endl;
+  	  cout<<"MassMax - Ups"<<iState+1<<"S, "<<"rap"<<iRap<<":"<<endl;
+     Int_t max = onia::kNbPTBins[iRap]+1;
+      for(int iPT = 6; iPT < 11; iPT++){
+    	  cout<<ActualMassMax_[iState][iRap-1][iPT-1]<<", ";
+      }
+    }
+  }
 
 // Get all the values to plot
 

@@ -139,10 +139,10 @@ int main(int argc, char** argv){
   int numEventsTotal=0;
   for(int iRap = 1; iRap <= onia::kNbRapForPTBins; iRap++){
     Int_t max = onia::kNbPTBins[iRap]+1;
-    for(int iPT = 1; iPT < max; iPT++){
+    for(int iPT = 6; iPT < max; iPT++){
                  numEventsTotal+=numEvents_[iState][iRap][iPT];
     }}
-  cout<<"Total Number of Signal Events: "<<numEventsTotal<<endl<<endl;
+  cout<<"Total Number of Signal Events in safe region: "<<numEventsTotal<<endl<<endl;
 
 
 
