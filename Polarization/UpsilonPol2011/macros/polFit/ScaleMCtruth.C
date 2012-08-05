@@ -231,7 +231,7 @@ void ScaleMCtruth(){
 
 	  if(etaBin==0||etaBin==2||etaBin==3||etaBin==4||etaBin==5) { SF=1.019; SFerror=0.005; }//for the bin |eta| < 1.2 (excl. 0.2-0.3)
 	  if(etaBin==1) { SF=1.032; SFerror=0.01; }//for the bin 0.2 < |eta| < 0.3
-	  if(etaBin==5||etaBin==6) { SF=1.019; SFerror=0.01; }//for the bin 1.2 < |eta| < 1.6
+	  if(etaBin==6||etaBin==7) { SF=1.019; SFerror=0.01; }//for the bin 1.2 < |eta| < 1.6
 
 
 

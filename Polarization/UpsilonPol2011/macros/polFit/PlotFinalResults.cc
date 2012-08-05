@@ -126,6 +126,7 @@ int main(int argc, char** argv) {
 	bool SetCompStyle(false);
 	bool DrawPreliminary(true);
 	bool PlotMattForICHEP(false);
+	bool ExtendLegendInX(false);
 
 	  for( int i=0;i < argc; ++i ) {
 
@@ -198,6 +199,7 @@ int main(int argc, char** argv) {
 		    if(std::string(argv[i]).find("SetCompStyle=1") != std::string::npos) {SetCompStyle=true; cout<<"SetCompStyle"<<endl;}
 		    if(std::string(argv[i]).find("DrawPreliminary=0") != std::string::npos) {DrawPreliminary=false; cout<<"DrawPreliminary"<<endl;}
 		    if(std::string(argv[i]).find("PlotMattForICHEP=1") != std::string::npos) {PlotMattForICHEP=true; cout<<"PlotMattForICHEP"<<endl;}
+		    if(std::string(argv[i]).find("ExtendLegendInX=1") != std::string::npos) {ExtendLegendInX=true; cout<<"ExtendLegendInX"<<endl;}
 
 	    }
 
@@ -670,6 +672,20 @@ int main(int argc, char** argv) {
 				}
 
 
+/*
+			yMin=-3;
+			yMax=3;
+
+			if(iLam==2||iLam==8||iLam==14||iLam==3||iLam==9||iLam==15){
+				yMin=-1;
+				yMax=1;
+			}
+
+			if(iLam==6||iLam==12||iLam==18){
+				yMin=-3;
+				yMax=3;
+			}
+*/
 		TGraphAsymmErrors* graphDefaultRes = (TGraphAsymmErrors*) infileRes->Get(GraphName);
 		TGraphAsymmErrors* graphDefaultRes2sigma = (TGraphAsymmErrors*) infileRes2sigma->Get(GraphName);
 		TGraphAsymmErrors* graphDefaultRes3sigma = (TGraphAsymmErrors*) infileRes3sigma->Get(GraphName);
@@ -2190,6 +2206,13 @@ int main(int argc, char** argv) {
 			graphCompareFile4->SetMarkerSize(BG0MarkerSize);
 
 		}
+
+		TLine* extreme0 = new TLine( onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL, 0, onia::pTRange[rapBin][ptBinMax] ,0);
+		extreme0->SetLineWidth( 1 );
+		extreme0->SetLineStyle( 2 );
+		extreme0->SetLineColor( kBlack );
+		extreme0->Draw( "same" );
+
 		if(nComp>0){//FindLegend
 		graphCompareFile1->Draw(drawGraphStyle);
 		sprintf(complegendentry,"#lambda(LSB)-#lambda(sig. region)");
@@ -2213,6 +2236,8 @@ int main(int argc, char** argv) {
 		sprintf(complegendentry,"%s",LegendEntryCompID4);
 		plotcompLegend->AddEntry(graphCompareFile4,complegendentry,"lp");
 		}
+
+
 		}
 
 		char texTex[200];
@@ -5088,7 +5113,10 @@ MPcanvasCDF->cd();
 		double ParametrizedFontSize[8]={0.05,0.05,0.05,0.05,0.04,0.04,0.03,0.03};
 		double LegendYmin[8]={0.8,0.75,0.7,0.65,0.65,0.6,0.6,0.6};
 
-		TLegend* plotLegend=new TLegend(0.6,LegendYmin[nSystematics-1],0.95,0.9);
+		double LegendXmin=0.6;
+		if(ExtendLegendInX) LegendXmin=0.25;
+
+		TLegend* plotLegend=new TLegend(LegendXmin,LegendYmin[nSystematics-1],0.95,0.9);
 		plotLegend->SetFillColor(kWhite);
 		plotLegend->SetTextFont(72);
 		plotLegend->SetTextSize(ParametrizedFontSize[nSystematics-1]);

@@ -87,8 +87,8 @@ int main(int argc, char** argv) {
 //		sprintf(filename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/UpsilonPol/macros/polFit/Systematics/TotalSyst/Apr25CentralWithStatSystSquared/TGraphResults_2SUps.root");
 		TFile *infile2 = new TFile(filename,"READ");
 
-//		sprintf(filename,"%s/Data_TheGreatRun_10B_Apr18_NewestCentrals/TGraphResults_%dSUps.root",storagedir,nState);//ifAddInforFromThirdTGraph
-//		TFile *infile3 = new TFile(filename,"READ");//ifAddInforFromThirdTGraph
+		sprintf(filename,"%s/MCclosure_CombinedStates_MCtruthFineEta_3Sig/TGraphResults_%dSUps.root",storagedir,nState);//ifAddInforFromThirdTGraph
+		TFile *infile3 = new TFile(filename,"READ");//ifAddInforFromThirdTGraph
 
 		char GraphName[200];
 
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 		TGraphAsymmErrors* graph1 = (TGraphAsymmErrors*) infile1->Get(GraphName);
 		TGraphAsymmErrors* graph2 = (TGraphAsymmErrors*) infile2->Get(GraphName);
 
-//		TGraphAsymmErrors* graph3 = (TGraphAsymmErrors*) infile3->Get(GraphName);//ifAddInforFromThirdTGraph
+		TGraphAsymmErrors* graph3 = (TGraphAsymmErrors*) infile3->Get(GraphName);//ifAddInforFromThirdTGraph
 
 
 		int nBinspT=ptBinMax-ptBinMin+1;
@@ -192,16 +192,15 @@ int main(int argc, char** argv) {
 
 			double fracErrHigh2=lmeanErr2_high[pt]/(lmeanErr2_high[pt]+lmeanErr2_low[pt]);
 
-//			lmeanErr1_low[pt]=lmeanErr1_low[pt]+lmean2[pt]-lmean1[pt];
-//			lmeanErr1_high[pt]=lmeanErr1_high[pt]-lmean2[pt]+lmean1[pt];
 
-			lmeanErr1_high[pt]=fracErrHigh2*(lmeanErr1_high[pt]+lmeanErr1_low[pt]);
-			lmeanErr1_low[pt]=(1-fracErrHigh2)*(lmeanErr1_high[pt]+lmeanErr1_low[pt]);
+//	unc		lmeanErr1_high[pt]=fracErrHigh2*(lmeanErr1_high[pt]+lmeanErr1_low[pt]);
+//	unc		lmeanErr1_low[pt]=(1-fracErrHigh2)*(lmeanErr1_high[pt]+lmeanErr1_low[pt]);
 
-/*
+
 			graph3->GetPoint(pt,ptCentre3_[pt],lmean3[pt]);//ifAddInforFromThirdTGraph
+			lmean[pt]=lmean1[pt]-lmean2[pt]+lmean3[pt];
 
-			if(ptBin<6){
+/*			if(ptBin<6){
 				lmean[pt]=lmean1[pt]-lmean3[pt];//ifAddInforFromThirdTGraph
 			}
 */
@@ -232,7 +231,8 @@ int main(int argc, char** argv) {
 //		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,0,0);
 //		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre2_,lmean2,ptCentreErr2_low,ptCentreErr2_high,lmean1,lmean1);// ifCentralsWithTotalSyst
 //		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,lmeanErr_change,lmeanErr_change);// ifCombineErrorsOfTheTwo
-		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean2,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// if 'take central value from JobID2, take error from JobID1'
+//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean2,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// if 'take central value from JobID2, take error from JobID1'
+		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// ifAddInforFromThirdTGraph
 		graphSyst->SetMarkerColor(ToyMC::MarkerColor[nFrame]);
 		graphSyst->SetLineColor(ToyMC::MarkerColor[nFrame]);
 		graphSyst->SetMarkerStyle(ToyMC::MarkerStyle[nState][rapBin]);

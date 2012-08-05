@@ -63,7 +63,7 @@ void BinExamplePlots(){
 	gROOT->SetBatch();
 
 	  char DataID[200];
-	  sprintf(DataID,"Data_CowboyFix_July16");
+	  sprintf(DataID,"Data_TowardsPRL_Mass3Sigma_July27");
 
 	  bool PlotAcceptance=true;
 
@@ -78,7 +78,7 @@ void BinExamplePlots(){
 	  int pTmax=10;
 	  int rapmin=1;
 	  int rapmax=2;
-	  int nStatemin=1;
+	  int nStatemin=3;
 	  int nStatemax=3;
 
 

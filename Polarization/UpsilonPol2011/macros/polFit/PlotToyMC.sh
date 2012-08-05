@@ -10,16 +10,16 @@ storagedir=`more storagedir`/ToyMC #please define the directory storagedir in th
 
 
 
-for JobID in Toy_TheGreatRun_ARC_June23_1S_PhiRejection Toy_TheGreatRun_ARC_June23_1S_PhiRejection8th;do
+for JobID in Toy_TowardsPRL_Aug03_AmapsTest_1030t32104o105;do
 
 echo ${JobID}
 
 nState=1
 
-ptBinMin=8
-ptBinMax=8
+ptBinMin=1
+ptBinMax=10
 
-frameSig=2
+frameSig=1
 for polScenSig in 3;do
 
 frameBkg=1

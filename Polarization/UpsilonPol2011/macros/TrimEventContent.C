@@ -14,6 +14,8 @@ double contamination2Sin3S;
 double backgroundFrac;
 double err_backgroundFrac;
 double SignalEvents;
+double ActualMassMin;
+double ActualMassMax;
 
 double TrimEventContent(Int_t iRapBin = 1,
 		      Int_t iPTBin = 1,
@@ -112,6 +114,15 @@ double TrimEventContent(Int_t iRapBin = 1,
 	  massMin = poleMass;
 	  massMax = poleMass + nSigma*sigma[nUpsState];
   }
+
+//	  massMin = poleMass - 3.*sigma[nUpsState];
+//	  massMax = poleMass - 1.*sigma[nUpsState];
+
+//	  massMin = poleMass + 1.*sigma[nUpsState];
+//	  massMax = poleMass + 3.*sigma[nUpsState];
+
+  cout<<"massMin = "<<massMin<<endl;
+  cout<<"massMax = "<<massMax<<endl;
 
 
   if(adjustOverlapBorders){
@@ -286,6 +297,7 @@ cout<<"Y1Sto2S_SB fBG = "<<fBG->Integral(massMin, massMax) / (fBG->Integral(mass
 	  massMax=10.65;
   }
 
+  if(!UpsMC){
   if(massMaxBG[L] > massMin){
     printf("the right sideband window is LARGER than the left signal window!!!!\n\n\n\n");
     massMaxBG[L]=9.;
@@ -301,6 +313,7 @@ cout<<"Y1Sto2S_SB fBG = "<<fBG->Integral(massMin, massMax) / (fBG->Integral(mass
     massMax=10.;
     PseudoBin=true;
 //    exit(0);
+  }
   }
 
   if(ProjectLSBdata){
@@ -346,6 +359,105 @@ cout<<"Y1Sto2S_SB fBG = "<<fBG->Integral(massMin, massMax) / (fBG->Integral(mass
 	  hMassScanInfo->SetBinContent(1,meanMass);
 	  hMassScanInfo->SetBinContent(2,1-fracBG);
   }
+
+
+  if(UpsMC&&iPTBin>5){
+
+  Double_t massMinUps1S_1sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 9.38372, 9.38435, 9.38425, 9.38487, 9.38326},
+    {0,0,0,0,0, 9.35644, 9.3574, 9.35555, 9.35522, 9.34896}};
+  Double_t massMaxUps1S_1sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 9.518, 9.51711, 9.51826, 9.51701, 9.51941},
+    {0,0,0,0,0, 9.53728, 9.53853, 9.5394, 9.54169, 9.54538}};
+
+  Double_t massMinUps2S_1sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 9.94218, 9.94285, 9.94275, 9.9434, 9.94169},
+    {0,0,0,0,0, 9.91328, 9.91429, 9.91234, 9.91198, 9.90535}};
+  Double_t massMaxUps2S_1sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 10.0844, 10.0835, 10.0847, 10.0834, 10.086},
+    {0,0,0,0,0, 10.1049, 10.1062, 10.1071, 10.1096, 10.1135}};
+
+  Double_t massMinUps3S_1sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 10.2715, 10.2722, 10.2721, 10.2728, 10.271},
+    {0,0,0,0,0, 10.2416, 10.2427, 10.2407, 10.2403, 10.2335}};
+  Double_t massMaxUps3S_1sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 10.4185, 10.4175, 10.4188, 10.4174, 10.42},
+    {0,0,0,0,0, 10.4396, 10.441, 10.4419, 10.4444, 10.4485}};
+
+  //=============================
+
+  Double_t massMinUps1S_3sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 9.24945, 9.2516, 9.25025, 9.25273, 9.24711},
+    {0,0,0,0,0, 9.1756, 9.17626, 9.17171, 9.16874, 9.15253}};
+  Double_t massMaxUps1S_3sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 9.65227, 9.64987, 9.65227, 9.64915, 9.65557},
+    {0,0,0,0,0, 9.71811, 9.71966, 9.72048, 9.72149, 9.72017}};
+
+  Double_t massMinUps2S_3sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 9.79992, 9.80219, 9.80076, 9.80339, 9.79744},
+    {0,0,0,0,0, 9.72168, 9.72238, 9.72048, 9.72149, 9.72017}};
+  Double_t massMaxUps2S_3sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 10.1765, 10.1763, 10.1769, 10.1765, 10.177},
+    {0,0,0,0,0, 10.1721, 10.1733, 10.1728, 10.1739, 10.1725}};
+
+  Double_t massMinUps3S_3sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 10.1765, 10.1763, 10.1769, 10.1765, 10.177},
+    {0,0,0,0,0, 10.1721, 10.1733, 10.1728, 10.1739, 10.1725}};
+  Double_t massMaxUps3S_3sigma[3][10] = {
+    {0,0,0,0,0, 0,0,0,0,0},
+    {0,0,0,0,0, 10.5655, 10.5628, 10.5655, 10.562, 10.5691},
+    {0,0,0,0,0, 10.6375, 10.6392, 10.6432, 10.6485, 10.6635}};
+
+
+  if(nSigma==1){
+	  if(nUpsState==0){
+		  massMin=massMinUps1S_1sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps1S_1sigma[iRapBin][iPTBin-1];
+	  }
+	  if(nUpsState==1){
+		  massMin=massMinUps2S_1sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps2S_1sigma[iRapBin][iPTBin-1];
+	  }
+	  if(nUpsState==2){
+		  massMin=massMinUps3S_1sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps3S_1sigma[iRapBin][iPTBin-1];
+	  }
+  }
+  if(nSigma==3){
+	  if(nUpsState==0){
+		  massMin=massMinUps1S_3sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps1S_3sigma[iRapBin][iPTBin-1];
+	  }
+	  if(nUpsState==1){
+		  massMin=massMinUps2S_3sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps2S_3sigma[iRapBin][iPTBin-1];
+	  }
+	  if(nUpsState==2){
+		  massMin=massMinUps3S_3sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps3S_3sigma[iRapBin][iPTBin-1];
+	  }
+  }
+
+}
+
+
+
+
+
+  ActualMassMin=massMin;
+  ActualMassMax=massMax;
+
 
   //calculate central fracL
 

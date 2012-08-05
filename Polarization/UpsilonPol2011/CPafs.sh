@@ -31,6 +31,7 @@ cp ${fromdir}/macros/polFit/PlotCentrals.sh ${todir}/macros/polFit/
 cp ${fromdir}/macros/polFit/AverageSyst.sh ${todir}/macros/polFit/
 cp ${fromdir}/macros/polFit/ChangeTGraph.sh ${todir}/macros/polFit/
 cp ${fromdir}/macros/polFit/RePlotDataFits.sh ${todir}/macros/polFit/
+cp ${fromdir}/macros/polFit/BinExamplePlots.C ${todir}/macros/polFit/
 
 cp ${fromdir}/macros/polFit/AlterPPD.cc ${todir}/macros/polFit/
 cp ${fromdir}/macros/polFit/AlterPPD.sh ${todir}/macros/polFit/

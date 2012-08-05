@@ -75,6 +75,8 @@ void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff)
 double DiLeptonEfficiency( double& Dilepton_pT, double& Dilepton_rap, int nDileptonEff, TFile *fInDileptonEff, bool MCeff);
 double EvaluateRhoFactor( double& costh, double& phi, int nEff, TFile* fInRhoFactor, double rap, double pT);
 void FindMPV(TH1* PosteriorDist , double& MPV , double& MPVerrorLow, double& MPVerrorHigh, int MPValgo, int nSigma);
+double DenominatorAmapEfficiency( double& pT, double& eta, int nDenominatorAmap, TFile *fInEff_nDenominatorAmap, TH2D* hEvalEff_nDenominatorAmap, bool MCeff, TEfficiency* TEff_nDenominatorAmap);
+double EvaluateAmap( double& costh_Amap, double& phi_Amap, int nAmap, TFile* fInAmap, double rap, double pT);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function randomly sampling the lambda values of the "next iteration"
@@ -88,7 +90,7 @@ void extractFromProposalPDF( double& lth_candidate,     double& lph_candidate,  
   if ( proposalWidth_lth < 0. || proposalWidth_lph < 0. || proposalWidth_ltp < 0. ) {
        do {
            lth_candidate = gRandom->Gaus( lth, proposalWidthBurnIn ); // Gaussian proposal pdf with "large" sigma and positivity constraints
-           lph_candidate = gRandom->Gaus( lph, proposalWidthBurnIn ); //0.10 all default
+           lph_candidate = gRandom->Gaus( lph, proposalWidthBurnIn ); // 0.10 all default
            ltp_candidate = gRandom->Gaus( ltp, proposalWidthBurnIn );
        }
 
@@ -222,7 +224,10 @@ void polFit(int n_sampledPoints=1,
 		int rapBin=999,
 		int pTbin=999,
 		bool NewAccCalc=true,
-		int MPValgo=999){
+		int MPValgo=999,
+		bool useAmapApproach=false,
+		int nAmap=999,
+		int nDenominatorAmap=999){
 
   gROOT->Reset();
 
@@ -231,7 +236,7 @@ void polFit(int n_sampledPoints=1,
   if(RandomSeed) gRandom = new TRandom3(0);  // better random generator
   else gRandom = new TRandom3(23101987);
 
-  bool ForceEpsSmallerOne=true;
+  bool ForceEpsSmallerOne=false;
 
   if(!RealData) n_burnIn=Toy_n_burnIn;
 
@@ -402,12 +407,93 @@ if(nEff==105 || nEff==106){
 }
 
 
-if(nEff!=105 && nEff!=106)
+if(nEff!=105 && nEff!=106 && nEff!=1)
 	hEvalEff = (TH2D*)hEvalEff1D->Clone("hEvalEff");
 if(nEff > 10000) hEvalEff = (TH2D*)hEvalEff2D->Clone("hEvalEff");
 
 sprintf(hEvalEffName,"%s/EvalHisto.root",dirstruct);
 //hEvalEff->SaveAs(hEvalEffName);
+
+
+
+
+
+cout<<"Get Amap"<<endl;
+
+////// Get Amap
+
+EvaluateEffFileName(nAmap,EffFileName,false);
+sprintf(EffFile,"%s/%s",effDir,EffFileName);
+
+TFile *fInAmap = new TFile(EffFile);
+
+
+
+
+
+cout<<"Get Amap Denominator"<<endl;
+
+
+////// Get Amap Denominator
+
+TEfficiency* TEff_nDenominatorAmap;
+TH2D* hEvalEff_nDenominatorAmap;
+
+TH2D*  hEvalEff1D_nDenominatorAmap;
+
+EvaluateEffFileName(nDenominatorAmap,EffFileName,true);
+sprintf(EffFile,"%s/%s",effDir,EffFileName);
+
+TFile *fInEff_nDenominatorAmap = new TFile(EffFile);
+
+if( nDenominatorAmap==1101 ){
+const int etaBinsTotal = 16;
+double etaBinningParametrized[etaBinsTotal+1]={0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6};
+int pTBinsNew = 2000;
+int etaBinsNew = 200;
+hEvalEff1D_nDenominatorAmap   = new TH2D( "hEvalEff1D_nDenominatorAmap", "hEvalEff1D_nDenominatorAmap", etaBinsNew, 0,1.6, pTBinsNew,  0, 100);
+double eff;
+double effBuffer;
+char graphName[200];
+
+
+int currentEtaBin;
+for(int etaBin=0;etaBin<etaBinsNew;etaBin++){
+	  for(int etaSearch=0;etaSearch<etaBinsTotal;etaSearch++){
+	  if(hEvalEff1D_nDenominatorAmap->GetXaxis()->GetBinCenter(etaBin+1)>etaBinningParametrized[etaSearch] && hEvalEff1D_nDenominatorAmap->GetXaxis()->GetBinCenter(etaBin+1)<etaBinningParametrized[etaSearch+1])
+		  currentEtaBin=etaSearch+1;
+	  }
+	  sprintf(graphName,"gEff_DATA_PT_AETA%d",currentEtaBin-1);
+	  TGraphAsymmErrors *graph = new TGraphAsymmErrors(*((TGraphAsymmErrors *) fInEff_nDenominatorAmap->Get(graphName)));
+
+		  for(int pTBin=0;pTBin<pTBinsNew;pTBin++){
+			  eff = graph->Eval(hEvalEff1D_nDenominatorAmap->GetYaxis()->GetBinCenter(pTBin+1));
+		  	  if(eff<0) eff=0;
+		  	  hEvalEff1D_nDenominatorAmap->SetBinContent(etaBin+1,pTBin+1,eff); effBuffer=eff;
+}
+
+}
+}
+
+if(nDenominatorAmap!=105 && nDenominatorAmap!=106 && nDenominatorAmap!=1)
+	hEvalEff_nDenominatorAmap = (TH2D*)hEvalEff1D_nDenominatorAmap->Clone("hEvalEff_nDenominatorAmap");
+
+
+if(nDenominatorAmap==105 || nDenominatorAmap==106){
+	sprintf(EffType,"totEff_MCTRUTH_pT_eta");
+	TEfficiency* TEff2=(TEfficiency*) fInEff_nDenominatorAmap->Get(EffType);
+	TH1* hEffTOT=(TH1*)TEff2->GetTotalHistogram();
+	TH1* hEffPASS=(TH1*)TEff2->GetPassedHistogram();
+	hEffPASS->Divide(hEffTOT);
+	hEvalEff_nDenominatorAmap=(TH2D*)hEffPASS->Clone("hEffPASS");
+	TEff_nDenominatorAmap=(TEfficiency*) fInEff_nDenominatorAmap->Get(EffType);
+}
+
+
+
+
+
+
 
 
   // input file with the background histograms
@@ -761,7 +847,34 @@ sprintf(hEvalEffName,"%s/EvalHisto.root",dirstruct);
     if(nRhoFactor>320 && nRhoFactor<331) {costh_RhoFactor=costh_PX; phi_RhoFactor=phi_PX;}
 	double RhoFactor = EvaluateRhoFactor( costh_RhoFactor, phi_RhoFactor, nRhoFactor, fInRhoFactor, rap, pT);
 
-	epsilon = epsilon*DileptonEff*RhoFactor;
+
+	if(!useAmapApproach) epsilon = epsilon*DileptonEff*RhoFactor;
+
+	if(useAmapApproach){
+	    double costh_Amap=0;
+	    double phi_Amap=0;
+	    if(nAmap>10000 && nAmap<20000) {costh_Amap=costh_CS; phi_Amap=phi_CS;}
+	    if(nAmap>20000 && nAmap<30000) {costh_Amap=costh_HX; phi_Amap=phi_HX;}
+	    if(nAmap>30000 && nAmap<40000) {costh_Amap=costh_PX; phi_Amap=phi_PX;}
+		double AmapValue=EvaluateAmap( costh_Amap, phi_Amap, nAmap, fInAmap, rap, pT);
+		double AmapDenominator= DenominatorAmapEfficiency( lepP_pT, lepP_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap) * DenominatorAmapEfficiency( lepN_pT, lepN_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap);
+		epsilon = epsilon*AmapValue/AmapDenominator;
+
+/*		cout<<"muonP pT = "<<lepP_pT<<" muonP eta = "<<lepP_eta<<endl;
+		cout<<"muonN pT = "<<lepN_pT<<" muonN eta = "<<lepN_eta<<endl;
+		cout<<"costh    = "<<costh_Amap<<" phi = "<<phi_Amap<<endl;
+		cout<<"Ups pT = "<<pT<<" Ups rap = "<<rap<<endl;
+		cout<<"muonP eff = "<<singleLeptonEfficiency( lepP_pT, lepP_eta, nEff, fInEff, hEvalEff, MCeff, TEff)<<endl;
+		cout<<"muonN eff = "<<singleLeptonEfficiency( lepN_pT, lepN_eta, nEff, fInEff, hEvalEff, MCeff, TEff)<<endl;
+		cout<<"muonP Denominator eff = "<<DenominatorAmapEfficiency( lepP_pT, lepP_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap)<<endl;
+		cout<<"muonN Denominator eff = "<<DenominatorAmapEfficiency( lepN_pT, lepN_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap)<<endl;
+		cout<<"AmapValue = "<<EvaluateAmap( costh_Amap, phi_Amap, nAmap, fInAmap, rap, pT)<<endl;
+		cout<<"dimuon efficiency = "<<epsilon<<endl;
+		cout<<"dimuon efficiency Check 0 = "<<epsilon-singleLeptonEfficiency( lepP_pT, lepP_eta, nEff, fInEff, hEvalEff, MCeff, TEff)*singleLeptonEfficiency( lepN_pT, lepN_eta, nEff, fInEff, hEvalEff, MCeff, TEff)*EvaluateAmap( costh_Amap, phi_Amap, nAmap, fInAmap, rap, pT)/(DenominatorAmapEfficiency( lepP_pT, lepP_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap)*DenominatorAmapEfficiency( lepN_pT, lepN_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap))<<endl;
+*/
+
+	}
+
 
 	if(epsilon>1&&ForceEpsSmallerOne) {epsilon=1;}
 
@@ -957,7 +1070,20 @@ sprintf(hEvalEffName,"%s/EvalHisto.root",dirstruct);
     if(nRhoFactor>320 && nRhoFactor<331) {costh_RhoFactor=costh_PX; phi_RhoFactor=phi_PX;}
 	double RhoFactor = EvaluateRhoFactor( costh_RhoFactor, phi_RhoFactor, nRhoFactor, fInRhoFactor, rap, pT);
 
-	epsilon = epsilon*DileptonEff*RhoFactor;
+
+	if(!useAmapApproach) epsilon = epsilon*DileptonEff*RhoFactor;
+
+	if(useAmapApproach){
+	    double costh_Amap=0;
+	    double phi_Amap=0;
+	    if(nAmap>10000 && nAmap<20000) {costh_Amap=costh_CS; phi_Amap=phi_CS;}
+	    if(nAmap>20000 && nAmap<30000) {costh_Amap=costh_HX; phi_Amap=phi_HX;}
+	    if(nAmap>30000 && nAmap<40000) {costh_Amap=costh_PX; phi_Amap=phi_PX;}
+		double AmapValue=EvaluateAmap( costh_Amap, phi_Amap, nAmap, fInAmap, rap, pT);
+		double AmapDenominator= DenominatorAmapEfficiency( lepP_pT, lepP_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap) * DenominatorAmapEfficiency( lepN_pT, lepN_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap);
+		epsilon = epsilon*AmapValue/AmapDenominator;
+	}
+
 
 	if(epsilon>1&&ForceEpsSmallerOne) {epsilon=1;}
 
@@ -1287,7 +1413,24 @@ sprintf(hEvalEffName,"%s/EvalHisto.root",dirstruct);
     if(nRhoFactor>320 && nRhoFactor<331) {costh_RhoFactor=costh_PX; phi_RhoFactor=phi_PX;}
 	double RhoFactor = EvaluateRhoFactor( costh_RhoFactor, phi_RhoFactor, nRhoFactor, fInRhoFactor, rap, pT);
 
-	epsilon = epsilon*DileptonEff*RhoFactor;
+
+	if(!useAmapApproach) epsilon = epsilon*DileptonEff*RhoFactor;
+
+	if(useAmapApproach){
+//		cout<<"useAmapApproach"<<endl;
+	    double costh_Amap=0;
+	    double phi_Amap=0;
+	    if(nAmap>10000 && nAmap<20000) {costh_Amap=costh_CS; phi_Amap=phi_CS;}
+	    if(nAmap>20000 && nAmap<30000) {costh_Amap=costh_HX; phi_Amap=phi_HX;}
+	    if(nAmap>30000 && nAmap<40000) {costh_Amap=costh_PX; phi_Amap=phi_PX;}
+//		cout<<"before EvalAmap"<<endl;
+		double AmapValue=EvaluateAmap( costh_Amap, phi_Amap, nAmap, fInAmap, rap, pT);
+//		cout<<"AmapValue "<<AmapValue<<endl;
+//		cout<<"after EvalAmap"<<endl;
+		double AmapDenominator= DenominatorAmapEfficiency( lepP_pT, lepP_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap) * DenominatorAmapEfficiency( lepN_pT, lepN_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap);
+		epsilon = epsilon*AmapValue/AmapDenominator;
+	}
+
 
 	if(epsilon>1&&ForceEpsSmallerOne) {epsilon=1;}
 
@@ -1345,7 +1488,7 @@ sprintf(hEvalEffName,"%s/EvalHisto.root",dirstruct);
 
 
     }
-    if(epsilon < min_dileptonEff){i_EffRejectedSignalEvent++;cout<<"Rho = "<<RhoFactor<<endl;}
+    if(epsilon < min_dileptonEff){i_EffRejectedSignalEvent++;cout<<"Event rejected because of dimuonEff<1%"<<endl;}
   } // end of loop over dilepton events in the ntuple
 
   cout << endl;
@@ -1670,7 +1813,20 @@ sprintf(hEvalEffName,"%s/EvalHisto.root",dirstruct);
     if(nRhoFactor>320 && nRhoFactor<331) {costh_RhoFactor=costh_PX; phi_RhoFactor=phi_PX;}
 	double RhoFactor = EvaluateRhoFactor( costh_RhoFactor, phi_RhoFactor, nRhoFactor, fInRhoFactor, rap, pT);
 
-	epsilon = epsilon*DileptonEff*RhoFactor;
+
+	if(!useAmapApproach) epsilon = epsilon*DileptonEff*RhoFactor;
+
+	if(useAmapApproach){
+	    double costh_Amap=0;
+	    double phi_Amap=0;
+	    if(nAmap>10000 && nAmap<20000) {costh_Amap=costh_CS; phi_Amap=phi_CS;}
+	    if(nAmap>20000 && nAmap<30000) {costh_Amap=costh_HX; phi_Amap=phi_HX;}
+	    if(nAmap>30000 && nAmap<40000) {costh_Amap=costh_PX; phi_Amap=phi_PX;}
+		double AmapValue=EvaluateAmap( costh_Amap, phi_Amap, nAmap, fInAmap, rap, pT);
+		double AmapDenominator= DenominatorAmapEfficiency( lepP_pT, lepP_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap) * DenominatorAmapEfficiency( lepN_pT, lepN_eta, nDenominatorAmap, fInEff_nDenominatorAmap, hEvalEff_nDenominatorAmap, true, TEff_nDenominatorAmap);
+		epsilon = epsilon*AmapValue/AmapDenominator;
+	}
+
 
 	if(epsilon>1&&ForceEpsSmallerOne) {epsilon=1;}
 

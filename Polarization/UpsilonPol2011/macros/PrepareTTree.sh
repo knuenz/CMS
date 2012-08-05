@@ -2,15 +2,15 @@
 
 ########## INPUTS ##########
 
-JobID=MCclosure_Ups1S_July25 #May20Centrals #HighCtau3_BGratioTest #MCclosure #FinalData_CtauSig2 #_NoCtauCut #
+JobID=MCclosure_Ups3S_July25 #MCclosure_Ups1S_July25 #May20Centrals #HighCtau3_BGratioTest #MCclosure #FinalData_CtauSig2 #_NoCtauCut #
 
 for FidCuts in 11;do 				#defines the set of cuts to be used, see macros/polFit/effsAndCuts.h
 
-for FracLSB in 50;do				#in percent; the left mass sideband will be weighted accordingly with respect to the right mass sideband
-for nSigma in 3.00;do				#needed in 2 decimal accuracy (x.yz); this value decides in which dimuon mass region the data is projected
+for FracLSB in 25;do				#in percent; the left mass sideband will be weighted accordingly with respect to the right mass sideband
+for nSigma in 1.00;do				#needed in 2 decimal accuracy (x.yz); this value decides in which dimuon mass region the data is projected
 
 UpsMC=1
-UpsMCstate=1
+UpsMCstate=3 #enters only runMassFit in MC closure tests
 RequestTrigger=1 ###set1 for centrals
 f_BG_zero=0
 ProjectLSBdata=0
@@ -42,7 +42,7 @@ execute_runMeanPt=1					#Optional; This macro calculates the mean pT for the plo
 #inputTree2=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Upsi_Onia2MuMu_v20_PromptReco_v5.root
 #inputTree3=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Upsi_Onia2MuMu_v20_PromptReco_v6.root
 #inputTree4=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Upsi_Onia2MuMu_v20_RunB_PromptReco_v1_full.root
-#NEWtree:
+#NEWtree (Linlin 3 days before pre-approval):
 #inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Onia2MuMu_v30_PromptRecoAB_10May2012_Upsi.root
 #MIXEDtree:
 #inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Onia2MuMu_v20_Upsi_13June2012_PromptRecoBV1.root
@@ -61,10 +61,10 @@ execute_runMeanPt=1					#Optional; This macro calculates the mean pT for the plo
 #inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_SingleMu_Onia2MuMu_v20_PromptRecoAB.root
 
 #ILSE MC
-inputTree1=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Ups1S_pt0-30_20June2012.root 
+#inputTree1=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Ups1S_pt0-30_20June2012.root 
 #inputTree1=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Onia2MuMu_Upsi2s_measuredPt30_50_17July2012.root
 #inputTree2=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Onia2MuMu_Upsi2s_measuredPt_2April2012.root
-#inputTree1=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Onia2MuMu_Upsi3s_measuredPt_2April2012.root
+inputTree1=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Onia2MuMu_Upsi3s_measuredPt_2April2012.root
 
 #In case of more input Files: define inputTreeX and adapt the line starting with ./runData, implemented up to 4 Files
 
@@ -158,7 +158,7 @@ fi
 
 if [ ${execute_runTrimEventContent} -eq 1 ]
 then
-./runTrimEventContent ${FracLSB}=FracLSB ${nSigma}=nSigma UpsMC=${UpsMC} f_BG_zero=${f_BG_zero} ProjectLSBdata=${ProjectLSBdata} ProjectRSBdata=${ProjectRSBdata} CombineSignalPeaks=${CombineSignalPeaks} Y1Sto2S_SB=${Y1Sto2S_SB} LeftSided=${LeftSided} RightSided=${RightSided} MassScan=${MassScan} adjustOverlapBorders=${adjustOverlapBorders0}
+./runTrimEventContent ${FracLSB}=FracLSB ${nSigma}=nSigma UpsMC=${UpsMC} f_BG_zero=${f_BG_zero} ProjectLSBdata=${ProjectLSBdata} ProjectRSBdata=${ProjectRSBdata} CombineSignalPeaks=${CombineSignalPeaks} Y1Sto2S_SB=${Y1Sto2S_SB} LeftSided=${LeftSided} RightSided=${RightSided} MassScan=${MassScan} adjustOverlapBorders=${adjustOverlapBorders}
 fi
 
 if [ ${execute_PlotCosThetaPhiDistribution} -eq 1 ]

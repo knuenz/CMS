@@ -10,11 +10,11 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 ########## INPUTS ##########
 
 for nState in 1 2 3;do
-for JobID1 in Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT;do #this is the systematic error!!!
+for JobID1 in Data_CowboyFix_July16;do #this is the systematic error!!!
 
-SystID=TotalSyst
+SystID=MassSigmaDep
 
-JobID2=Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand   #this is the default!!!
+JobID2=MCclosure_CombinedStates_MCtruthFineEta_1Sig   #this is the default!!!
 
 ptBinMin=1
 ptBinMax=10

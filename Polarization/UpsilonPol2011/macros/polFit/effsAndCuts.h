@@ -164,6 +164,7 @@ void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff)
 		if(nEff==1070) sprintf(EffFileName,"ParametrizedFactDataEff_June25_Central.root");//'mixed'
 		if(nEff==1080) sprintf(EffFileName,"ParametrizedFactMCEff_July19_Central_fixed.root");//'MC TnP Parametrized'
 
+		if(nEff==1090) sprintf(EffFileName,"ParametrizedFactDataEff_May20_Central.root");//'soft SF bug fix'
 
 
 		if(nEff==1101) sprintf(EffFileName,"MCTruthEfficiency_coarsePT_18July2012.root");
@@ -183,6 +184,46 @@ void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff)
 		if(nEff==304 || nEff==314 || nEff==324) sprintf(EffFileName,"rhoFactor_Ups1S_ProdSingleMuEff_7Feb2012.root");
 		if(nEff==305 || nEff==315 || nEff==325) sprintf(EffFileName,"rhoFactor_Ups1S_MCTruthEff_21March2012_finalPTBins_TPVCuts.root");
 
+		// A-maps code: frame/state/sigma/ID ( ID= 2 digits )
+		if(nEff==11101 || nEff==21101 || nEff==31101) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_HLTDimuon5UpsilonBarrelV3_1sigma_2Aug2012.root");
+		if(nEff==12101 || nEff==22101 || nEff==32101) sprintf(EffFileName,"MCTruthEffAndAcc_UPS2S_HLTDimuon5UpsilonBarrelV3_1sigma_2Aug2012.root");
+		if(nEff==13101 || nEff==23101 || nEff==33101) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_HLTDimuon5UpsilonBarrelV3_1sigma_2Aug2012.root");
+		if(nEff==11301 || nEff==21301 || nEff==31301) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_HLTDimuon5UpsilonBarrelV3_3sigma_2Aug2012.root");
+		if(nEff==12301 || nEff==22301 || nEff==32301) sprintf(EffFileName,"MCTruthEffAndAcc_UPS2S_HLTDimuon5UpsilonBarrelV3_3sigma_2Aug2012.root");
+		if(nEff==13301 || nEff==23301 || nEff==33301) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_HLTDimuon5UpsilonBarrelV3_3sigma_2Aug2012.root");
+
+		if(nEff==11102 || nEff==21102 || nEff==31102) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_HLTDimuon5UpsilonBarrelV5_1sigma_2Aug2012.root");
+		if(nEff==12102 || nEff==22102 || nEff==32102) sprintf(EffFileName,"MCTruthEffAndAcc_UPS2S_HLTDimuon5UpsilonBarrelV5_1sigma_2Aug2012.root");
+		if(nEff==13102 || nEff==23102 || nEff==33102) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_HLTDimuon5UpsilonBarrelV5_1sigma_2Aug2012.root");
+		if(nEff==11302 || nEff==21302 || nEff==31302) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_HLTDimuon5UpsilonBarrelV5_3sigma_2Aug2012.root");
+		if(nEff==12302 || nEff==22302 || nEff==32302) sprintf(EffFileName,"MCTruthEffAndAcc_UPS2S_HLTDimuon5UpsilonBarrelV5_3sigma_2Aug2012.root");
+		if(nEff==13302 || nEff==23302 || nEff==33302) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_HLTDimuon5UpsilonBarrelV5_3sigma_2Aug2012.root");
+
+		if(nEff==11103 || nEff==21103 || nEff==31103) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_HLTDimuon7UpsilonBarrelV1_1sigma_2Aug2012.root");
+		if(nEff==12103 || nEff==22103 || nEff==32103) sprintf(EffFileName,"MCTruthEffAndAcc_UPS2S_HLTDimuon7UpsilonBarrelV1_1sigma_2Aug2012.root");
+		if(nEff==13103 || nEff==23103 || nEff==33103) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_HLTDimuon7UpsilonBarrelV1_1sigma_2Aug2012.root");
+		if(nEff==11303 || nEff==21303 || nEff==31303) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_HLTDimuon7UpsilonBarrelV1_3sigma_2Aug2012.root");
+		if(nEff==12303 || nEff==22303 || nEff==32303) sprintf(EffFileName,"MCTruthEffAndAcc_UPS2S_HLTDimuon7UpsilonBarrelV1_3sigma_2Aug2012.root");
+		if(nEff==13303 || nEff==23303 || nEff==33303) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_HLTDimuon7UpsilonBarrelV1_3sigma_2Aug2012.root");
+
+		if(nEff==11104 || nEff==21104 || nEff==31104) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_AllTriggers_1sigma_2Aug2012_framework.root");
+		if(nEff==12104 || nEff==22104 || nEff==32104) sprintf(EffFileName,"MCTruthEffAndAcc_UPS2S_AllTriggers_1sigma_2Aug2012_framework.root");
+		if(nEff==13104 || nEff==23104 || nEff==33104) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_AllTriggers_1sigma_2Aug2012_framework.root");
+		if(nEff==11304 || nEff==21304 || nEff==31304) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_AllTriggers_3sigma_2Aug2012_framework.root");
+		if(nEff==12304 || nEff==22304 || nEff==32304) sprintf(EffFileName,"MCTruthEffAndAcc_UPS2S_AllTriggers_3sigma_2Aug2012_framework.root");
+		if(nEff==13304 || nEff==23304 || nEff==33304) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_AllTriggers_3sigma_2Aug2012_framework.root");
+
+		if(nEff==13105 || nEff==23105 || nEff==33105) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_AllTriggers_1sigma_2Aug2012_GenInAcceptance_framework.root");
+		if(nEff==13305 || nEff==23305 || nEff==33305) sprintf(EffFileName,"MCTruthEffAndAcc_UPS3S_AllTriggers_3sigma_2Aug2012_GenInAcceptance_framework.root");
+
+		if(nEff==11106 || nEff==21106 || nEff==31106) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_HLTDimuon5UpsilonBarrelV5_1sigma_3Aug2012_framework.root");
+		if(nEff==11306 || nEff==21306 || nEff==31306) sprintf(EffFileName,"MCTruthEffAndAcc_UPS1S_HLTDimuon5UpsilonBarrelV5_3sigma_3Aug2012_framework.root");
+
+		if(nEff==12107 || nEff==22107 || nEff==32107) sprintf(EffFileName,"test_newmaps_UPS2S.root");
+		if(nEff==13107 || nEff==23107 || nEff==33107) sprintf(EffFileName,"test_newmaps_UPS3S.root");
+
+
+
 	}
 
 
@@ -198,7 +239,7 @@ double EvaluateRhoFactor( double& costh, double& phi, int nEff, TFile* fInRhoFac
 	const int nRhoPtBins=12;
 	const int nRhorapBins=2;
 	Double_t rapRangeRho[nRhorapBins+1] = {0.,0.6,1.2};
-	Double_t pTRangeRho[nRhoPtBins+1] = {5., 6., 7., 8., 9., 10., 12., 16., 20., 30., 50.};
+	Double_t pTRangeRho[nRhoPtBins+1] = {5., 6., 7., 8., 9., 10., 11., 12., 14., 16., 20., 30., 50.};
 
 	if(pT>pTRangeRho[nRhoPtBins]){eff=0;return eff;}
 
@@ -219,7 +260,7 @@ double EvaluateRhoFactor( double& costh, double& phi, int nEff, TFile* fInRhoFac
 		if(nEff>320 && nEff<331) sprintf(EffType,"hRho_pol_totEff_PHX_rap%d_pT%d",rapBin,pTbin);
 
 	  TH1* hEff=(TH1*) fInRhoFactor->Get(EffType);
-	  Int_t binX = hEff->GetXaxis()->FindBin(TMath::Abs(costh));
+	  Int_t binX = hEff->GetXaxis()->FindBin(costh);
 	  Int_t binY = hEff->GetYaxis()->FindBin(phi);
 	  eff = hEff->GetBinContent(binX, binY);
 //	  cout<<eff<<endl;
@@ -228,6 +269,62 @@ double EvaluateRhoFactor( double& costh, double& phi, int nEff, TFile* fInRhoFac
 
 
 }
+
+
+double EvaluateAmap( double& costh_Amap, double& phi_Amap, int nAmap, TFile* fInAmap, double rap, double pT){
+
+	double eff=1;
+
+	int pTbin;
+	int rapBin;
+	const int nAmapPtBins=10;
+	const int nAmaprapBins=2;
+	Double_t rapRangeAmap[nAmaprapBins+1] = {0.,0.6,1.2};
+	Double_t pTRangeAmap[nAmapPtBins+1] = {5., 6., 7., 8., 9., 10., 12., 16., 20., 30., 50.};
+
+	if(pT>pTRangeAmap[nAmapPtBins]){eff=0;return eff;}
+
+	for(int i=1;i<nAmapPtBins+1;i++){
+//		cout<<i;
+		if(pT>pTRangeAmap[i-1]&&pT<pTRangeAmap[i]) {pTbin=i; break; }
+	}
+	for(int i=1;i<nAmaprapBins+1;i++){
+		if(TMath::Abs(rap)>rapRangeAmap[i-1]&&TMath::Abs(rap)<rapRangeAmap[i]) {rapBin=i; break; }
+	}
+//	cout<<"rap "<<rap<<" bin "<<rapBin<<" pT "<<pT<<" bin "<<pTbin<<endl;
+
+	if(nAmap==1) return eff;
+
+	if(nAmap>10000){
+		char EffType[200];
+/*	    if(nAmap>10000 && nAmap<20000) sprintf(EffType,"totEff2D_Onia_CS_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap>20000 && nAmap<30000) sprintf(EffType,"totEff2D_Onia_HX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap>30000 && nAmap<40000) sprintf(EffType,"totEff2D_Onia_PHX_pT%d_rap%d",pTbin,rapBin);
+*/
+	    if(nAmap>10000 && nAmap<20000) sprintf(EffType,"htotEff2D_pol_CS_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap>20000 && nAmap<30000) sprintf(EffType,"htotEff2D_pol_HX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap>30000 && nAmap<40000) sprintf(EffType,"htotEff2D_pol_PHX_pT%d_rap%d",pTbin,rapBin);
+
+/*	  TEfficiency* TEff=(TEfficiency*)fInAmap->Get(EffType);
+	  Int_t globalBin = TEff->FindFixBin(costh_Amap, phi_Amap);
+	  eff = TEff->GetEfficiency(globalBin);
+*/
+	  TH1* hEff=(TH1*) fInAmap->Get(EffType);
+	  Int_t binX = hEff->GetXaxis()->FindBin(costh_Amap);
+	  Int_t binY = hEff->GetYaxis()->FindBin(phi_Amap);
+	  eff = hEff->GetBinContent(binX, binY);
+
+//	  cout<<"eff = "<<eff<<endl;
+	  return eff;
+	}
+
+
+
+
+}
+
+
+
 
 
 double DiLeptonEfficiency( double& costh, double& phi, int nEff, TFile* fInDileptonEff, bool MCeff) {
@@ -244,7 +341,7 @@ double DiLeptonEfficiency( double& costh, double& phi, int nEff, TFile* fInDilep
 		else sprintf(EffType,"hEff_DATA_central");
 
 	  TH1* hEff=(TH1*) fInDileptonEff->Get(EffType);
-	  Int_t binX = hEff->GetXaxis()->FindBin(TMath::Abs(costh));
+	  Int_t binX = hEff->GetXaxis()->FindBin(costh);
 	  Int_t binY = hEff->GetYaxis()->FindBin(phi);
 	  eff = hEff->GetBinContent(binX, binY);
 	  return eff;
@@ -485,6 +582,55 @@ double singleLeptonEfficiency( double& pT, double& eta, int nEff, TFile* fInEff,
   if ( TMath::Abs(eta) > 2.1 ) eff = 0.;
 
   if(nEff==6) return eff;
+
+
+}
+
+
+double DenominatorAmapEfficiency( double& pT, double& eta, int nDenominatorAmap, TFile *fInEff_nDenominatorAmap, TH2D* hEvalEff_nDenominatorAmap, bool MCeff, TEfficiency* TEff_nDenominatorAmap){
+
+
+	double eff;
+	char EffType[200];
+
+
+	if(nDenominatorAmap==105 || nDenominatorAmap==106){
+		sprintf(EffType,"totEff_MCTRUTH_pT_eta");
+
+		  Int_t globalBin = TEff_nDenominatorAmap->FindFixBin(TMath::Abs(eta), pT);
+		  eff = TEff_nDenominatorAmap->GetEfficiency(globalBin);
+
+
+		return eff;
+	}
+
+	if(MCeff) sprintf(EffType,"hEff_MC_central");
+	else sprintf(EffType,"hEff_DATA_central");
+
+	if(nDenominatorAmap > 100 && nDenominatorAmap < 1000){//binned efficiencies: 1XX
+
+	  TH1* hEff=(TH1*) fInEff_nDenominatorAmap->Get(EffType);
+	  Int_t binX = hEff->GetXaxis()->FindBin(TMath::Abs(eta));
+	  Int_t binY = hEff->GetYaxis()->FindBin(pT);
+
+	  eff = hEff->GetBinContent(binX, binY);
+
+	  return eff;
+	}
+
+
+	if(nDenominatorAmap > 1000){//linear interpolated efficiencies: 1XXnEff (1D) 1XXXnEff (2D)
+
+	  int binX = hEvalEff_nDenominatorAmap->GetXaxis()->FindBin(TMath::Abs(eta));
+	  int binY = hEvalEff_nDenominatorAmap->GetYaxis()->FindBin(pT);
+
+	  eff = hEvalEff_nDenominatorAmap->GetBinContent(binX, binY);
+
+  	  return eff;
+	}
+
+
+  if(nDenominatorAmap==1) return 1;
 
 
 }

@@ -171,3 +171,35 @@ cp Additions2_Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT/results_Fit6
 cp Additions2_Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT/results_Fit7_2SUps_rap1_pT9.root Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT/results_Fit49_2SUps_rap1_pT9.root
 cp Additions2_Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT/results_Fit8_2SUps_rap1_pT9.root Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT/results_Fit50_2SUps_rap1_pT9.root
 
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap1_pT6.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap1_pT7.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap1_pT8.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap1_pT9.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap1_pT10.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap2_pT6.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap2_pT7.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap2_pT8.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap2_pT9.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_1SUps_rap2_pT10.root .
+
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap1_pT6.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap1_pT7.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap1_pT8.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap1_pT9.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap1_pT10.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap2_pT6.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap2_pT7.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap2_pT8.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap2_pT9.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_2SUps_rap2_pT10.root .
+
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap1_pT6.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap1_pT7.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap1_pT8.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap1_pT9.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap1_pT10.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap2_pT6.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap2_pT7.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap2_pT8.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap2_pT9.root .
+scp knuenz@lxplus250.cern.ch:/tmp/zhlinl/rootfiles/results_3SUps_rap2_pT10.root .
