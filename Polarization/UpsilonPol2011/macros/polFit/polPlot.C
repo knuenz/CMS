@@ -31,20 +31,20 @@ const int nbin_cth = 40.;//80
 const int nbin_ph  = 36.;//72
 
 // extremes and binning of lambda plots
-const double lth_min = -1.1;
-const double lth_max =  1.1;
-const double lth_step_1D = 0.02;
-const double lth_step_2D = 0.02;
+double lth_min = -1.1;
+double lth_max =  1.1;
+double lth_step_1D = 0.02;
+double lth_step_2D = 0.02;
 
-const double lph_min = -1.1;
-const double lph_max =  1.1;
-const double lph_step_1D = 0.02;
-const double lph_step_2D = 0.02;
+double lph_min = -1.1;
+double lph_max =  1.1;
+double lph_step_1D = 0.02;
+double lph_step_2D = 0.02;
 
-const double ltp_min = -1.1;
-const double ltp_max =  1.1;
-const double ltp_step_1D = 0.02;
-const double ltp_step_2D = 0.02;
+double ltp_min = -1.1;
+double ltp_max =  1.1;
+double ltp_step_1D = 0.02;
+double ltp_step_2D = 0.02;
 
 double ContourHeightForIntegral;
 double FractionInsideContour;
@@ -107,6 +107,17 @@ inline void setContourHistogram ( TH2D *h ) {
   FractionInsideContour=double(iCalcNbinsInContour)/double(iCalcNbins);
 */
 
+}
+
+inline void setContourHistogram1Sig ( TH2D *h ) {
+  double cont0 = contourHeight2D( h, 0.683 );
+  h->SetContour(1);
+  h->SetContourLevel(0,cont0);
+}
+inline void setContourHistogram3Sig ( TH2D *h ) {
+  double cont0 = contourHeight2D( h, 0.997 );
+  h->SetContour(1);
+  h->SetContourLevel(0,cont0);
 }
 
 void FindMPV(TH1* PosteriorDist , double& MPV , double& MPVerrorLow, double& MPVerrorHigh, int MPValgo, int nSigma){
@@ -184,7 +195,7 @@ void PlotPosterior(int ptBin, int rapBin, char xAxisTitle[200], char filename[20
 
 		TLegend* plotLegend=new TLegend(0.725,0.7,0.95,0.9);
 		plotLegend->SetFillColor(kWhite);
-		plotLegend->SetTextFont(72);
+//		plotLegend->SetTextFont(72);
 		plotLegend->SetTextSize(0.03);
 		plotLegend->SetBorderSize(1);
 
@@ -454,18 +465,162 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
   cout << endl << endl;
 
-  bool CMSprelim=true;
-  bool TreeBinIDTextAdd=true;
+  bool CMSprelim=false;
+  bool TreeBinIDTextAdd=false;
 
   TLatex *CentralsText1_2D;
   TLatex *CentralsText2_2D;
   TLatex *CentralsText3_2D;
+  TLatex *CentralsTextNumbering_2D;
   TLatex *TreeBinIDText1_2D;
   TLatex *TreeBinIDText2_2D;
   TLatex *TreeBinIDText3_2D;
   double xCentrals2D;
   char text[200];
   double CentralsFontSize;
+
+
+
+  TGraph* graph_lph_vs_lth_CS_1Sig       = NULL;
+  TGraph* graph_lph_vs_lth_CS_3Sig       = NULL;
+  TGraph* graph_ltp_vs_lph_CS_1Sig       = NULL;
+  TGraph* graph_ltp_vs_lph_CS_3Sig       = NULL;
+  TGraph* graph_ltp_vs_lth_CS_1Sig       = NULL;
+  TGraph* graph_ltp_vs_lth_CS_3Sig       = NULL;
+
+  TCanvas *cBuffer = new TCanvas("cBuffer", "cBuffer", 10, 28, 580,571);
+  cBuffer->Range(-237.541,-66.47556,187.377,434.8609);
+  cBuffer->SetFillColor(0);
+  cBuffer->SetBorderMode(0);
+  cBuffer->SetBorderSize(0);
+  cBuffer->SetLeftMargin(0.1354167);
+  cBuffer->SetRightMargin(0.01736111);
+  cBuffer->SetTopMargin(0.01841621);
+  cBuffer->SetBottomMargin(0.1325967);
+  cBuffer->SetFrameBorderMode(0);
+
+  Int_t i, j;
+  Double_t x0, y0, z0;
+  Double_t contours[6];
+  TObjArray *conts;
+  TList* contLevel = NULL;
+  TGraph* curv     = NULL;
+  TGraph* gc       = NULL;
+  Int_t TotalConts = 0;
+
+  setContourHistogram1Sig ( h_lph_vs_lth_CS );
+  h_lph_vs_lth_CS->Draw("CONT Z LIST");
+  cBuffer->Update();
+  conts = (TObjArray*)gROOT->GetListOfSpecials()->FindObject("contours");
+  TotalConts = conts->GetSize();
+  for(i = 0; i < TotalConts; i++) contLevel = (TList*)conts->At(i);
+     for(i = 0; i < TotalConts; i++){
+       contLevel = (TList*)conts->At(i);
+       curv = (TGraph*)contLevel->First();
+       for(j = 0; j < contLevel->GetSize(); j++){
+          gc = (TGraph*)curv->Clone();
+          curv = (TGraph*)contLevel->After(curv);
+       }
+   }
+   cBuffer->Update();
+   graph_lph_vs_lth_CS_1Sig= (TGraph*)gc->Clone();
+
+   setContourHistogram3Sig ( h_lph_vs_lth_CS );
+   h_lph_vs_lth_CS->Draw("CONT Z LIST");
+   cBuffer->Update();
+   conts = (TObjArray*)gROOT->GetListOfSpecials()->FindObject("contours");
+   TotalConts = conts->GetSize();
+   for(i = 0; i < TotalConts; i++) contLevel = (TList*)conts->At(i);
+      for(i = 0; i < TotalConts; i++){
+        contLevel = (TList*)conts->At(i);
+        curv = (TGraph*)contLevel->First();
+        for(j = 0; j < contLevel->GetSize(); j++){
+           gc = (TGraph*)curv->Clone();
+           curv = (TGraph*)contLevel->After(curv);
+        }
+    }
+    cBuffer->Update();
+    graph_lph_vs_lth_CS_3Sig= (TGraph*)gc->Clone();
+
+
+
+
+
+
+
+    setContourHistogram1Sig ( h_ltp_vs_lph_CS );
+    h_ltp_vs_lph_CS->Draw("CONT Z LIST");
+    cBuffer->Update();
+    conts = (TObjArray*)gROOT->GetListOfSpecials()->FindObject("contours");
+    TotalConts = conts->GetSize();
+    for(i = 0; i < TotalConts; i++) contLevel = (TList*)conts->At(i);
+       for(i = 0; i < TotalConts; i++){
+         contLevel = (TList*)conts->At(i);
+         curv = (TGraph*)contLevel->First();
+         for(j = 0; j < contLevel->GetSize(); j++){
+            gc = (TGraph*)curv->Clone();
+            curv = (TGraph*)contLevel->After(curv);
+         }
+     }
+     cBuffer->Update();
+     graph_ltp_vs_lph_CS_1Sig= (TGraph*)gc->Clone();
+
+     setContourHistogram3Sig ( h_ltp_vs_lph_CS );
+     h_ltp_vs_lph_CS->Draw("CONT Z LIST");
+     cBuffer->Update();
+     conts = (TObjArray*)gROOT->GetListOfSpecials()->FindObject("contours");
+     TotalConts = conts->GetSize();
+     for(i = 0; i < TotalConts; i++) contLevel = (TList*)conts->At(i);
+        for(i = 0; i < TotalConts; i++){
+          contLevel = (TList*)conts->At(i);
+          curv = (TGraph*)contLevel->First();
+          for(j = 0; j < contLevel->GetSize(); j++){
+             gc = (TGraph*)curv->Clone();
+             curv = (TGraph*)contLevel->After(curv);
+          }
+      }
+      cBuffer->Update();
+      graph_ltp_vs_lph_CS_3Sig= (TGraph*)gc->Clone();
+
+
+
+
+
+      setContourHistogram1Sig ( h_ltp_vs_lth_CS );
+      h_ltp_vs_lth_CS->Draw("CONT Z LIST");
+      cBuffer->Update();
+      conts = (TObjArray*)gROOT->GetListOfSpecials()->FindObject("contours");
+      TotalConts = conts->GetSize();
+      for(i = 0; i < TotalConts; i++) contLevel = (TList*)conts->At(i);
+         for(i = 0; i < TotalConts; i++){
+           contLevel = (TList*)conts->At(i);
+           curv = (TGraph*)contLevel->First();
+           for(j = 0; j < contLevel->GetSize(); j++){
+              gc = (TGraph*)curv->Clone();
+              curv = (TGraph*)contLevel->After(curv);
+           }
+       }
+       cBuffer->Update();
+       graph_ltp_vs_lth_CS_1Sig= (TGraph*)gc->Clone();
+
+       setContourHistogram3Sig ( h_ltp_vs_lth_CS );
+       h_ltp_vs_lth_CS->Draw("CONT Z LIST");
+       cBuffer->Update();
+       conts = (TObjArray*)gROOT->GetListOfSpecials()->FindObject("contours");
+       TotalConts = conts->GetSize();
+       for(i = 0; i < TotalConts; i++) contLevel = (TList*)conts->At(i);
+          for(i = 0; i < TotalConts; i++){
+            contLevel = (TList*)conts->At(i);
+            curv = (TGraph*)contLevel->First();
+            for(j = 0; j < contLevel->GetSize(); j++){
+               gc = (TGraph*)curv->Clone();
+               curv = (TGraph*)contLevel->After(curv);
+            }
+        }
+        cBuffer->Update();
+        graph_ltp_vs_lth_CS_3Sig= (TGraph*)gc->Clone();
+
+
 
 
 
@@ -484,10 +639,44 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   c1->SetFrameBorderMode(0);
 
 
+  double NewXAxisMin=lth_min;
+  double NewXAxisMax=lth_max;
+  double NewYAxisMin=lph_min;
+  double NewYAxisMax=lph_max;
+
+  double CentralsTextyMin=0;
+  double CentralsTextxMin=0;
+  double CentralsTextyDelta=0.05;
+  double CentralsTextxDelta=0.05;
+
   ////////////////////////////////////////////////////////////////
   // 2D plot lph vs lth
 
-  TH2D* h_lph_vs_lth = (TH2D*)h_lph_vs_lth_CS->Clone();
+bool TomChange=true;
+bool TomZoom=false;
+bool TomZoomButNeverthelessSpendHoursToWorkOnThatBoundaries=false;
+
+char DrawContourStyle[200];
+sprintf(DrawContourStyle,"cont2,same");
+int LineWidth1Sig=4;
+int LineWidth3Sig=2;
+int LineStyleCS=2;
+int LineStyleHX=1;
+int LineStylePX=3;
+int LineColorCS=418;
+int LineColorHX=632;
+int LineColorPX=600;
+
+
+//TomChange
+if(TomChange&&TomZoom){
+  lth_min=-0.7;
+  lth_max=0.7;
+  lph_min=-0.5;
+  lph_max=0.5;
+}
+
+  TH2D* h_lph_vs_lth = new TH2D( "h_lph_vs_lth", "", int((lth_max-lth_min)/lth_step_2D), lth_min, lth_max, int((lph_max-lph_min)/lph_step_2D), lph_min, lph_max );
   h_lph_vs_lth->SetName("h_lph_vs_lth");
   h_lph_vs_lth->Reset();
 
@@ -508,26 +697,26 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   TPolyLine *background_ph_vs_th = new TPolyLine( 4, x_background_ph_vs_th, y_background_ph_vs_th );
   background_ph_vs_th->SetFillColor(kGray);
   background_ph_vs_th->SetLineStyle(0);
-  background_ph_vs_th->Draw("f same");
+  if(!TomZoom)background_ph_vs_th->Draw("f same");
 
   double x_triangle_ph_vs_th[3] = {-1.,  1., 1.};
   double y_triangle_ph_vs_th[3] = { 0., -1., 1.};
   TPolyLine *triangle_ph_vs_th = new TPolyLine( 3, x_triangle_ph_vs_th, y_triangle_ph_vs_th );
   triangle_ph_vs_th->SetFillColor(kWhite);
   triangle_ph_vs_th->SetLineStyle(0);
-  triangle_ph_vs_th->Draw("f same");
+  if(!TomZoom)triangle_ph_vs_th->Draw("f same");
 
   TLine* lh_p1 = new TLine( lth_min, 1., lth_max, 1. );
   lh_p1->SetLineWidth( 1 );
   lh_p1->SetLineStyle( 2 );
   lh_p1->SetLineColor( kGray+2 );
-  lh_p1->Draw( "same" );
+  if(!TomZoom)lh_p1->Draw( "same" );
 
   TLine* lh_m1 = new TLine( lth_min, -1., lth_max, -1. );
   lh_m1->SetLineWidth( 1 );
   lh_m1->SetLineStyle( 2 );
   lh_m1->SetLineColor( kGray+2 );
-  lh_m1->Draw( "same" );
+  if(!TomZoom)lh_m1->Draw( "same" );
 
   TLine* lh_0 = new TLine( lth_min, 0., lth_max, 0. );
   lh_0->SetLineWidth( 1 );
@@ -539,13 +728,13 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   lv_p1->SetLineWidth( 1 );
   lv_p1->SetLineStyle( 2 );
   lv_p1->SetLineColor( kGray+2 );
-  lv_p1->Draw( "same" );
+  if(!TomZoom)lv_p1->Draw( "same" );
 
   TLine* lv_m1 = new TLine( -1., lph_min, -1., lph_max );
   lv_m1->SetLineWidth( 1 );
   lv_m1->SetLineStyle( 2 );
   lv_m1->SetLineColor( kGray+2 );
-  lv_m1->Draw( "same" );
+  if(!TomZoom)lv_m1->Draw( "same" );
 
   TLine* lv_0 = new TLine( 0., lph_min, 0., lph_max );
   lv_0->SetLineWidth( 1 );
@@ -556,34 +745,84 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
   // CS frame
 
-  setContourHistogram ( h_lph_vs_lth_CS );
+/*  setContourHistogram ( h_lph_vs_lth_CS );
   h_lph_vs_lth_CS->SetLineColor( kGreen+2 );
-  h_lph_vs_lth_CS->SetLineWidth( 2 );
-  h_lph_vs_lth_CS->SetLineStyle( 1 );
-  h_lph_vs_lth_CS->Draw( "cont2, same" );
+  h_lph_vs_lth_CS->SetLineWidth( LineWidth3Sig );
+  h_lph_vs_lth_CS->SetLineStyle( LineStyleCS  );
+  h_lph_vs_lth_CS->Draw( DrawContourStyle );
+*/
+
+
+  graph_lph_vs_lth_CS_1Sig->SetLineWidth(LineWidth1Sig);
+  graph_lph_vs_lth_CS_1Sig->SetLineColor(LineColorCS);
+  graph_lph_vs_lth_CS_1Sig->SetLineStyle(LineStyleCS);
+  graph_lph_vs_lth_CS_1Sig->Draw("C");
+  graph_lph_vs_lth_CS_3Sig->SetLineWidth(LineWidth3Sig);
+  graph_lph_vs_lth_CS_3Sig->SetLineColor(LineColorCS);
+  graph_lph_vs_lth_CS_3Sig->SetLineStyle(LineStyleCS);
+  graph_lph_vs_lth_CS_3Sig->Draw("C");
+
+
+  h_lph_vs_lth_CS->SetLineColor( kGreen+2 );
+  h_lph_vs_lth_CS->SetLineWidth( LineWidth1Sig );
+  h_lph_vs_lth_CS->SetLineStyle( LineStyleCS  );
+//  h_lph_vs_lth_CS->Draw( DrawContourStyle );
+  TH2D *h_lph_vs_lth_CS_clone=(TH2D*)h_lph_vs_lth_CS->Clone();
+  setContourHistogram3Sig ( h_lph_vs_lth_CS_clone );
+  h_lph_vs_lth_CS_clone->SetLineColor( kGreen+2 );
+  h_lph_vs_lth_CS_clone->SetLineWidth( LineWidth3Sig );
+  h_lph_vs_lth_CS_clone->SetLineStyle( LineStyleCS  );
+//  h_lph_vs_lth_CS_clone->Draw( DrawContourStyle );
 
   // HX frame
 
-  setContourHistogram ( h_lph_vs_lth_HX );
+/*  setContourHistogram ( h_lph_vs_lth_HX );
   h_lph_vs_lth_HX->SetLineColor( kRed );
-  h_lph_vs_lth_HX->SetLineWidth( 2 );
-  h_lph_vs_lth_HX->SetLineStyle( 1 );
-  h_lph_vs_lth_HX->Draw( "cont2, same" );
+  h_lph_vs_lth_HX->SetLineWidth( LineWidth3Sig );
+  h_lph_vs_lth_HX->SetLineStyle( LineStyleHX );
+  h_lph_vs_lth_HX->Draw( DrawContourStyle );
+*/
+  setContourHistogram1Sig ( h_lph_vs_lth_HX );
+  h_lph_vs_lth_HX->SetLineColor( kRed );
+  h_lph_vs_lth_HX->SetLineWidth( LineWidth1Sig );
+  h_lph_vs_lth_HX->SetLineStyle( LineStyleHX  );
+  h_lph_vs_lth_HX->Draw( DrawContourStyle );
+  TH2D *h_lph_vs_lth_HX_clone=(TH2D*)h_lph_vs_lth_HX->Clone();
+  setContourHistogram3Sig ( h_lph_vs_lth_HX_clone );
+  h_lph_vs_lth_HX_clone->SetLineColor( kRed );
+  h_lph_vs_lth_HX_clone->SetLineWidth( LineWidth3Sig );
+  h_lph_vs_lth_HX_clone->SetLineStyle( LineStyleHX  );
+  h_lph_vs_lth_HX_clone->Draw( DrawContourStyle );
 
   // PX frame
 
-  setContourHistogram ( h_lph_vs_lth_PX );
+/*  setContourHistogram ( h_lph_vs_lth_PX );
   h_lph_vs_lth_PX->SetLineColor( kBlue );
-  h_lph_vs_lth_PX->SetLineWidth( 2 );
-  h_lph_vs_lth_PX->SetLineStyle( 1 );
-  h_lph_vs_lth_PX->Draw( "cont2, same" );
+  h_lph_vs_lth_PX->SetLineWidth( LineWidth3Sig );
+  h_lph_vs_lth_PX->SetLineStyle( LineStylePX );
+  if(!TomChange) h_lph_vs_lth_PX->Draw( DrawContourStyle );
+*/
 
-	 TLegend* plotLegend=new TLegend(0.15,0.8,0.25,0.95);
+  setContourHistogram1Sig ( h_lph_vs_lth_PX );
+  h_lph_vs_lth_PX->SetLineColor( kBlue );
+  h_lph_vs_lth_PX->SetLineWidth( LineWidth1Sig );
+  h_lph_vs_lth_PX->SetLineStyle( LineStylePX  );
+  if(!TomChange) h_lph_vs_lth_PX->Draw( DrawContourStyle );
+  TH2D *h_lph_vs_lth_PX_clone=(TH2D*)h_lph_vs_lth_PX->Clone();
+  setContourHistogram3Sig ( h_lph_vs_lth_PX_clone );
+  h_lph_vs_lth_PX_clone->SetLineColor( kBlue );
+  h_lph_vs_lth_PX_clone->SetLineWidth( LineWidth3Sig );
+  h_lph_vs_lth_PX_clone->SetLineStyle( LineStylePX  );
+  if(!TomChange) h_lph_vs_lth_PX_clone->Draw( DrawContourStyle );
+
+	 char legendentry[200];
+
+     TLegend* plotLegend;
+     if(!TomChange){
+     plotLegend=new TLegend(0.15,0.8,0.25,0.95);
 	 plotLegend->SetFillColor(kWhite);
-	 plotLegend->SetTextFont(72);
 	 plotLegend->SetTextSize(0.035);
 	 plotLegend->SetBorderSize(1);
-	 char legendentry[200];
 	 sprintf(legendentry,"CS");
 	 plotLegend->AddEntry(h_lph_vs_lth_CS,legendentry,"l");
 	 sprintf(legendentry,"HX");
@@ -591,7 +830,32 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 	 sprintf(legendentry,"PX");
 	 plotLegend->AddEntry(h_lph_vs_lth_PX,legendentry,"l");
 	 plotLegend->Draw(); plotLegend->Draw();
+     }
 
+	 if(TomChange){
+	 plotLegend=new TLegend(0.195,0.735,0.475,0.93);
+	 if(TomZoom) 	 plotLegend=new TLegend(0.65,0.735,0.93,0.93);
+	 plotLegend->SetFillColor(kWhite);
+	 plotLegend->SetTextSize(0.035);
+	 plotLegend->SetBorderSize(1);
+
+	 TH2D* h_lph_vs_lth_CS_legend1 = (TH2D*)h_lph_vs_lth_CS->Clone();
+	 TH2D* h_lph_vs_lth_CS_legend2 = (TH2D*)h_lph_vs_lth_CS_clone->Clone();
+	 TH2D* h_lph_vs_lth_HX_legend1 = (TH2D*)h_lph_vs_lth_HX->Clone();
+	 TH2D* h_lph_vs_lth_HX_legend2 = (TH2D*)h_lph_vs_lth_HX_clone->Clone();
+
+	 sprintf(legendentry,"CS, 68.3%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_CS_legend1,legendentry,"l");
+	 sprintf(legendentry,"CS, 99.7%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_CS_legend2,legendentry,"l");
+	 sprintf(legendentry,"HX, 68.3%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_HX_legend1,legendentry,"l");
+	 sprintf(legendentry,"HX, 99.7%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_HX_legend2,legendentry,"l");
+	 plotLegend->Draw();
+	 }
+
+     if(!TomChange){
 		cout<<"DRAW CMS preliminary Latex"<<endl;
 		xCentrals2D=-0.75;
 	    CentralsFontSize=0.035;
@@ -607,7 +871,44 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 	    CentralsText3_2D = new TLatex(xCentrals2D,0.78,text);
 //	    if(!CMSprelim) CentralsText3_2D = new TLatex(xCentrals2D,0.85,text);
 	    CentralsText3_2D->SetTextSize(CentralsFontSize);
+     }
 
+     if(TomChange){
+		cout<<"DRAW CMS preliminary Latex"<<endl;
+		xCentrals2D=lth_min+(lth_max-lth_min)*0.10;
+	    CentralsFontSize=0.035;
+	    sprintf(text,"CMS preliminary");
+	    if(!CMSprelim) sprintf(text,"CMS");
+	    CentralsText1_2D = new TLatex(xCentrals2D,lph_min+(lph_max-lph_min)*0.21,text);
+	    CentralsText1_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"L = 4.9 fb^{-1}");
+	    CentralsText2_2D = new TLatex(xCentrals2D,lph_min+(lph_max-lph_min)*0.11,text);
+	    CentralsText2_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"pp    #sqrt{s} = 7 TeV");
+	    CentralsText3_2D = new TLatex(xCentrals2D,lph_min+(lph_max-lph_min)*0.16,text);
+	    CentralsText3_2D->SetTextSize(CentralsFontSize);
+	    if(TomZoom){
+	    cout<<"DRAW CMS preliminary Latex"<<endl;
+		xCentrals2D=lth_min+(lth_max-lth_min)*0.65;
+	    CentralsFontSize=0.035;
+	    sprintf(text,"CMS preliminary");
+	    if(!CMSprelim) sprintf(text,"CMS");
+	    CentralsText1_2D = new TLatex(xCentrals2D,lph_min+(lph_max-lph_min)*0.21,text);
+	    CentralsText1_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"L = 4.9 fb^{-1}");
+	    CentralsText2_2D = new TLatex(xCentrals2D,lph_min+(lph_max-lph_min)*0.11,text);
+	    CentralsText2_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"pp    #sqrt{s} = 7 TeV");
+	    CentralsText3_2D = new TLatex(xCentrals2D,lph_min+(lph_max-lph_min)*0.16,text);
+	    CentralsText3_2D->SetTextSize(CentralsFontSize);
+	    }
+
+	    sprintf(text,"(a)");
+	    CentralsTextNumbering_2D = new TLatex(xCentrals2D,lph_min+(lph_max-lph_min)*0.31,text);
+	    CentralsTextNumbering_2D->SetTextSize(CentralsFontSize);
+	    CentralsTextNumbering_2D->Draw( "same" );
+
+     }
 	    CentralsText1_2D->Draw( "same" );
 	    CentralsText2_2D->Draw( "same" );
 	    CentralsText3_2D->Draw( "same" );
@@ -673,24 +974,24 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
   setContourHistogram ( h_lphstar_vs_lthstar_CS );
   h_lphstar_vs_lthstar_CS->SetLineColor( kGreen+2 );
-  h_lphstar_vs_lthstar_CS->SetLineWidth( 2 );
-  h_lphstar_vs_lthstar_CS->SetLineStyle( 1 );
+  h_lphstar_vs_lthstar_CS->SetLineWidth( LineWidth3Sig );
+  h_lphstar_vs_lthstar_CS->SetLineStyle( LineStyleCS   );
   h_lphstar_vs_lthstar_CS->Draw( "cont2, same" );
 
   // HX frame
 
   setContourHistogram ( h_lphstar_vs_lthstar_HX );
   h_lphstar_vs_lthstar_HX->SetLineColor( kRed );
-  h_lphstar_vs_lthstar_HX->SetLineWidth( 2 );
-  h_lphstar_vs_lthstar_HX->SetLineStyle( 1 );
+  h_lphstar_vs_lthstar_HX->SetLineWidth( LineWidth3Sig );
+  h_lphstar_vs_lthstar_HX->SetLineStyle( LineStyleHX   );
   h_lphstar_vs_lthstar_HX->Draw( "cont2, same" );
 
   // PX frame
 
   setContourHistogram ( h_lphstar_vs_lthstar_PX );
   h_lphstar_vs_lthstar_PX->SetLineColor( kBlue );
-  h_lphstar_vs_lthstar_PX->SetLineWidth( 2 );
-  h_lphstar_vs_lthstar_PX->SetLineStyle( 1 );
+  h_lphstar_vs_lthstar_PX->SetLineWidth( LineWidth3Sig );
+  h_lphstar_vs_lthstar_PX->SetLineStyle( LineStylePX   );
   h_lphstar_vs_lthstar_PX->Draw( "cont2, same" );
 
   plotLegend->Draw();
@@ -719,7 +1020,15 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   ////////////////////////////////////////////////////////////////
   // 2D plot ltp vs lth
 
-  TH2D* h_ltp_vs_lth = (TH2D*)h_ltp_vs_lth_CS->Clone();
+  if(TomChange&&TomZoom){
+    lth_min=-0.7;
+    lth_max=0.7;
+    ltp_min=-0.5;
+    ltp_max=0.5;
+  }
+
+  TH2D* h_ltp_vs_lth = new TH2D( "h_ltp_vs_lth", "", int((lth_max-lth_min)/lth_step_2D), lth_min, lth_max, int((ltp_max-ltp_min)/ltp_step_2D), ltp_min, ltp_max );
+//  TH2D* h_ltp_vs_lth = (TH2D*)h_ltp_vs_lth_CS->Clone();
   h_ltp_vs_lth->SetName("h_ltp_vs_lth");
   h_ltp_vs_lth->Reset();
 
@@ -740,25 +1049,25 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   TPolyLine *background_tp_vs_th = new TPolyLine( 4, x_background_tp_vs_th, y_background_tp_vs_th );
   background_tp_vs_th->SetFillColor(kGray);
   background_tp_vs_th->SetLineStyle(0);
-  background_tp_vs_th->Draw("f same");
+  if(!TomZoom) background_tp_vs_th->Draw("f same");
 
   TEllipse *ellipse_tp_vs_th = new TEllipse( 0., 0., 1., sqrt(2.)/2. );
   ellipse_tp_vs_th->SetFillColor(kWhite);
   ellipse_tp_vs_th->SetLineStyle(0);
-  ellipse_tp_vs_th->Draw("f same");
+  if(!TomZoom) ellipse_tp_vs_th->Draw("f same");
 
 
   lh_p1 = new TLine( lth_min, sqrt(2.)/2., lth_max, sqrt(2.)/2. );
   lh_p1->SetLineWidth( 1 );
   lh_p1->SetLineStyle( 2 );
   lh_p1->SetLineColor( kGray+2 );
-  lh_p1->Draw( "same" );
+  if(!TomZoom) lh_p1->Draw( "same" );
 
   lh_m1 = new TLine( lth_min, -sqrt(2.)/2., lth_max, -sqrt(2.)/2. );
   lh_m1->SetLineWidth( 1 );
   lh_m1->SetLineStyle( 2 );
   lh_m1->SetLineColor( kGray+2 );
-  lh_m1->Draw( "same" );
+  if(!TomZoom) lh_m1->Draw( "same" );
 
   lh_0 = new TLine( lth_min, 0., lth_max, 0. );
   lh_0->SetLineWidth( 1 );
@@ -770,13 +1079,13 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   lv_p1->SetLineWidth( 1 );
   lv_p1->SetLineStyle( 2 );
   lv_p1->SetLineColor( kGray+2 );
-  lv_p1->Draw( "same" );
+  if(!TomZoom) lv_p1->Draw( "same" );
 
   lv_m1 = new TLine( -1., ltp_min, -1., ltp_max );
   lv_m1->SetLineWidth( 1 );
   lv_m1->SetLineStyle( 2 );
   lv_m1->SetLineColor( kGray+2 );
-  lv_m1->Draw( "same" );
+  if(!TomZoom) lv_m1->Draw( "same" );
 
   lv_0 = new TLine( 0., ltp_min, 0., ltp_max );
   lv_0->SetLineWidth( 1 );
@@ -787,31 +1096,78 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
   // CS frame
 
-  setContourHistogram ( h_ltp_vs_lth_CS );
+/*  setContourHistogram ( h_ltp_vs_lth_CS );
   h_ltp_vs_lth_CS->SetLineColor( kGreen+2 );
-  h_ltp_vs_lth_CS->SetLineWidth( 2 );
-  h_ltp_vs_lth_CS->SetLineStyle( 1 );
-  h_ltp_vs_lth_CS->Draw( "cont2, same" );
+  h_ltp_vs_lth_CS->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lth_CS->SetLineStyle( LineStyleCS  );
+  h_ltp_vs_lth_CS->Draw( DrawContourStyle );
+*/
+
+  graph_ltp_vs_lth_CS_1Sig->SetLineWidth(LineWidth1Sig);
+  graph_ltp_vs_lth_CS_1Sig->SetLineColor(LineColorCS);
+  graph_ltp_vs_lth_CS_1Sig->SetLineStyle(LineStyleCS);
+  graph_ltp_vs_lth_CS_1Sig->Draw("C");
+  graph_ltp_vs_lth_CS_3Sig->SetLineWidth(LineWidth3Sig);
+  graph_ltp_vs_lth_CS_3Sig->SetLineColor(LineColorCS);
+  graph_ltp_vs_lth_CS_3Sig->SetLineStyle(LineStyleCS);
+  graph_ltp_vs_lth_CS_3Sig->Draw("C");
+
+  setContourHistogram1Sig ( h_ltp_vs_lth_CS );
+  h_ltp_vs_lth_CS->SetLineColor( kGreen+2 );
+  h_ltp_vs_lth_CS->SetLineWidth( LineWidth1Sig );
+  h_ltp_vs_lth_CS->SetLineStyle( LineStyleCS  );
+//  h_ltp_vs_lth_CS->Draw( DrawContourStyle );
+  TH2D *h_ltp_vs_lth_CS_clone=(TH2D*)h_ltp_vs_lth_CS->Clone();
+  setContourHistogram3Sig ( h_ltp_vs_lth_CS_clone );
+  h_ltp_vs_lth_CS_clone->SetLineColor( kGreen+2 );
+  h_ltp_vs_lth_CS_clone->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lth_CS_clone->SetLineStyle( LineStyleCS  );
+//  h_ltp_vs_lth_CS_clone->Draw( DrawContourStyle );
 
   // HX frame
 
-  setContourHistogram ( h_ltp_vs_lth_HX );
+/*  setContourHistogram ( h_ltp_vs_lth_HX );
   h_ltp_vs_lth_HX->SetLineColor( kRed );
-  h_ltp_vs_lth_HX->SetLineWidth( 2 );
-  h_ltp_vs_lth_HX->SetLineStyle( 1 );
-  h_ltp_vs_lth_HX->Draw( "cont2, same" );
+  h_ltp_vs_lth_HX->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lth_HX->SetLineStyle( LineStyleHX );
+  h_ltp_vs_lth_HX->Draw( DrawContourStyle );
+*/
+  setContourHistogram1Sig ( h_ltp_vs_lth_HX );
+  h_ltp_vs_lth_HX->SetLineColor( kRed );
+  h_ltp_vs_lth_HX->SetLineWidth( LineWidth1Sig );
+  h_ltp_vs_lth_HX->SetLineStyle( LineStyleHX  );
+  h_ltp_vs_lth_HX->Draw( DrawContourStyle );
+  TH2D *h_ltp_vs_lth_HX_clone=(TH2D*)h_ltp_vs_lth_HX->Clone();
+  setContourHistogram3Sig ( h_ltp_vs_lth_HX_clone );
+  h_ltp_vs_lth_HX_clone->SetLineColor( kRed );
+  h_ltp_vs_lth_HX_clone->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lth_HX_clone->SetLineStyle( LineStyleHX  );
+  h_ltp_vs_lth_HX_clone->Draw( DrawContourStyle );
 
   // PX frame
 
-  setContourHistogram ( h_ltp_vs_lth_PX );
+/*  setContourHistogram ( h_ltp_vs_lth_PX );
   h_ltp_vs_lth_PX->SetLineColor( kBlue );
-  h_ltp_vs_lth_PX->SetLineWidth( 2 );
-  h_ltp_vs_lth_PX->SetLineStyle( 1 );
-  h_ltp_vs_lth_PX->Draw( "cont2, same" );
+  h_ltp_vs_lth_PX->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lth_PX->SetLineStyle( LineStylePX );
+  if(!TomChange) h_ltp_vs_lth_PX->Draw( DrawContourStyle );
+*/
 
+  setContourHistogram1Sig ( h_ltp_vs_lth_PX );
+  h_ltp_vs_lth_PX->SetLineColor( kBlue );
+  h_ltp_vs_lth_PX->SetLineWidth( LineWidth1Sig );
+  h_ltp_vs_lth_PX->SetLineStyle( LineStylePX  );
+  if(!TomChange) h_ltp_vs_lth_PX->Draw( DrawContourStyle );
+  TH2D *h_ltp_vs_lth_PX_clone=(TH2D*)h_ltp_vs_lth_PX->Clone();
+  setContourHistogram3Sig ( h_ltp_vs_lth_PX_clone );
+  h_ltp_vs_lth_PX_clone->SetLineColor( kBlue );
+  h_ltp_vs_lth_PX_clone->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lth_PX_clone->SetLineStyle( LineStylePX  );
+  if(!TomChange) h_ltp_vs_lth_PX_clone->Draw( DrawContourStyle );
+
+	 if(!TomChange){
   plotLegend=new TLegend(0.15,0.825,0.25,0.975);
   plotLegend->SetFillColor(kWhite);
-  plotLegend->SetTextFont(72);
   plotLegend->SetTextSize(0.035);
   plotLegend->SetBorderSize(1);
   sprintf(legendentry,"CS");
@@ -822,7 +1178,32 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   plotLegend->AddEntry(h_lph_vs_lth_PX,legendentry,"l");
   plotLegend->Draw(); plotLegend->Draw();
   plotLegend->Draw();
+	 }
 
+	 if(TomChange){
+	 plotLegend=new TLegend(0.195,0.735,0.475,0.93);
+	 if(TomZoom) 	 plotLegend=new TLegend(0.65,0.735,0.93,0.93);
+	 plotLegend->SetFillColor(kWhite);
+	 plotLegend->SetTextSize(0.035);
+	 plotLegend->SetBorderSize(1);
+
+	 TH2D* h_lph_vs_lth_CS_legend1 = (TH2D*)h_lph_vs_lth_CS->Clone();
+	 TH2D* h_lph_vs_lth_CS_legend2 = (TH2D*)h_lph_vs_lth_CS_clone->Clone();
+	 TH2D* h_lph_vs_lth_HX_legend1 = (TH2D*)h_lph_vs_lth_HX->Clone();
+	 TH2D* h_lph_vs_lth_HX_legend2 = (TH2D*)h_lph_vs_lth_HX_clone->Clone();
+
+	 sprintf(legendentry,"CS, 68.3%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_CS_legend1,legendentry,"l");
+	 sprintf(legendentry,"CS, 99.7%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_CS_legend2,legendentry,"l");
+	 sprintf(legendentry,"HX, 68.3%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_HX_legend1,legendentry,"l");
+	 sprintf(legendentry,"HX, 99.7%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_HX_legend2,legendentry,"l");
+	 plotLegend->Draw();
+	 }
+
+	  if(!TomChange){
 	cout<<"DRAW CMS preliminary Latex"<<endl;
 	xCentrals2D=-0.75;
   CentralsFontSize=0.035;
@@ -838,6 +1219,38 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   CentralsText3_2D = new TLatex(xCentrals2D,0.86,text);
 //  if(!CMSprelim) CentralsText3_2D = new TLatex(xCentrals2D,0.93,text);
   CentralsText3_2D->SetTextSize(CentralsFontSize);
+	  }
+
+  if(TomChange){
+		cout<<"DRAW CMS preliminary Latex"<<endl;
+		xCentrals2D=lth_min+(lth_max-lth_min)*0.1;
+	    CentralsFontSize=0.035;
+	    sprintf(text,"CMS preliminary");
+	    if(!CMSprelim) sprintf(text,"CMS");
+	    CentralsText1_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.13,text);
+	    CentralsText1_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"L = 4.9 fb^{-1}");
+	    CentralsText2_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.03,text);
+	    CentralsText2_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"pp    #sqrt{s} = 7 TeV");
+	    CentralsText3_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.08,text);
+	    CentralsText3_2D->SetTextSize(CentralsFontSize);
+	    if(TomZoom){
+			cout<<"DRAW CMS preliminary Latex"<<endl;
+			xCentrals2D=lth_min+(lth_max-lth_min)*0.65;
+		    CentralsFontSize=0.035;
+		    sprintf(text,"CMS preliminary");
+		    if(!CMSprelim) sprintf(text,"CMS");
+		    CentralsText1_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.21,text);
+		    CentralsText1_2D->SetTextSize(CentralsFontSize);
+		    sprintf(text,"L = 4.9 fb^{-1}");
+		    CentralsText2_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.11,text);
+		    CentralsText2_2D->SetTextSize(CentralsFontSize);
+		    sprintf(text,"pp    #sqrt{s} = 7 TeV");
+		    CentralsText3_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.16,text);
+		    CentralsText3_2D->SetTextSize(CentralsFontSize);
+	    }
+  }
 
   CentralsText1_2D->Draw( "same" );
   CentralsText2_2D->Draw( "same" );
@@ -871,7 +1284,15 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   ////////////////////////////////////////////////////////////////
   // 2D plot ltp vs lth
 
-  TH2D* h_ltp_vs_lph = (TH2D*)h_ltp_vs_lph_CS->Clone();
+  if(TomChange&&TomZoom){
+    ltp_min=-0.5;
+    ltp_max=0.5;
+    lph_min=-0.5;
+    lph_max=0.5;
+  }
+
+  TH2D* h_ltp_vs_lph = new TH2D( "h_ltp_vs_lph", "", int((lph_max-lph_min)/lph_step_2D), lph_min, lph_max, int((ltp_max-ltp_min)/ltp_step_2D), ltp_min, ltp_max );
+// TH2D* h_ltp_vs_lph = (TH2D*)h_ltp_vs_lph_CS->Clone();
   h_ltp_vs_lph->SetName("h_ltp_vs_lph");
   h_ltp_vs_lph->Reset();
 
@@ -892,31 +1313,31 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   TPolyLine *background_tp_vs_ph = new TPolyLine( 4, x_background_tp_vs_ph, y_background_tp_vs_ph );
   background_tp_vs_ph->SetFillColor(kGray);
   background_tp_vs_ph->SetLineStyle(0);
-  background_tp_vs_ph->Draw("f same");
+  if(!TomZoom) background_tp_vs_ph->Draw("f same");
 
   TEllipse *ellipse_tp_vs_ph = new TEllipse( -0.5, 0., 0.5, sqrt(2.)/2. );
   ellipse_tp_vs_ph->SetFillColor(kWhite);
   ellipse_tp_vs_ph->SetLineStyle(0);
-  ellipse_tp_vs_ph->Draw("f same");
+  if(!TomZoom) ellipse_tp_vs_ph->Draw("f same");
 
   double x_triangle_tp_vs_th[3] = {-1./3., -1./3., 1.};
   double y_triangle_tp_vs_th[3] = { 2./3., -2./3., 0.};
   TPolyLine *triangle_tp_vs_th = new TPolyLine( 3, x_triangle_tp_vs_th, y_triangle_tp_vs_th );
   triangle_tp_vs_th->SetFillColor(kWhite);
   triangle_tp_vs_th->SetLineStyle(0);
-  triangle_tp_vs_th->Draw("f same");
+  if(!TomZoom) triangle_tp_vs_th->Draw("f same");
 
   lh_p1 = new TLine( lph_min, sqrt(2.)/2., lph_max, sqrt(2.)/2. );
   lh_p1->SetLineWidth( 1 );
   lh_p1->SetLineStyle( 2 );
   lh_p1->SetLineColor( kGray+2 );
-  lh_p1->Draw( "same" );
+  if(!TomZoom) lh_p1->Draw( "same" );
 
   lh_m1 = new TLine( lph_min, -sqrt(2.)/2., lph_max, -sqrt(2.)/2. );
   lh_m1->SetLineWidth( 1 );
   lh_m1->SetLineStyle( 2 );
   lh_m1->SetLineColor( kGray+2 );
-  lh_m1->Draw( "same" );
+  if(!TomZoom) lh_m1->Draw( "same" );
 
   lh_0 = new TLine( lph_min, 0., lph_max, 0. );
   lh_0->SetLineWidth( 1 );
@@ -928,13 +1349,13 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
   lv_p1->SetLineWidth( 1 );
   lv_p1->SetLineStyle( 2 );
   lv_p1->SetLineColor( kGray+2 );
-  lv_p1->Draw( "same" );
+  if(!TomZoom) lv_p1->Draw( "same" );
 
   lv_m1 = new TLine( -1., ltp_min, -1., ltp_max );
   lv_m1->SetLineWidth( 1 );
   lv_m1->SetLineStyle( 2 );
   lv_m1->SetLineColor( kGray+2 );
-  lv_m1->Draw( "same" );
+  if(!TomZoom) lv_m1->Draw( "same" );
 
   lv_0 = new TLine( 0., ltp_min, 0., ltp_max );
   lv_0->SetLineWidth( 1 );
@@ -945,27 +1366,138 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
   // CS frame
 
-  setContourHistogram ( h_ltp_vs_lph_CS );
+/*  setContourHistogram ( h_ltp_vs_lph_CS );
   h_ltp_vs_lph_CS->SetLineColor( kGreen+2 );
-  h_ltp_vs_lph_CS->SetLineWidth( 2 );
-  h_ltp_vs_lph_CS->SetLineStyle( 1 );
-  h_ltp_vs_lph_CS->Draw( "cont2, same" );
+  h_ltp_vs_lph_CS->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lph_CS->SetLineStyle( LineStyleCS  );
+  h_ltp_vs_lph_CS->Draw( DrawContourStyle );
+*/
+
+  graph_ltp_vs_lph_CS_1Sig->SetLineWidth(LineWidth1Sig);
+  graph_ltp_vs_lph_CS_1Sig->SetLineColor(LineColorCS);
+  graph_ltp_vs_lph_CS_1Sig->SetLineStyle(LineStyleCS);
+  graph_ltp_vs_lph_CS_1Sig->Draw("C");
+  graph_ltp_vs_lph_CS_3Sig->SetLineWidth(LineWidth3Sig);
+  graph_ltp_vs_lph_CS_3Sig->SetLineColor(LineColorCS);
+  graph_ltp_vs_lph_CS_3Sig->SetLineStyle(LineStyleCS);
+  graph_ltp_vs_lph_CS_3Sig->Draw("C");
+
+  setContourHistogram1Sig ( h_ltp_vs_lph_CS );
+  h_ltp_vs_lph_CS->SetLineColor( kGreen+2 );
+  h_ltp_vs_lph_CS->SetLineWidth( LineWidth1Sig );
+  h_ltp_vs_lph_CS->SetLineStyle( LineStyleCS  );
+//  h_ltp_vs_lph_CS->Draw( DrawContourStyle );
+  TH2D *h_ltp_vs_lph_CS_clone=(TH2D*)h_ltp_vs_lph_CS->Clone();
+  setContourHistogram3Sig ( h_ltp_vs_lph_CS_clone );
+  h_ltp_vs_lph_CS_clone->SetLineColor( kGreen+2 );
+  h_ltp_vs_lph_CS_clone->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lph_CS_clone->SetLineStyle( LineStyleCS  );
+//  h_ltp_vs_lph_CS_clone->Draw( DrawContourStyle );
 
   // HX frame
 
-  setContourHistogram ( h_ltp_vs_lph_HX );
+/*  setContourHistogram ( h_ltp_vs_lph_HX );
   h_ltp_vs_lph_HX->SetLineColor( kRed );
-  h_ltp_vs_lph_HX->SetLineWidth( 2 );
-  h_ltp_vs_lph_HX->SetLineStyle( 1 );
-  h_ltp_vs_lph_HX->Draw( "cont2, same" );
+  h_ltp_vs_lph_HX->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lph_HX->SetLineStyle( LineStyleHX );
+  h_ltp_vs_lph_HX->Draw( DrawContourStyle );
+*/
+  setContourHistogram1Sig ( h_ltp_vs_lph_HX );
+  h_ltp_vs_lph_HX->SetLineColor( kRed );
+  h_ltp_vs_lph_HX->SetLineWidth( LineWidth1Sig );
+  h_ltp_vs_lph_HX->SetLineStyle( LineStyleHX  );
+  h_ltp_vs_lph_HX->Draw( DrawContourStyle );
+  TH2D *h_ltp_vs_lph_HX_clone=(TH2D*)h_ltp_vs_lph_HX->Clone();
+  setContourHistogram3Sig ( h_ltp_vs_lph_HX_clone );
+  h_ltp_vs_lph_HX_clone->SetLineColor( kRed );
+  h_ltp_vs_lph_HX_clone->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lph_HX_clone->SetLineStyle( LineStyleHX  );
+  h_ltp_vs_lph_HX_clone->Draw( DrawContourStyle );
 
   // PX frame
 
-  setContourHistogram ( h_ltp_vs_lph_PX );
+/*  setContourHistogram ( h_ltp_vs_lph_PX );
   h_ltp_vs_lph_PX->SetLineColor( kBlue );
-  h_ltp_vs_lph_PX->SetLineWidth( 2 );
-  h_ltp_vs_lph_PX->SetLineStyle( 1 );
-  h_ltp_vs_lph_PX->Draw( "cont2, same" );
+  h_ltp_vs_lph_PX->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lph_PX->SetLineStyle( LineStylePX );
+  if(!TomChange) h_ltp_vs_lph_PX->Draw( DrawContourStyle );
+*/
+
+  setContourHistogram1Sig ( h_ltp_vs_lph_PX );
+  h_ltp_vs_lph_PX->SetLineColor( kBlue );
+  h_ltp_vs_lph_PX->SetLineWidth( LineWidth1Sig );
+  h_ltp_vs_lph_PX->SetLineStyle( LineStylePX  );
+  if(!TomChange) h_ltp_vs_lph_PX->Draw( DrawContourStyle );
+  TH2D *h_ltp_vs_lph_PX_clone=(TH2D*)h_ltp_vs_lph_PX->Clone();
+  setContourHistogram3Sig ( h_ltp_vs_lph_PX_clone );
+  h_ltp_vs_lph_PX_clone->SetLineColor( kBlue );
+  h_ltp_vs_lph_PX_clone->SetLineWidth( LineWidth3Sig );
+  h_ltp_vs_lph_PX_clone->SetLineStyle( LineStylePX  );
+  if(!TomChange) h_ltp_vs_lph_PX_clone->Draw( DrawContourStyle );
+
+
+  if(!TomChange){
+	 plotLegend->Draw();
+  }
+
+	 if(TomChange){
+	 plotLegend=new TLegend(0.65,0.735,0.93,0.93);
+	 plotLegend->SetFillColor(kWhite);
+	 plotLegend->SetTextSize(0.035);
+	 plotLegend->SetBorderSize(1);
+
+	 TH2D* h_lph_vs_lth_CS_legend1 = (TH2D*)h_lph_vs_lth_CS->Clone();
+	 TH2D* h_lph_vs_lth_CS_legend2 = (TH2D*)h_lph_vs_lth_CS_clone->Clone();
+	 TH2D* h_lph_vs_lth_HX_legend1 = (TH2D*)h_lph_vs_lth_HX->Clone();
+	 TH2D* h_lph_vs_lth_HX_legend2 = (TH2D*)h_lph_vs_lth_HX_clone->Clone();
+
+	 sprintf(legendentry,"CS, 68.3%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_CS_legend1,legendentry,"l");
+	 sprintf(legendentry,"CS, 99.7%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_CS_legend2,legendentry,"l");
+	 sprintf(legendentry,"HX, 68.3%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_HX_legend1,legendentry,"l");
+	 sprintf(legendentry,"HX, 99.7%% CL");
+	 plotLegend->AddEntry(h_lph_vs_lth_HX_legend2,legendentry,"l");
+	 plotLegend->Draw();
+	 }
+
+  if(TomChange){
+		cout<<"DRAW CMS preliminary Latex"<<endl;
+		xCentrals2D=lph_min+(lph_max-lph_min)*0.65;
+	    CentralsFontSize=0.035;
+	    sprintf(text,"CMS preliminary");
+	    if(!CMSprelim) sprintf(text,"CMS");
+	    CentralsText1_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.13,text);
+	    CentralsText1_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"L = 4.9 fb^{-1}");
+	    CentralsText2_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.03,text);
+	    CentralsText2_2D->SetTextSize(CentralsFontSize);
+	    sprintf(text,"pp    #sqrt{s} = 7 TeV");
+	    CentralsText3_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.08,text);
+	    CentralsText3_2D->SetTextSize(CentralsFontSize);
+	    if(TomZoom){
+			cout<<"DRAW CMS preliminary Latex"<<endl;
+			xCentrals2D=lph_min+(lph_max-lph_min)*0.65;
+		    CentralsFontSize=0.035;
+		    sprintf(text,"CMS preliminary");
+		    if(!CMSprelim) sprintf(text,"CMS");
+		    CentralsText1_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.21,text);
+		    CentralsText1_2D->SetTextSize(CentralsFontSize);
+		    sprintf(text,"L = 4.9 fb^{-1}");
+		    CentralsText2_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.11,text);
+		    CentralsText2_2D->SetTextSize(CentralsFontSize);
+		    sprintf(text,"pp    #sqrt{s} = 7 TeV");
+		    CentralsText3_2D = new TLatex(xCentrals2D,ltp_min+(ltp_max-ltp_min)*0.16,text);
+		    CentralsText3_2D->SetTextSize(CentralsFontSize);
+	    }
+		    sprintf(text,"(b)");
+		    CentralsTextNumbering_2D = new TLatex(lph_min+(lph_max-lph_min)*0.1,0.875,text);
+		    CentralsTextNumbering_2D->SetTextSize(CentralsFontSize);
+		    CentralsTextNumbering_2D->Draw( "same" );
+
+
+  }
 
   plotLegend->Draw();
 
@@ -1132,7 +1664,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
 		 plotLegend=new TLegend(0.225,0.625,0.9,0.95);
 		 plotLegend->SetFillColor(kWhite);
-		 plotLegend->SetTextFont(72);
+//		 plotLegend->SetTextFont(72);
 		 plotLegend->SetTextSize(0.03);
 		 plotLegend->SetBorderSize(1);
 		 sprintf(legendentry,"#lambda_{#theta}^{PX,start} = 0.0, #sigma^{BurnIn}=0.1,Int_{cont.}=%1.4f",IntegralInsideContour[1]);
@@ -1285,7 +1817,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
 		 plotLegend=new TLegend(0.225,0.625,0.9,0.95);
 		 plotLegend->SetFillColor(kWhite);
-		 plotLegend->SetTextFont(72);
+//		 plotLegend->SetTextFont(72);
 		 plotLegend->SetTextSize(0.03);
 		 plotLegend->SetBorderSize(1);
 		 sprintf(legendentry,"#sigma^{AfterBurnIn}=0.3*#sigma_{test},Int_{cont.}=%1.4f",IntegralInsideContour[1]);
@@ -1439,7 +1971,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
 		 plotLegend=new TLegend(0.225,0.625,0.9,0.95);
 		 plotLegend->SetFillColor(kWhite);
-		 plotLegend->SetTextFont(72);
+//		 plotLegend->SetTextFont(72);
 		 plotLegend->SetTextSize(0.03);
 		 plotLegend->SetBorderSize(1);
 		 sprintf(legendentry,"#lambda_{#theta}^{PX,start} = 0.5, #sigma^{BurnIn}=0.1, #sigma^{AfterBurnIn}=0.3*#sigma_{test},1");
@@ -1590,7 +2122,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
 		 plotLegend=new TLegend(0.225,0.7,0.45,0.95);
 		 plotLegend->SetFillColor(kWhite);
-		 plotLegend->SetTextFont(72);
+//		 plotLegend->SetTextFont(72);
 		 plotLegend->SetTextSize(0.03);
 		 plotLegend->SetBorderSize(1);
 		 sprintf(legendentry,"n_{fit} = 50");
@@ -1694,7 +2226,7 @@ void polPlot(Char_t *dirstruct = "OutputDirectory_Default",
 
   plotLegend=new TLegend(0.175,0.81,0.275,0.96);
   plotLegend->SetFillColor(kWhite);
-  plotLegend->SetTextFont(72);
+//  plotLegend->SetTextFont(72);
   plotLegend->SetTextSize(0.035);
   plotLegend->SetBorderSize(1);
   sprintf(legendentry,"CS");
@@ -2098,7 +2630,7 @@ TLegend* plotLegend2;
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2183,7 +2715,7 @@ DATA_ph_CS->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2268,7 +2800,7 @@ DATA_phth_CS->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2350,7 +2882,7 @@ DATA_cth_HX->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2436,7 +2968,7 @@ DATA_ph_HX->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2522,7 +3054,7 @@ DATA_phth_HX->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2605,7 +3137,7 @@ DATA_cth_PX->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2690,7 +3222,7 @@ DATA_ph_PX->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2775,7 +3307,7 @@ DATA_phth_PX->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 
@@ -2849,7 +3381,7 @@ DATA_calpha->Draw("E same");
 
 plotLegend2=new TLegend(0.2,0.8,0.75,0.95);
 plotLegend2->SetFillColor(kWhite);
-plotLegend2->SetTextFont(72);
+//plotLegend2->SetTextFont(72);
 plotLegend2->SetTextSize(0.035);
 plotLegend2->SetBorderSize(1);
 

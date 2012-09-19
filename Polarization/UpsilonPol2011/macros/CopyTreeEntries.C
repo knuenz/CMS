@@ -22,6 +22,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
   TLorentzVector *lepP;
   TLorentzVector *lepN;
   TTree *treeIn = (TTree *) gDirectory->Get("selectedData");
+
   //==============================
 
   //==============================
@@ -49,6 +50,11 @@ void CopyTreeEntries(Int_t iRapBin = 1,
   //reading info from input file:
   //===============================
   TTree *treeFitPar = (TTree *) gDirectory->Get("massFitParameters");
+  if(gDirectory->Get("massFitParameters")==NULL){
+    printf("\n\n\nskip processing this bin.\n\n\n");
+    return;
+  }
+
   TF1 *fUps[kNbSpecies], *fBG = 0;
   fUps[0] = 0, fUps[1] = 0, fUps[2] = 0;
   treeFitPar->SetBranchAddress("fUps1S", &fUps[0]);
@@ -93,7 +99,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 
 	  double DMmin=8.6;
 	  double DMmax=11.4;
-	  double DMbinwidth1=0.02;
+	  double DMbinwidth1=0.04;
 	  double DMbinwidth2=0.04;
 	  int DMnBins1=(DMmax-DMmin)/DMbinwidth1;
 	  int DMnBins2=(DMmax-DMmin)/DMbinwidth2;
@@ -113,12 +119,13 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  char DMCutChar[2000];
 
 
-		TLegend* DMLegend=new TLegend(0.53,0.75,0.95,0.9);
+//		TLegend* DMLegend=new TLegend(0.53,0.75,0.95,0.9);
+		TLegend* DMLegend=new TLegend(0.68,0.585,0.95,0.725);
 		DMLegend->SetFillColor(0);
-		DMLegend->SetTextFont(72);
+//		DMLegend->SetTextFont(72);
 		DMLegend->SetTextSize(0.0345);
 		DMLegend->SetBorderSize(1);
-		DMLegend->SetMargin(0.135);
+//		DMLegend->SetMargin(0.135);
 		char DMLegendEntry[200];
 
 
@@ -141,7 +148,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  treeIn->Draw(DMDrawChar,DMCutChar);
 
 	  char DMyTitle[200];
-	  sprintf(DMyTitle,"Counts");
+	  sprintf(DMyTitle,"Counts per %d MeV",int(1000*DMbinwidth1));
 	  c2 = new TCanvas("c2","c2",1200,1100);
 	  gStyle->SetPalette(1);
  	  gPad->SetFillColor(kWhite);
@@ -150,16 +157,19 @@ void CopyTreeEntries(Int_t iRapBin = 1,
  	  double MargRight=0.025;//0.1;
  	  double MargTop=0.05;//0.175;
 
+ 	  double MarkerSizeTom=1.75;
+
  	  gPad->SetLeftMargin(MargLeft);
       gPad->SetRightMargin(MargRight);
       gPad->SetTopMargin(MargTop);
 
- 	  dimumassRap2->SetYTitle(DMyTitle);
-	  dimumassRap2->SetXTitle("dimuon mass [GeV]");
+ 	  dimumassRap1->SetYTitle(DMyTitle);
+	  dimumassRap1->SetXTitle("Dimuon mass [GeV]");
 	  dimumassRap1->SetTitle(0);
 	  dimumassRap1->SetStats(0);
-	  dimumassRap2->GetYaxis()->SetTitleOffset(1.25);
-	  dimumassRap1->SetMarkerStyle(24);
+	  dimumassRap1->GetYaxis()->SetTitleOffset(1.25);
+	  dimumassRap1->SetMarkerStyle(25);
+	  dimumassRap1->SetMarkerSize(MarkerSizeTom);
 	  dimumassRap1->SetMarkerColor(kBlack);
 	  dimumassRap1->SetLineColor(kBlack);
 	  dimumassRap2->SetTitle(0);
@@ -167,6 +177,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  dimumassRap2->SetMarkerColor(kRed);
 	  dimumassRap2->SetMarkerStyle(20);
 	  dimumassRap2->SetLineColor(kRed);
+	  dimumassRap2->SetMarkerSize(MarkerSizeTom);
 
 
 	  double SF_DM=1000;
@@ -183,17 +194,22 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	        }
 
 
-	  dimumassRap2->Draw("E1");
-	  dimumassRap1->Draw("same,E1");
+	  dimumassRap1->Draw("E1");
+	  dimumassRap2->Draw("same,E1");
+	  dimumassRap1->Draw("same,chist");
+	  dimumassRap2->Draw("same,chist");
 
-		sprintf(DMLegendEntry,"0.6 < |y| < 1.2, per %d MeV",int(1000*DMbinwidth2));
-		DMLegend->AddEntry(dimumassRap2,DMLegendEntry,"lp");
-		sprintf(DMLegendEntry,"|y| < 0.6, per %d MeV",int(1000*DMbinwidth1));
-		DMLegend->AddEntry(dimumassRap1,DMLegendEntry,"lp");
+
+//		sprintf(DMLegendEntry,"|#it{y}| < 0.6, per %d MeV",int(1000*DMbinwidth1));
+		sprintf(DMLegendEntry,"|#it{y}| < 0.6");
+		DMLegend->AddEntry(dimumassRap1,DMLegendEntry,"p");
+//		sprintf(DMLegendEntry,"0.6 < |#it{y}| < 1.2, per %d MeV",int(1000*DMbinwidth2));
+		sprintf(DMLegendEntry,"0.6 < |#it{y}| < 1.2");
+		DMLegend->AddEntry(dimumassRap2,DMLegendEntry,"p");
 
 		DMLegend->Draw();
 
-		double xCentralsDM=10.15;
+		double xCentralsDM=10.475;
 		double xCentralsDM_shift=0.;
 
 		 cout<<"DRAW CMS preliminary Latex"<<endl;
@@ -202,18 +218,18 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	 sprintf(text,"CMS preliminary");
 	 if(!CMSprelim) sprintf(text,"CMS");
 	 cout<<text<<endl;
-	 TLatex *CentralsText1DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap2->GetMaximum()*0.75,text);
+	 TLatex *CentralsText1DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap1->GetMaximum()*0.975,text);
 	 CentralsText1DM->SetTextSize(CentralsFontSize);
 	 CentralsText1DM->Draw( "same" );
 	 sprintf(text,"L = 4.9 fb^{-1}");
 	 cout<<text<<endl;
-	 TLatex *CentralsText2DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap2->GetMaximum()*0.6,text);
+	 TLatex *CentralsText2DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap1->GetMaximum()*0.825,text);
 //	 if(!CMSprelim) CentralsText2DM = new TLatex(xCentralsDM+0.15,dimumassRap2->GetMaximum()*0.65,text);
 	 CentralsText2DM->SetTextSize(CentralsFontSize);
 	 CentralsText2DM->Draw( "same" );
 	 sprintf(text,"pp    #sqrt{s} = 7 TeV");
 	 cout<<text<<endl;
-	 TLatex *CentralsText3DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap2->GetMaximum()*0.675,text);
+	 TLatex *CentralsText3DM = new TLatex(xCentralsDM+xCentralsDM_shift,dimumassRap1->GetMaximum()*0.9,text);
 //	 if(!CMSprelim) CentralsText3DM = new TLatex(xCentralsDM+0.15,dimumassRap2->GetMaximum()*0.725,text);
 	 CentralsText3DM->SetTextSize(CentralsFontSize);
 	 CentralsText3DM->Draw( "same" );
@@ -225,7 +241,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 //	   tex_abcdef->Draw( "same" );
 
 	   sprintf(abcdef,"x 10^{3}");
-	   tex_abcdef = new TLatex(8.5,dimumassRap2->GetMaximum()*1.07,abcdef);
+	   tex_abcdef = new TLatex(8.5,dimumassRap1->GetMaximum()*1.07,abcdef);
 	   	   tex_abcdef->SetTextSize(CentralsFontSize*1.05);
 	   	   tex_abcdef->Draw( "same" );
 
@@ -265,9 +281,9 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  // mean 10.344 GeV
 	  }
 
-		PTLegend=new TLegend(0.68,0.75,0.95,0.9);
+		PTLegend=new TLegend(0.68,0.55,0.95,0.7);
 		PTLegend->SetFillColor(0);
-		PTLegend->SetTextFont(72);
+//		PTLegend->SetTextFont(72);
 		PTLegend->SetTextSize(0.0345);
 		PTLegend->SetBorderSize(1);
 		char PTLegendEntry[200];
@@ -317,7 +333,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	   TH1F *PThist = new TH1F;
 	   PThist = c2->DrawFrame(PTplotmin-4,histMin,PTplotmax,histMax);
 
-	   PThist->SetXTitle("dimuon p_{T} [GeV]");
+	   PThist->SetXTitle("Dimuon #it{p}_{T} [GeV]");
 	   PThist->SetYTitle(PTyTitle);
 	   PThist->GetYaxis()->SetTitleOffset(1.25);
 
@@ -329,12 +345,14 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 //      ptRap1->GetYaxis()->SetTitleOffset(1.75);
       ptRap2->SetTitle(0);
       ptRap2->SetStats(0);
-      ptRap1->SetMarkerStyle(24);
+      ptRap1->SetMarkerStyle(25);
       ptRap1->SetMarkerColor(kBlack);
       ptRap1->SetLineColor(kBlack);
       ptRap2->SetMarkerStyle(20);
       ptRap2->SetMarkerColor(kRed);
       ptRap2->SetLineColor(kRed);
+      ptRap2->SetMarkerSize(MarkerSizeTom);
+      ptRap1->SetMarkerSize(MarkerSizeTom);
 
 
 
@@ -342,10 +360,10 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  ptRap2->Draw("same,E1");
 
 
-		sprintf(PTLegendEntry,"|y| < 0.6");
-		PTLegend->AddEntry(ptRap1,PTLegendEntry,"lp");
-		sprintf(PTLegendEntry,"0.6 < |y| < 1.2");
-		PTLegend->AddEntry(ptRap2,PTLegendEntry,"lp");
+		sprintf(PTLegendEntry,"|#it{y}| < 0.6");
+		PTLegend->AddEntry(ptRap1,PTLegendEntry,"p");
+		sprintf(PTLegendEntry,"0.6 < |#it{y}| < 1.2");
+		PTLegend->AddEntry(ptRap2,PTLegendEntry,"p");
 
 
 		TLine *PtLine;
@@ -368,18 +386,18 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	 sprintf(text,"CMS preliminary");
 	 if(!CMSprelim) sprintf(text,"CMS");
      cout<<text<<endl;
-	 TLatex *CentralsText1Pt = new TLatex(xCentralsPt+xCentralsPt_shift,10e2,text);
+	 TLatex *CentralsText1Pt = new TLatex(xCentralsPt+xCentralsPt_shift,6e3,text);
 	 CentralsText1Pt->SetTextSize(CentralsFontSize);
 	 CentralsText1Pt->Draw( "same" );
 	 sprintf(text,"L = 4.9 fb^{-1}");
 	 cout<<text<<endl;
-	 TLatex *CentralsText2Pt = new TLatex(xCentralsPt+xCentralsPt_shift,2.5e2,text);
+	 TLatex *CentralsText2Pt = new TLatex(xCentralsPt+xCentralsPt_shift,1.5e3,text);
 //	 if(!CMSprelim) CentralsText2Pt = new TLatex(xCentralsPt+2.5,4e2,text);
 	 CentralsText2Pt->SetTextSize(CentralsFontSize);
 	 CentralsText2Pt->Draw( "same" );
 	 sprintf(text,"pp    #sqrt{s} = 7 TeV");
 	 cout<<text<<endl;
-	 TLatex *CentralsText3Pt = new TLatex(xCentralsPt+xCentralsPt_shift,5e2,text);
+	 TLatex *CentralsText3Pt = new TLatex(xCentralsPt+xCentralsPt_shift,3e3,text);
 //	 if(!CMSprelim) CentralsText3Pt = new TLatex(xCentralsPt+2.5,8e2,text);
 	 CentralsText3Pt->SetTextSize(CentralsFontSize);
 	 CentralsText3Pt->Draw( "same" );
@@ -437,7 +455,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	  	  c2->SaveAs(savename);
 
 	  	  c2 = new TCanvas("c2","c2",1200,1000);
-	  	  masspt->SetYTitle("p_{T}(#mu#mu) [GeV]");
+	  	  masspt->SetYTitle("#it{p}_{T}(#mu#mu) [GeV]");
 	  	  masspt->SetXTitle("M(#mu#mu) [GeV]");
 	  	  gStyle->SetPalette(1);
 	  	  gPad->SetFillColor(kWhite);
@@ -470,7 +488,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
 	      }
 
 	  	  c2 = new TCanvas("c2","c2",1200,1000);
-	  	hMeanPt->SetYTitle("mean p_{T}(#mu#mu) [GeV]");
+	  	hMeanPt->SetYTitle("mean #it{p}_{T}(#mu#mu) [GeV]");
 	  	hMeanPt->SetXTitle("M(#mu#mu) [GeV]");
 	  	  gStyle->SetPalette(1);
 	  	  gPad->SetFillColor(kWhite);
@@ -535,7 +553,7 @@ void CopyTreeEntries(Int_t iRapBin = 1,
   treeIn->Draw("TMath::Sqrt((lepP->Px()+lepN->Px())*(lepP->Px()+lepN->Px())+(lepP->Py()+lepN->Py())*(lepP->Py()+lepN->Py())):1/2*TMath::Log((TMath::Sqrt((lepP->Px()+lepN->Px())*(lepP->Px()+lepN->Px())+(lepP->Py()+lepN->Py())*(lepP->Py()+lepN->Py())+(lepP->Pz()+lepN->Pz())*(lepP->Pz()+lepN->Pz())+2*0.105658*0.105658+2*(lepP->Energy()*lepN->Energy()-(lepP->Px()*lepN->Px()+lepP->Py()*lepN->Py()+lepP->Pz()*lepN->Pz())))+(lepP->Pz()+lepN->Pz()))/(TMath::Sqrt((lepP->Px()+lepN->Px())*(lepP->Px()+lepN->Px())+(lepP->Py()+lepN->Py())*(lepP->Py()+lepN->Py())+(lepP->Pz()+lepN->Pz())*(lepP->Pz()+lepN->Pz())+2*0.105658*0.105658+2*(lepP->Energy()*lepN->Energy()-(lepP->Px()*lepN->Px()+lepP->Py()*lepN->Py()+lepP->Pz()*lepN->Pz())))-(lepP->Pz()+lepN->Pz())))>>rapPt",CutChar,"colz");
 
   c2 = new TCanvas("c2","c2",1200,1500);
-  rapPt->SetYTitle("p_{T}(#mu#mu) [GeV]");
+  rapPt->SetYTitle("#it{p}_{T}(#mu#mu) [GeV]");
   rapPt->SetXTitle("y(#mu#mu)");
   gStyle->SetPalette(1);
 //  gPad->SetTopMargin(0.1);
@@ -614,6 +632,11 @@ void CopyTreeEntries(Int_t iRapBin = 1,
     if(iRapBin==0){
     	ProjectRapMin=onia::rapForPTRange[0];
     	ProjectRapMax=onia::rapForPTRange[onia::kNbRapForPTBins];
+    }
+
+    if(UpsMC&&iPTBin<6){
+    	ProjectPtMin=onia::pTRange[iRapBin][5];//[0]
+    	ProjectPtMax=onia::pTRange[iRapBin][onia::kNbPTBins[iRapBin]];
     }
 
     *onia = *(lepP) + *(lepN);

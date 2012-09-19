@@ -63,7 +63,7 @@ void BinExamplePlots(){
 	gROOT->SetBatch();
 
 	  char DataID[200];
-	  sprintf(DataID,"Data_TowardsPRL_Mass3Sigma_July27");
+	  sprintf(DataID,"Data_TowardsPRL_Aug11_FinalResults_1Sigma_AlteredPPD_BKGlinPLUSRestSquaredGauss_5nRand_BiasCorrection_1S2S3SAug12_1Sig");
 
 	  bool PlotAcceptance=true;
 
@@ -78,7 +78,7 @@ void BinExamplePlots(){
 	  int pTmax=10;
 	  int rapmin=1;
 	  int rapmax=2;
-	  int nStatemin=3;
+	  int nStatemin=1;
 	  int nStatemax=3;
 
 
@@ -268,7 +268,7 @@ void BinExamplePlots(){
 
  	 TLegend* plotLegend=new TLegend(0.15,0.8,0.25,0.95);
     	 plotLegend->SetFillColor(kWhite);
-    	 plotLegend->SetTextFont(72);
+//    	 plotLegend->SetTextFont(72);
     	 plotLegend->SetTextSize(0.035);
     	 plotLegend->SetBorderSize(1);
     	 char legendentry[200];

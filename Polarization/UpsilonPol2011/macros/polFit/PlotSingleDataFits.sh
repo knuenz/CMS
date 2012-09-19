@@ -15,7 +15,7 @@ nSigma=1.00 #needed in 2 decimal accuracy (x.yz)
 
 for nState in 1;do
 
-JobID=Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand #Data_TheGreatRun_10B_May11_NewestCentrals
+JobID=Data_TowardsPRL_Aug11_FinalResults_1Sigma_AlteredPPD_BKGlinPLUSRestSquaredGauss_5nRand_BiasCorrection_1S2S3SAug12_1Sig #Data_TheGreatRun_10B_May11_NewestCentrals
 
 rapBinMin=1
 rapBinMax=1

@@ -101,6 +101,7 @@ cp ${fromdir}/macros/PolData.h ${todir}/macros/
 cp ${fromdir}/macros/runCopyTreeEntries.cc ${todir}/macros/
 cp ${fromdir}/macros/runData.cc ${todir}/macros/
 cp ${fromdir}/macros/runMassFit.cc ${todir}/macros/
+cp ${fromdir}/macros/runMassFitMC.cc ${todir}/macros/
 cp ${fromdir}/macros/runMeanPt.cc ${todir}/macros/
 cp ${fromdir}/macros/runTrimEventContent.cc ${todir}/macros/
 cp ${fromdir}/macros/TrimEventContent.C ${todir}/macros/

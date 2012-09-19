@@ -1,9 +1,9 @@
-storagedir=/tmp_mnt/scratch/knuenz/Polarization/Upsilon/Data
+storagedir=/scratch/knuenz/Polarization/Upsilon/Data
 macdir=/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/UpsilonPol/macros/polFit
 
 DataToy=Data
 
-for JobID in Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand;do
+for JobID in Data_TowardsPRL_Aug11_FinalResults_1Sigma_AlteredPPD_BKGlinPLUSRestSquaredGauss_5nRand_BiasCorrection_1S2S3SAug12_1Sig;do
 for nState in 1;do
 for rap_ in 1;do
 for pT_ in 10;do

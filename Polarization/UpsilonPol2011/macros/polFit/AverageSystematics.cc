@@ -162,6 +162,11 @@ int main(int argc, char** argv) {
 		double ptCentreErr_low[nBinspT];
 		double ptCentreErr_high[nBinspT];
 		double lmean[nBinspT];
+		double errlmean[nBinspT];
+
+		double fit_lmean[nSystematics];
+		double fit_errlmean[nSystematics];
+		double fit_X[nSystematics];
 
 		double ptCentre__[nSystematics][nBinspT];
 		double ptCentreErr_low_[nSystematics][nBinspT];
@@ -196,7 +201,15 @@ int main(int argc, char** argv) {
 			ptCentreErr_high_[iSyst][pt]=graph_->GetErrorXhigh(pt);
 			ptCentreErr_low_[iSyst][pt]=graph_->GetErrorXlow(pt);
 
+			fit_errlmean[iSyst]=graph_->GetErrorYhigh(pt);
+			fit_lmean[iSyst]=lmean_[iSyst][pt];
+			fit_X[iSyst]=0.;
+
 			}
+
+			double pTcentreReal=0;
+			double pTcentreReallow=0;
+			double pTcentreRealhigh=0;
 
 			for(int iSyst=0;iSyst<nSystematics;iSyst++){
 //				lmean_Buffer=lmean_Buffer+TMath::Abs(lmean_[iSyst][pt]);//ifMean
@@ -205,14 +218,44 @@ int main(int argc, char** argv) {
 				ptCentre_Buffer=ptCentre_Buffer+ptCentre__[iSyst][pt];
 				ptCentreErr_low_Buffer=ptCentreErr_low_Buffer+ptCentreErr_low_[iSyst][pt];
 				ptCentreErr_high_Buffer=ptCentreErr_high_Buffer+ptCentreErr_high_[iSyst][pt];
+
+				if(iSyst==1) {//delete loop
+					pTcentreReal=ptCentre__[iSyst][pt];
+					pTcentreReallow=ptCentreErr_low_[iSyst][pt];
+					pTcentreRealhigh=ptCentreErr_high_[iSyst][pt];
+				}
+
 			}
 
 			ptCentre_[pt]=ptCentre_Buffer/nSystematics;
 			ptCentreErr_low[pt]=ptCentreErr_low_Buffer/nSystematics;
 			ptCentreErr_high[pt]=ptCentreErr_high_Buffer/nSystematics;
 
+			ptCentre_[pt]=pTcentreReal;//delete
+			ptCentreErr_low[pt]=pTcentreReallow;//delete
+			ptCentreErr_high[pt]=pTcentreRealhigh;//delete
+
 //			lmean[pt]=lmean_Buffer/nSystematics;//ifMean
 			lmean[pt]=TMath::Sqrt(lmean_Buffer);//ifSquare
+
+
+
+// IF FIT THE NSYSTEMATIC VALUES INSTEAD OF USING THE MEAN:::
+
+//			  if(pt==9) {
+//			  	fit_X[2]=-999.;
+//			  }
+
+			  TGraphAsymmErrors *fitGraph = new TGraphAsymmErrors(nSystematics,fit_X,fit_lmean,0,0,fit_errlmean,fit_errlmean);
+		      TF1* fConst = new TF1("fConst","pol0",-1,1);
+		      fitGraph->Fit("fConst","EFNR");
+
+		      lmean[pt]=fConst->GetParameter(0);
+		      errlmean[pt]=fConst->GetParError(0);
+
+
+
+// END Fit
 
 		pt++;
 		}
@@ -250,7 +293,8 @@ int main(int argc, char** argv) {
 */
 //////////////// END Change TGraphs
 
-		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,0,0);
+//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,0,0);//Original
+		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,errlmean,errlmean);//If Fit the nSyst values with constant
 		graphSyst->SetMarkerColor(ToyMC::MarkerColor[rapBin]);
 		graphSyst->SetLineColor(ToyMC::MarkerColor[rapBin]);
 //		graphSyst->SetMarkerStyle(ToyMC::MarkerStyle[rapBin]);

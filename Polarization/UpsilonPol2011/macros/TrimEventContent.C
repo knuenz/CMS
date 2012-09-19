@@ -44,6 +44,11 @@ double TrimEventContent(Int_t iRapBin = 1,
   TLorentzVector *lepP;
   TLorentzVector *lepN;
   TTree *treeIn = (TTree *) gDirectory->Get("selectedData");
+  if(gDirectory->Get("selectedData")==NULL){
+    printf("\n\n\nskip processing this bin.\n\n\n");
+    return -999.;
+  }
+
   TH2D *hBG_cosThetaPhiLR[onia::kNbFrames][2];
   for(int iFrame = 0; iFrame < onia::kNbFrames; iFrame++){
     sprintf(name, "hBG_cosThetaPhi_%s_L", onia::frameLabel[iFrame]);
@@ -361,7 +366,8 @@ cout<<"Y1Sto2S_SB fBG = "<<fBG->Integral(massMin, massMax) / (fBG->Integral(mass
   }
 
 
-  if(UpsMC&&iPTBin>5){
+  if(UpsMC&&iPTBin>5&&fracL<0.35){
+	  cout<<"using exact mass window definition of data"<<endl;
 
   Double_t massMinUps1S_1sigma[3][10] = {
     {0,0,0,0,0, 0,0,0,0,0},
@@ -434,6 +440,7 @@ cout<<"Y1Sto2S_SB fBG = "<<fBG->Integral(massMin, massMax) / (fBG->Integral(mass
 		  massMax=massMaxUps3S_1sigma[iRapBin][iPTBin-1];
 	  }
   }
+
   if(nSigma==3){
 	  if(nUpsState==0){
 		  massMin=massMinUps1S_3sigma[iRapBin][iPTBin-1];
@@ -448,6 +455,67 @@ cout<<"Y1Sto2S_SB fBG = "<<fBG->Integral(massMin, massMax) / (fBG->Integral(mass
 		  massMax=massMaxUps3S_3sigma[iRapBin][iPTBin-1];
 	  }
   }
+
+  if(nSigma==0.5){
+	  if(nUpsState==0){
+		  massMin=massMinUps1S_1sigma[iRapBin][iPTBin-1]+(massMaxUps1S_1sigma[iRapBin][iPTBin-1]-massMinUps1S_1sigma[iRapBin][iPTBin-1])/4.;
+		  massMax=massMaxUps1S_1sigma[iRapBin][iPTBin-1]-(massMaxUps1S_1sigma[iRapBin][iPTBin-1]-massMinUps1S_1sigma[iRapBin][iPTBin-1])/4.;
+	  }
+	  if(nUpsState==1){
+		  massMin=massMinUps2S_1sigma[iRapBin][iPTBin-1]+(massMaxUps2S_1sigma[iRapBin][iPTBin-1]-massMinUps2S_1sigma[iRapBin][iPTBin-1])/4.;
+		  massMax=massMaxUps2S_1sigma[iRapBin][iPTBin-1]-(massMaxUps2S_1sigma[iRapBin][iPTBin-1]-massMinUps2S_1sigma[iRapBin][iPTBin-1])/4.;
+	  }
+	  if(nUpsState==2){
+		  massMin=massMinUps3S_1sigma[iRapBin][iPTBin-1]+(massMaxUps3S_1sigma[iRapBin][iPTBin-1]-massMinUps3S_1sigma[iRapBin][iPTBin-1])/4.;
+		  massMax=massMaxUps3S_1sigma[iRapBin][iPTBin-1]-(massMaxUps3S_1sigma[iRapBin][iPTBin-1]-massMinUps3S_1sigma[iRapBin][iPTBin-1])/4.;
+	  }
+  }
+
+  if(nSigma==0.1){
+	  if(nUpsState==0){
+		  massMin=massMinUps1S_1sigma[iRapBin][iPTBin-1]+(massMaxUps1S_1sigma[iRapBin][iPTBin-1]-massMinUps1S_1sigma[iRapBin][iPTBin-1])/20.;
+		  massMax=massMaxUps1S_1sigma[iRapBin][iPTBin-1]-(massMaxUps1S_1sigma[iRapBin][iPTBin-1]-massMinUps1S_1sigma[iRapBin][iPTBin-1])/20.;
+	  }
+	  if(nUpsState==1){
+		  massMin=massMinUps2S_1sigma[iRapBin][iPTBin-1]+(massMaxUps2S_1sigma[iRapBin][iPTBin-1]-massMinUps2S_1sigma[iRapBin][iPTBin-1])/20.;
+		  massMax=massMaxUps2S_1sigma[iRapBin][iPTBin-1]-(massMaxUps2S_1sigma[iRapBin][iPTBin-1]-massMinUps2S_1sigma[iRapBin][iPTBin-1])/20.;
+	  }
+	  if(nUpsState==2){
+		  massMin=massMinUps3S_1sigma[iRapBin][iPTBin-1]+(massMaxUps3S_1sigma[iRapBin][iPTBin-1]-massMinUps3S_1sigma[iRapBin][iPTBin-1])/20.;
+		  massMax=massMaxUps3S_1sigma[iRapBin][iPTBin-1]-(massMaxUps3S_1sigma[iRapBin][iPTBin-1]-massMinUps3S_1sigma[iRapBin][iPTBin-1])/20.;
+	  }
+  }
+
+  if(nSigma==9){
+	  if(nUpsState==0){
+		  massMin=massMinUps1S_1sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps1S_1sigma[iRapBin][iPTBin-1]-(massMaxUps1S_1sigma[iRapBin][iPTBin-1]-massMinUps1S_1sigma[iRapBin][iPTBin-1])/2.;
+	  }
+	  if(nUpsState==1){
+		  massMin=massMinUps2S_1sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps2S_1sigma[iRapBin][iPTBin-1]-(massMaxUps2S_1sigma[iRapBin][iPTBin-1]-massMinUps2S_1sigma[iRapBin][iPTBin-1])/2.;
+	  }
+	  if(nUpsState==2){
+		  massMin=massMinUps3S_1sigma[iRapBin][iPTBin-1];
+		  massMax=massMaxUps3S_1sigma[iRapBin][iPTBin-1]-(massMaxUps3S_1sigma[iRapBin][iPTBin-1]-massMinUps3S_1sigma[iRapBin][iPTBin-1])/2.;
+	  }
+  }
+
+  if(nSigma==10){
+	  if(nUpsState==0){
+		  massMax=massMaxUps1S_1sigma[iRapBin][iPTBin-1];
+		  massMin=massMaxUps1S_1sigma[iRapBin][iPTBin-1]-(massMaxUps1S_1sigma[iRapBin][iPTBin-1]-massMinUps1S_1sigma[iRapBin][iPTBin-1])/2.;
+	  }
+	  if(nUpsState==1){
+		  massMax=massMaxUps2S_1sigma[iRapBin][iPTBin-1];
+		  massMin=massMaxUps2S_1sigma[iRapBin][iPTBin-1]-(massMaxUps2S_1sigma[iRapBin][iPTBin-1]-massMinUps2S_1sigma[iRapBin][iPTBin-1])/2.;
+	  }
+	  if(nUpsState==2){
+		  massMax=massMaxUps3S_1sigma[iRapBin][iPTBin-1];
+		  massMin=massMaxUps3S_1sigma[iRapBin][iPTBin-1]-(massMaxUps3S_1sigma[iRapBin][iPTBin-1]-massMinUps3S_1sigma[iRapBin][iPTBin-1])/2.;
+	  }
+  }
+
 
 }
 

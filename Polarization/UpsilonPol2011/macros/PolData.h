@@ -523,6 +523,8 @@ void PolData::Init(TTree *tree)
    fChain->SetBranchAddress("JpsiP", &onia);
    fChain->SetBranchAddress("muNegP", &muNeg);
    fChain->SetBranchAddress("muPosP", &muPos);
+//   fChain->SetBranchAddress("muNegP_Gen", &muNeg);
+//   fChain->SetBranchAddress("muPosP_Gen", &muPos);
 
    fChain->SetBranchAddress("muPosPglobalOK", &muPosPglobalOK, &b_muPosPglobalOK);
    fChain->SetBranchAddress("muNegPglobalOK", &muNegPglobalOK, &b_muNegPglobalOK);

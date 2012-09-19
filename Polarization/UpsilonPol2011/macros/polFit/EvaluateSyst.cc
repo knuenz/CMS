@@ -87,8 +87,8 @@ int main(int argc, char** argv) {
 //		sprintf(filename,"/afs/hephy.at/scratch/k/knuenz/CMSSW_4_2_4_patch2/src/UpsilonPol/macros/polFit/Systematics/TotalSyst/Apr25CentralWithStatSystSquared/TGraphResults_2SUps.root");
 		TFile *infile2 = new TFile(filename,"READ");
 
-		sprintf(filename,"%s/MCclosure_CombinedStates_MCtruthFineEta_3Sig/TGraphResults_%dSUps.root",storagedir,nState);//ifAddInforFromThirdTGraph
-		TFile *infile3 = new TFile(filename,"READ");//ifAddInforFromThirdTGraph
+//		sprintf(filename,"%s/MCclosure_CombinedStates_MCtruthFineEta_3Sig/TGraphResults_%dSUps.root",storagedir,nState);//ifAddInforFromThirdTGraph
+//		TFile *infile3 = new TFile(filename,"READ");//ifAddInforFromThirdTGraph
 
 		char GraphName[200];
 
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 		TGraphAsymmErrors* graph1 = (TGraphAsymmErrors*) infile1->Get(GraphName);
 		TGraphAsymmErrors* graph2 = (TGraphAsymmErrors*) infile2->Get(GraphName);
 
-		TGraphAsymmErrors* graph3 = (TGraphAsymmErrors*) infile3->Get(GraphName);//ifAddInforFromThirdTGraph
+//		TGraphAsymmErrors* graph3 = (TGraphAsymmErrors*) infile3->Get(GraphName);//ifAddInforFromThirdTGraph
 
 
 		int nBinspT=ptBinMax-ptBinMin+1;
@@ -173,6 +173,8 @@ int main(int argc, char** argv) {
 			ptCentreErr2_high[pt]=graph2->GetErrorXhigh(pt);
 			ptCentreErr2_low[pt]=graph2->GetErrorXlow(pt);
 
+			if(lmean1[pt]>998) lmean1[pt]=9999;
+
 			ptCentre_[pt]=(ptCentre1_[pt]+ptCentre1_[pt])/2.;
 			ptCentreErr_low[pt]=(ptCentreErr1_low[pt]+ptCentreErr2_low[pt])/2.;
 			ptCentreErr_high[pt]=(ptCentreErr1_high[pt]+ptCentreErr2_high[pt])/2.;
@@ -188,7 +190,16 @@ int main(int argc, char** argv) {
 			lmeanErr_change_low[pt]=TMath::Sqrt(lmeanErr2_low[pt]*lmeanErr2_low[pt]+lmean1[pt]*lmean1[pt]);
 			lmeanErr_change[pt]=(lmeanErr_change_low[pt]+lmeanErr_change_high[pt])/2.;
 
-			lmeanErr_change[pt]=TMath::Sqrt(TMath::Power((lmeanErr1_high[pt]+lmeanErr1_low[pt])/2.,2.)+TMath::Power((lmeanErr2_high[pt]+lmeanErr2_low[pt])/2.,2.));
+
+
+//			lmean[pt]=lmean1[pt]+lmean2[pt];//ifCorrectCentralResultsForBias
+
+//BiasCorrectionError
+
+			lmeanErr_change[pt]=999;
+//			lmeanErr_change[pt]=TMath::Sqrt(TMath::Power((lmeanErr1_high[pt]+lmeanErr1_low[pt])/2.,2.)+TMath::Power((lmeanErr2_high[pt]+lmeanErr2_low[pt])/2.,2.));
+			if((lmeanErr1_high[pt]+lmeanErr1_low[pt])/2.>(lmeanErr2_high[pt]+lmeanErr2_low[pt])/2.) lmeanErr_change[pt]=TMath::Sqrt(TMath::Power((lmeanErr1_high[pt]+lmeanErr1_low[pt])/2.,2.)-TMath::Power((lmeanErr2_high[pt]+lmeanErr2_low[pt])/2.,2.));
+			if((lmeanErr1_high[pt]+lmeanErr1_low[pt])/2.<(lmeanErr2_high[pt]+lmeanErr2_low[pt])/2.) lmeanErr_change[pt]=TMath::Sqrt(TMath::Power((lmeanErr2_high[pt]+lmeanErr2_low[pt])/2.,2.)-TMath::Power((lmeanErr1_high[pt]+lmeanErr1_low[pt])/2.,2.));
 
 			double fracErrHigh2=lmeanErr2_high[pt]/(lmeanErr2_high[pt]+lmeanErr2_low[pt]);
 
@@ -197,8 +208,8 @@ int main(int argc, char** argv) {
 //	unc		lmeanErr1_low[pt]=(1-fracErrHigh2)*(lmeanErr1_high[pt]+lmeanErr1_low[pt]);
 
 
-			graph3->GetPoint(pt,ptCentre3_[pt],lmean3[pt]);//ifAddInforFromThirdTGraph
-			lmean[pt]=lmean1[pt]-lmean2[pt]+lmean3[pt];
+//			graph3->GetPoint(pt,ptCentre3_[pt],lmean3[pt]);//ifAddInforFromThirdTGraph
+//			lmean[pt]=lmean1[pt]-lmean2[pt]+lmean3[pt];
 
 /*			if(ptBin<6){
 				lmean[pt]=lmean1[pt]-lmean3[pt];//ifAddInforFromThirdTGraph
@@ -230,9 +241,10 @@ int main(int argc, char** argv) {
 
 //		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,0,0);
 //		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre2_,lmean2,ptCentreErr2_low,ptCentreErr2_high,lmean1,lmean1);// ifCentralsWithTotalSyst
-//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,lmeanErr_change,lmeanErr_change);// ifCombineErrorsOfTheTwo
-//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean2,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// if 'take central value from JobID2, take error from JobID1'
-		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// ifAddInforFromThirdTGraph
+//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,lmeanErr_change,lmeanErr_change);// ifCalculateBiasCorrection
+//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// ifCorrectCentralResultsForBias
+		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean2,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// if 'take central value from JobID2, take error from JobID1'
+//		TGraphAsymmErrors *graphSyst = new TGraphAsymmErrors(nBinspT,ptCentre_,lmean,ptCentreErr_low,ptCentreErr_high,lmeanErr1_low,lmeanErr1_high);// ifAddInforFromThirdTGraph
 		graphSyst->SetMarkerColor(ToyMC::MarkerColor[nFrame]);
 		graphSyst->SetLineColor(ToyMC::MarkerColor[nFrame]);
 		graphSyst->SetMarkerStyle(ToyMC::MarkerStyle[nState][rapBin]);

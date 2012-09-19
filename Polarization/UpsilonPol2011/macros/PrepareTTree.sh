@@ -2,16 +2,16 @@
 
 ########## INPUTS ##########
 
-JobID=MCclosure_Ups3S_July25 #MCclosure_Ups1S_July25 #May20Centrals #HighCtau3_BGratioTest #MCclosure #FinalData_CtauSig2 #_NoCtauCut #
+JobID=MCclosure_Ups1S_July25 #MCclosure_Ups3S_Sept8 #July27_CowboyFix #MCclosure_Ups3S_July25 #MCclosure_Ups1S_July25 #May20Centrals #HighCtau3_BGratioTest #MCclosure #FinalData_CtauSig2 #_NoCtauCut #
 
 for FidCuts in 11;do 				#defines the set of cuts to be used, see macros/polFit/effsAndCuts.h
 
 for FracLSB in 25;do				#in percent; the left mass sideband will be weighted accordingly with respect to the right mass sideband
-for nSigma in 1.00;do				#needed in 2 decimal accuracy (x.yz); this value decides in which dimuon mass region the data is projected
+for nSigma in 10.00;do				#needed in 2 decimal accuracy (x.yz); this value decides in which dimuon mass region the data is projected
 
 UpsMC=1
-UpsMCstate=3 #enters only runMassFit in MC closure tests
-RequestTrigger=1 ###set1 for centrals
+UpsMCstate=1 #enters only runMassFit in MC closure tests
+RequestTrigger=1 ###set1
 f_BG_zero=0
 ProjectLSBdata=0
 ProjectRSBdata=0
@@ -20,8 +20,8 @@ Y1Sto2S_SB=0
 LeftSided=0
 RightSided=0
 MassScan=0
-DoCPUconsumingPlots=0 ###set1 for centrals
-adjustOverlapBorders=0 ###set1 for centrals
+DoCPUconsumingPlots=1 ###set1 for centrals
+adjustOverlapBorders=1 ###set1 for centrals
 #SELECTION
 selectSOFT=0
 selectTIGHT=0
@@ -29,13 +29,13 @@ selectMIXED=0
 selectNOTMIXED=0
 
 #following flags decide if the step is executed (1) or not (0):
-execute_runData=1					#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
-execute_runMassFit=1				#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
-execute_runCopyTreeEntries=1		#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
-execute_PlotCosThetaPhiBG=1  		#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
+execute_runData=0					#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
+execute_runMassFit=0				#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
+execute_runCopyTreeEntries=0		#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
+execute_PlotCosThetaPhiBG=0  		#This step only has to be executed once for each set of cuts (indep. of FracLSB and nSigma)
 execute_runTrimEventContent=1		#For each set of cuts, you can choose different values for FracLSB and nSigma
-execute_PlotCosThetaPhiDistribution=1	#For each set of cuts, you can choose different values for FracLSB and nSigma
-execute_runMeanPt=1					#Optional; This macro calculates the mean pT for the plotting (one has to manually copy the contents of meanPt.txt to ToyMC.h, different mean-pT of the three Y states are not yet implemented)
+execute_PlotCosThetaPhiDistribution=0	#For each set of cuts, you can choose different values for FracLSB and nSigma
+execute_runMeanPt=0					#Optional; This macro calculates the mean pT for the plotting (one has to manually copy the contents of meanPt.txt to ToyMC.h, different mean-pT of the three Y states are not yet implemented)
 
 #OLDtree:
 #inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Upsi_Onia2MuMu_v20_PromptReco_v4.root
@@ -43,7 +43,7 @@ execute_runMeanPt=1					#Optional; This macro calculates the mean pT for the plo
 #inputTree3=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Upsi_Onia2MuMu_v20_PromptReco_v6.root
 #inputTree4=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Upsi_Onia2MuMu_v20_RunB_PromptReco_v1_full.root
 #NEWtree (Linlin 3 days before pre-approval):
-#inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Onia2MuMu_v30_PromptRecoAB_10May2012_Upsi.root
+inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Onia2MuMu_v30_PromptRecoAB_10May2012_Upsi.root
 #MIXEDtree:
 #inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Onia2MuMu_v20_Upsi_13June2012_PromptRecoBV1.root
 #inputTree2=/scratch/knuenz/Polarization/RootInput/Upsilon/TTree_Onia2MuMu_v20_Upsi_13June2012_PromptRecoV4.root
@@ -65,6 +65,22 @@ execute_runMeanPt=1					#Optional; This macro calculates the mean pT for the plo
 #inputTree1=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Onia2MuMu_Upsi2s_measuredPt30_50_17July2012.root
 #inputTree2=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Onia2MuMu_Upsi2s_measuredPt_2April2012.root
 inputTree1=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/TTree_Onia2MuMu_Upsi3s_measuredPt_2April2012.root
+
+#ILSE MC Ups3S High pT
+#inputTree1=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/Generation/Tree_MC_Y3S_measuredPt28-52_1.root
+inputTree2=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/Generation/Tree_MC_Y3S_measuredPt28-52_2.root
+inputTree3=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/Generation/Tree_MC_Y3S_measuredPt28-52_3.root
+inputTree4=/scratch/ikratsch/Polarization/Upsilon/InputFiles/MC/Generation/Tree_MC_Y3S_measuredPt28-52_4.root 
+
+#HERMINE NEW 1S (realistic pT shape):
+#inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/onia2MuMu_tree_Ups1S_mergeAllBins_1.root
+#inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/onia2MuMu_tree_Ups1S_pT6.root
+#inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/onia2MuMu_tree_Ups1S_pT7.root
+#inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/onia2MuMu_tree_Ups1S_pT8.root
+#inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/onia2MuMu_tree_Ups1S_pT9.root
+#inputTree1=/scratch/knuenz/Polarization/RootInput/Upsilon/onia2MuMu_tree_Ups1S_pT10.root
+
+
 
 #In case of more input Files: define inputTreeX and adapt the line starting with ./runData, implemented up to 4 Files
 

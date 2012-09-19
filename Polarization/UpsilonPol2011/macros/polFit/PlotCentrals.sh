@@ -9,13 +9,13 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 
 ########## INPUTS ##########
 
-for nState in 1 3;do
+for nState in 1 2 3;do
 
-JobID=July4
-additionalName=_ICHEPnew_Ups${nState}S #SystBkgNew for centrals
+JobID=Sept7
+additionalName=_NewSuppMat_Ups${nState}S #SystBkgNew for centrals
 
-PlotMatt=1
-PlotMattForICHEP=1
+PlotMatt=0
+PlotMattForICHEP=0
 PlotCompare=1
 
 PlotAsymm=0
@@ -25,9 +25,9 @@ PlotLegend=0
 PlotBrazilian=1
 FitGraph=0
 DrawLatexStuff=1
-DrawPreliminary=1;
+DrawPreliminary=0
 MultiPanelPlots=1
-MPCentralsWithTotalSystID=June20Centrals_CentralsFromAlteredPPDJune20_1SigmaStatError #May11Centrals_CentralsFromAlteredPPDMay17_1SigmaStatErrorRelative #May11CentralWithTotalSyst #May11CentralWithTotalSyst May11NewTTreeCentralWithTotalSyst Apr27CentralWithTotalSyst
+MPCentralsWithTotalSystID=Aug11Centrals_CentralsFromAlteredPPD_1SigmaStatError #June20Centrals_CentralsFromAlteredPPDJune20_1SigmaStatError #May11Centrals_CentralsFromAlteredPPDMay17_1SigmaStatErrorRelative #May11CentralWithTotalSyst #May11CentralWithTotalSyst May11NewTTreeCentralWithTotalSyst Apr27CentralWithTotalSyst
 PlotAlteredPPDResults=1
 
 #UncommentIFplotSystOverview
@@ -51,15 +51,15 @@ PlotAlteredPPDResults=1
 #DrawLatexStuff=1
 #MultiPanelPlots=1
 
-DefaultID=Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand
+DefaultID=Data_TowardsPRL_Aug11_FinalResults_1Sigma_AlteredPPD_BKGlinPLUSRestSquaredGauss_5nRand_BiasCorrection_1S2S3SAug12_1Sig #Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand
 CompareID1=Data_TheGreatRun_10B_May11_NewestCentrals
 CompareID2=Data_TheGreatRun_10B_May11_NewestCentrals_AlteredPPD_May17_BKGlinPLUSRestSquaredGauss_10nRand
 CompareID3=BG0_Mar19_HighCtauSigCheck3p25
 CompareID4=BG0_Mar19_HighCtauSigCheck3p5
 nComp=0
 
-nSystematics=0
-#nSystematics=7
+#nSystematics=0
+nSystematics=7
 
 SystID1Base=TheGreatRun_BKGmodel
 SystID1Specify=BestSyst_28p_SQRT12

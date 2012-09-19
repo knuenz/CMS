@@ -11,19 +11,36 @@ storagedir=`more storagedir`/Data #please define the directory storagedir in the
 
 for nState in 1 2 3;do
 
-SystID=TotalSyst
 
-nSystematics=7
 
-JobID1=BestSyst_Bkg
-JobID2=BestSyst_FrameworkI
-JobID3=BestSyst_Param
-JobID4=BestSyst_Sig_NoUnpol
-JobID5=BestSyst_TnP
-JobID6=ConstSyst
-JobID7=BestSyst_28p_SQRT12
+SystID=MassSigmaDep
+
+nSystematics=3
+
+JobID1=BiasCorrectionAug12_1S_3Sig
+JobID2=BiasCorrectionAug12_2S_3Sig
+JobID3=BiasCorrectionAug12_3S_3Sig
+JobID4=
+JobID5=
+JobID6=
+JobID7=
 JobID8=
 JobID9=
+
+
+#SystID=TotalSyst
+#
+#nSystematics=7
+#
+#JobID1=BestSyst_Bkg
+#JobID2=BestSyst_FrameworkI
+#JobID3=BestSyst_Param
+#JobID4=BestSyst_Sig_NoUnpol
+#JobID5=BestSyst_TnP
+#JobID6=ConstSyst
+#JobID7=BestSyst_28p_SQRT12
+#JobID8=
+#JobID9=
  
 
 

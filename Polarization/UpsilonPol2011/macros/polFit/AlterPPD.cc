@@ -85,6 +85,7 @@ int main(int argc, char** argv) {
   	Char_t *basedir = "Default";
   	Char_t *storagedir = "Default";
   	Char_t *DefaultID = "Default";
+  	Char_t *ShiftID = "Default";
 
 	int ptBinMin=1;
 	int ptBinMax=1;
@@ -92,6 +93,7 @@ int main(int argc, char** argv) {
 	int rapBinMax=1;
 	int nSystematics=1;
 	int nState=1;
+	bool ShiftResults=false;
 
 	int SystID1ProbDist;
 	int SystID2ProbDist;
@@ -106,6 +108,7 @@ int main(int argc, char** argv) {
 
 		    if(std::string(argv[i]).find("JobID") != std::string::npos) {char* JobIDchar = argv[i]; char* JobIDchar2 = strtok (JobIDchar, "="); JobID = JobIDchar2; cout<<"JobID = "<<JobID<<endl;}
 		    if(std::string(argv[i]).find("DefaultID") != std::string::npos) {char* DefaultIDchar = argv[i]; char* DefaultIDchar2 = strtok (DefaultIDchar, "="); DefaultID = DefaultIDchar2; cout<<"DefaultID = "<<DefaultID<<endl;}
+		    if(std::string(argv[i]).find("ShiftID") != std::string::npos) {char* ShiftIDchar = argv[i]; char* ShiftIDchar2 = strtok (ShiftIDchar, "="); ShiftID = ShiftIDchar2; cout<<"ShiftID = "<<ShiftID<<endl;}
 		    if(std::string(argv[i]).find("basedir") != std::string::npos) {char* basedirchar = argv[i]; char* basedirchar2 = strtok (basedirchar, "="); basedir = basedirchar2; cout<<"basedir = "<<basedir<<endl;}
 		    if(std::string(argv[i]).find("storagedir") != std::string::npos) {char* storagedirchar = argv[i]; char* storagedirchar2 = strtok (storagedirchar, "="); storagedir = storagedirchar2; cout<<"storagedir = "<<storagedir<<endl;}
 		    if(std::string(argv[i]).find("SystID1Base") != std::string::npos) {char* SystID1Basechar = argv[i]; char* SystID1Basechar2 = strtok (SystID1Basechar, "="); SystID1Base = SystID1Basechar2; cout<<"SystID1Base = "<<SystID1Base<<endl;}
@@ -149,6 +152,7 @@ int main(int argc, char** argv) {
 		    if(std::string(argv[i]).find("SystID6ProbDist") != std::string::npos) {char* SystID6ProbDistchar = argv[i]; char* SystID6ProbDistchar2 = strtok (SystID6ProbDistchar, "p"); SystID6ProbDist = atof(SystID6ProbDistchar2); cout<<"SystID6ProbDist = "<<SystID6ProbDist<<endl;}
 		    if(std::string(argv[i]).find("SystID7ProbDist") != std::string::npos) {char* SystID7ProbDistchar = argv[i]; char* SystID7ProbDistchar2 = strtok (SystID7ProbDistchar, "p"); SystID7ProbDist = atof(SystID7ProbDistchar2); cout<<"SystID7ProbDist = "<<SystID7ProbDist<<endl;}
 		    if(std::string(argv[i]).find("SystID8ProbDist") != std::string::npos) {char* SystID8ProbDistchar = argv[i]; char* SystID8ProbDistchar2 = strtok (SystID8ProbDistchar, "p"); SystID8ProbDist = atof(SystID8ProbDistchar2); cout<<"SystID8ProbDist = "<<SystID8ProbDist<<endl;}
+		    if(std::string(argv[i]).find("ShiftResults=1") != std::string::npos) {ShiftResults=true; cout<<"ShiftResults"<<endl;}
 
 
 	    }
@@ -184,6 +188,10 @@ int main(int argc, char** argv) {
 		sprintf(filename,"%s/macros/polFit/Systematics/%s/%s/TGraphResults_%dSUps.root",basedir,SystID8Base,SystID8Specify,nState);
 		TFile *infileSyst8 = new TFile(filename,"READ");
 
+		sprintf(filename,"%s/%s/TGraphResults_%dSUps.root",storagedir,ShiftID,nState);
+		TFile *infileShift = new TFile(filename,"READ");
+
+		if(!ShiftResults) infileShift=infileSyst1;
 
 		char GraphName[200];
 		const int nFrames=3;
@@ -192,9 +200,11 @@ int main(int argc, char** argv) {
 		double BufferDouble;
 
 		double SystVariation[nSystematics+1][nFrames+1][nParameters+1];
+		double Shift[nFrames+1][nParameters+1];
 		int ProbDist[nSystematics+1];
 
 		TGraphAsymmErrors* graphSyst;
+		TGraphAsymmErrors* graphShift;
 
 
 //// Get Syst-values and Probability distributions  ///////////////
@@ -227,6 +237,7 @@ int main(int argc, char** argv) {
 		if(iSyst==7) {graphSyst = (TGraphAsymmErrors*) infileSyst7->Get(GraphName); ProbDist[iSyst]=SystID7ProbDist; }
 		if(iSyst==8) {graphSyst = (TGraphAsymmErrors*) infileSyst8->Get(GraphName); ProbDist[iSyst]=SystID8ProbDist; }
 
+
 		graphSyst->GetPoint(ptBin-1,BufferDouble,SystVariation[iSyst][iFrame][iLam]);
 
 		SystVariation[iSyst][iFrame][iLam]=TMath::Abs(SystVariation[iSyst][iFrame][iLam]);
@@ -237,6 +248,12 @@ int main(int argc, char** argv) {
 
 
 		}
+				if(ShiftResults){
+				graphShift = (TGraphAsymmErrors*) infileShift->Get(GraphName);
+				graphShift->GetPoint(ptBin-1,BufferDouble,Shift[iFrame][iLam]);
+				cout<<"Shift for iPar"<<iLam<<" in iFrame"<<iFrame<<": "<<Shift[iFrame][iLam]<<endl;
+				}
+				if(!ShiftResults) Shift[iFrame][iLam]=0.;
 		}
 		}
 
@@ -313,12 +330,12 @@ int main(int argc, char** argv) {
 
 		    lambdaCS->GetEvent( i_entry );
 
-		    lth_CS_Buff=lth_CS;
-		    lph_CS_Buff=lph_CS;
-		    ltp_CS_Buff=ltp_CS;
-		    ltilde_CS_Buff=ltilde_CS;
+			int iFrame=1;
+		    lth_CS_Buff=lth_CS+Shift[iFrame][1];
+		    lph_CS_Buff=lph_CS+Shift[iFrame][2];
+		    ltp_CS_Buff=ltp_CS+Shift[iFrame][3];
+		    ltilde_CS_Buff=ltilde_CS+Shift[iFrame][4];
 
-				int iFrame=1;
 				for(int iRandPerEntry = 1; iRandPerEntry<nRandPerEntry+1; iRandPerEntry++){
 					for(int iLam = 1; iLam<nParameters+1; iLam++){
 					randomNumber[iRandPerEntry][iLam]=0;
@@ -374,12 +391,12 @@ int main(int argc, char** argv) {
 
 		    lambdaHX->GetEvent( i_entry );
 
-		    lth_HX_Buff=lth_HX;
-		    lph_HX_Buff=lph_HX;
-		    ltp_HX_Buff=ltp_HX;
-		    ltilde_HX_Buff=ltilde_HX;
+			int iFrame=2;
+		    lth_HX_Buff=lth_HX+Shift[iFrame][1];
+		    lph_HX_Buff=lph_HX+Shift[iFrame][2];
+		    ltp_HX_Buff=ltp_HX+Shift[iFrame][3];
+		    ltilde_HX_Buff=ltilde_HX+Shift[iFrame][4];
 
-				int iFrame=2;
 				for(int iRandPerEntry = 1; iRandPerEntry<nRandPerEntry+1; iRandPerEntry++){
 					for(int iLam = 1; iLam<nParameters+1; iLam++){
 					randomNumber[iRandPerEntry][iLam]=0;
@@ -435,12 +452,12 @@ int main(int argc, char** argv) {
 
 		    lambdaPX->GetEvent( i_entry );
 
-		    lth_PX_Buff=lth_PX;
-		    lph_PX_Buff=lph_PX;
-		    ltp_PX_Buff=ltp_PX;
-		    ltilde_PX_Buff=ltilde_PX;
+			int iFrame=3;
+		    lth_PX_Buff=lth_PX+Shift[iFrame][1];
+		    lph_PX_Buff=lph_PX+Shift[iFrame][2];
+		    ltp_PX_Buff=ltp_PX+Shift[iFrame][3];
+		    ltilde_PX_Buff=ltilde_PX+Shift[iFrame][4];
 
-				int iFrame=3;
 				for(int iRandPerEntry = 1; iRandPerEntry<nRandPerEntry+1; iRandPerEntry++){
 					for(int iLam = 1; iLam<nParameters+1; iLam++){
 					randomNumber[iRandPerEntry][iLam]=0;

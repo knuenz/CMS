@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
 	bool NewAccCalc=true;
 	bool deletePseudoData=false;
 	bool useAmapApproach=false;
+	bool useBatch=false;
 
 	double n_sigmas_signal = 3.;
 
@@ -68,6 +69,7 @@ int main(int argc, char** argv) {
   	Char_t *JobID = "Default";
 	Char_t *realdatadir = "Default"; //Storage Directory
 	Char_t *TreeID = "ToyMC"; //Storage Directory
+	Char_t *TreeBinID_dataFile = "ToyMC"; //Storage Directory
 
 	  for( int i=0;i < argc; ++i ) {
 	    if(std::string(argv[i]).find("ptBinMin") != std::string::npos) {char* ptBinMinchar = argv[i]; char* ptBinMinchar2 = strtok (ptBinMinchar, "p"); ptBinMin = atof(ptBinMinchar2); cout<<"ptBinMin = "<<ptBinMin<<endl;}
@@ -106,6 +108,7 @@ int main(int argc, char** argv) {
 	    if(std::string(argv[i]).find("nRecRhoFactor") != std::string::npos) {char* nRecRhoFactorchar = argv[i]; char* nRecRhoFactorchar2 = strtok (nRecRhoFactorchar, "p"); nRecRhoFactor = atof(nRecRhoFactorchar2); cout<<"nRecRhoFactor = "<<nRecRhoFactor<<endl;}
 	    if(std::string(argv[i]).find("scalePlots=true") != std::string::npos) {scalePlots=true; cout<<"run polGen.C"<<endl;}
 	    if(std::string(argv[i]).find("useAmapApproach=true") != std::string::npos) {useAmapApproach=true; cout<<"use new A-map approach to calculate dimuon efficiencies"<<endl;}
+	    if(std::string(argv[i]).find("useBatch=1") != std::string::npos) {useBatch=true; cout<<"use batch submission system"<<endl;}
 
 	    if(std::string(argv[i]).find("JobID") != std::string::npos) {char* JobIDchar = argv[i]; char* JobIDchar2 = strtok (JobIDchar, "="); JobID = JobIDchar2; cout<<"JobID = "<<JobID<<endl;}
 	    if(std::string(argv[i]).find("basedir") != std::string::npos) {char* basedirchar = argv[i]; char* basedirchar2 = strtok (basedirchar, "="); basedir = basedirchar2; cout<<"basedir = "<<basedir<<endl;}
@@ -279,7 +282,16 @@ int main(int argc, char** argv) {
 
 		int iRap = rapBinMin;
   	    int iPt = ptBinMin;
-  		sprintf(TreeBinID_,"%s_rap%d_pT%d",TreeID,iRap,iPt);TreeBinID=TreeBinID_;
+  		sprintf(TreeBinID_,"%s_rap%d_pT%d",TreeID,iRap,iPt);
+  		char TreeBinID_dataFileChar[200];
+  		sprintf(TreeBinID_dataFileChar,"%s",TreeBinID_);
+  		TreeBinID_dataFile=TreeBinID_dataFileChar;
+  		if(useBatch) sprintf(TreeBinID_,"Fit%d_%s_rap%d_pT%d",ThisGen,TreeID,iRap,iPt);
+  		TreeBinID=TreeBinID_;
+
+  		cout<<TreeBinID_dataFile<<endl;
+  		cout<<TreeBinID<<endl;
+
 
   	    double ptlow=onia::pTRange[iRap][iPt-1];
   	    double pthigh=onia::pTRange[iRap][iPt];
@@ -356,7 +368,7 @@ int main(int argc, char** argv) {
 
   	    if(gen)polGen(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,n_events,f_BG,lambda_theta_sig_,lambda_phi_sig_,lambda_thetaphi_sig_,lambda_theta_bkg_,lambda_phi_bkg_,lambda_thetaphi_bkg_,frameSig,frameBkg,iGen,OutputDirectory);
 		if(rec)polRec(raplow,raphigh,ptlow,pthigh,mass_signal_peak,mass_signal_sigma,n_sigmas_signal,nRecEff,nRecDileptonEff,nRecRhoFactor,FidCuts,OutputDirectory, false, effDir, MCReceff, MCDileptonReceff, iRap, iPt, useAmapApproach, nAmap, nDenominatorAmap);
-  		if(fit)polFit(nSample,FidCuts, nEff, nDileptonEff, nRhoFactor, OutputDirectory, realdatadir, TreeBinID, RealData, effDir, MCeff, MCDileptoneff, iRap, iPt, NewAccCalc, MPValgo, useAmapApproach, nAmap, nDenominatorAmap);
+  		if(fit)polFit(nSample,FidCuts, nEff, nDileptonEff, nRhoFactor, OutputDirectory, realdatadir, TreeBinID, TreeBinID_dataFile, RealData, effDir, MCeff, MCDileptoneff, iRap, iPt, NewAccCalc, MPValgo, useAmapApproach, nAmap, nDenominatorAmap);
   		if(plot)polPlot(OutputDirectory, TreeBinID, RealData, MPValgo, scalePlots, nTotalFits, nState, ptlow, pthigh, raplow, raphigh);
 
   		sprintf(dirstruct,"%s/Generation%d",rapptstruct,iGen+nSkipGen);

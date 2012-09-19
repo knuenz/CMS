@@ -10,17 +10,20 @@ datadir_Start=${basedir}/macros/DataFiles
 
 ########## INPUTS ##########
 
-fracL=25 #in percent
+#Batch submission system: 0/1
+useBatch=1
+
+fracL=30 #in percent #MC closure: 25 for data sigmas, 50 for MC sigmas
 nSigma=1.00 #needed in 2 decimal accuracy (x.yz)
 
 for nState in 3;do
 
-JobID=MCclosure_Aug05_Ups3S_MCtruthFineEta_1Sig #Please define nSigma and fracL yourself in the JobID, if needed
+JobID=tmp_useBatch1 #Please define nSigma and fracL yourself in the JobID, if needed
 
-rapBinMin=1
+rapBinMin=2
 rapBinMax=2
-ptBinMin=9
-ptBinMax=9
+ptBinMin=10
+ptBinMax=10
 
 FidCuts=11
 
@@ -32,16 +35,16 @@ UseMCDileptoneff=true
 
 nRhoFactor=1
 
-useAmapApproach=true
-nAmap=33107                     #frame/state/sigma/ID ( ID= 2 digits )
-nDenominatorAmap=1		    #the number here corresponds to the same notation as nEff
+useAmapApproach=false
+nAmap=1                    #frame/state/sigma/ID ( ID= 2 digits )
+nDenominatorAmap=1		    	#the number here corresponds to the same notation as nEff
 
 nSample=50000
 
-nFits=1
+nFits=2
 nSkipGen=0
 
-DataID=_MCclosure_Ups3S_July25
+DataID=_July27_CowboyFix
 
 MPValgo=3 		#1...mean,2...gauss,3...gauss-loop with chi2<2
 
@@ -82,7 +85,7 @@ nGenerations=${nFits}
 gen=false
 rec=false
 fit=true
-plot=true
+plot=false
 NewAccCalc=false
 
 touch polGenRecFitPlot.cc
@@ -115,6 +118,9 @@ nMaxGen=$((nGenerations+nSkipGen))
 while [ $nGen_ -le $nMaxGen ]
 do
 
+if [ $useBatch -eq 0 ]
+then
+
 resultfilename=resultsMerged_${nState}SUps_rap${rap_}_pT${pT_}.root
 nActualGen=$((nGen_-nSkipGen))
 if [ $nSkipGen -ge 0 ]
@@ -125,35 +131,37 @@ cp results_${nState}SUps_rap${rap_}_pT${pT_}.root ${resultfilename}
 fi
 fi
 
+fi
 
 cp ${storagedir}/${JobID}/polGenRecFitPlot ${storagedir}/${JobID}/polGenRecFitPlot_rap${rap_}_pt${pT_}
-./polGenRecFitPlot_rap${rap_}_pt${pT_} ${nGen_}ThisGen ${JobID}=JobID ${storagedir}=storagedir ${basedir}=basedir ${nGenerations}nGenerations ${polScenSig}polScenSig ${frameSig}frameSig ${polScenBkg}polScenBkg ${frameBkg}frameBkg ${rap_}rapBinMin ${rap_}rapBinMax ${pT_}ptBinMin ${pT_}ptBinMax ${nEff}nEff ${nDileptonEff}nDiEff ${FidCuts}FidCuts ${nSample}nSample ${ConstEvents}ConstEvents ${nSkipGen}nSkipGen UseConstEv=${UseConstEv} gen=${gen} rec=${rec} fit=${fit} plot=${plot} ${TreeID}=TreeID ${datadir}=realdatadir UseMCeff=${UseMCeff} UseMCDileptoneff=${UseMCDileptoneff} ${nRhoFactor}nRhoFactor ${MPValgo}MPValgo NewAccCalc=${NewAccCalc} useAmapApproach=${useAmapApproach} ${nAmap}nAmap ${nDenominatorAmap}nDenominatorAmap
+./polGenRecFitPlot_rap${rap_}_pt${pT_} ${nGen_}ThisGen ${JobID}=JobID ${storagedir}=storagedir ${basedir}=basedir ${nGenerations}nGenerations ${polScenSig}polScenSig ${frameSig}frameSig ${polScenBkg}polScenBkg ${frameBkg}frameBkg ${rap_}rapBinMin ${rap_}rapBinMax ${pT_}ptBinMin ${pT_}ptBinMax ${nEff}nEff ${nDileptonEff}nDiEff ${FidCuts}FidCuts ${nSample}nSample ${ConstEvents}ConstEvents ${nSkipGen}nSkipGen UseConstEv=${UseConstEv} gen=${gen} rec=${rec} fit=${fit} plot=${plot} ${TreeID}=TreeID ${datadir}=realdatadir UseMCeff=${UseMCeff} UseMCDileptoneff=${UseMCDileptoneff} ${nRhoFactor}nRhoFactor ${MPValgo}MPValgo NewAccCalc=${NewAccCalc} useAmapApproach=${useAmapApproach} ${nAmap}nAmap ${nDenominatorAmap}nDenominatorAmap useBatch=${useBatch}
 rm polGenRecFitPlot_rap${rap_}_pt${pT_}
 
-mv Figures/fit_CS_costh_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_costh_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_CS_phi_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_phi_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_CS_phith_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_phith_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_HX_costh_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_HX_costh_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_HX_phi_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_HX_phi_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_HX_phith_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_HX_phith_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_PX_costh_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_PX_costh_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_PX_phi_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_PX_phi_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_PX_phith_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_PX_phith_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/lph_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/lph_vs_lth_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/lphstar_vs_lthstar_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/lphstar_vs_lthstar_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/ltp_vs_lph_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/ltp_vs_lph_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/ltp_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/ltp_vs_lth_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/ltilde_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/ltilde_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-
-mv Figures/fit_cosalpha_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_cosalpha_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_background_rap_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_rap_test_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
-mv Figures/fit_background_mass_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_mass_test_Fit${nGen_}_${nState}SUps_mass${mass_}_pT${pT_}.pdf
-mv Figures/fit_background_pT_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_pT_test_Fit${nGen_}_${nState}SUps_pT${pT_}_pT${pT_}.pdf
-mv Figures/fit_background_phiPX_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_phiPX_test_Fit${nGen_}_${nState}SUps_phiPX${phiPX_}_pT${pT_}.pdf
-mv Figures/fit_background_costhPX_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_costhPX_test_Fit${nGen_}_${nState}SUps_costhPX${costhPX_}_pT${pT_}.pdf
-
+#mv Figures/fit_CS_costh_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_costh_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_CS_phi_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_phi_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_CS_phith_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_phith_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_HX_costh_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_HX_costh_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_HX_phi_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_HX_phi_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_HX_phith_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_HX_phith_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_PX_costh_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_PX_costh_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_PX_phi_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_PX_phi_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_PX_phith_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_PX_phith_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/lph_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/lph_vs_lth_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/lphstar_vs_lthstar_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/lphstar_vs_lthstar_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/ltp_vs_lph_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/ltp_vs_lph_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/ltp_vs_lth_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/ltp_vs_lth_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/ltilde_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/ltilde_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_cosalpha_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_cosalpha_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_background_rap_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_rap_test_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.pdf
+#mv Figures/fit_background_mass_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_mass_test_Fit${nGen_}_${nState}SUps_mass${mass_}_pT${pT_}.pdf
+#mv Figures/fit_background_pT_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_pT_test_Fit${nGen_}_${nState}SUps_pT${pT_}_pT${pT_}.pdf
+#mv Figures/fit_background_phiPX_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_phiPX_test_Fit${nGen_}_${nState}SUps_phiPX${phiPX_}_pT${pT_}.pdf
+#mv Figures/fit_background_costhPX_test_${nState}SUps_rap${rap_}_pT${pT_}.pdf Figures/fit_CS_background_costhPX_test_Fit${nGen_}_${nState}SUps_costhPX${costhPX_}_pT${pT_}.pdf
 
 
+
+if [ $useBatch -eq 0 ]
+then
 
 mv results_${nState}SUps_rap${rap_}_pT${pT_}.root results_Fit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.root
 
@@ -171,14 +179,21 @@ fi
 
 #cp ${resultfilename} results_MergedUpToFit${nGen_}_${nState}SUps_rap${rap_}_pT${pT_}.root
 
+fi
+
 nGen_=$((nGen_+1))
 done
+
+if [ $useBatch -eq 0 ]
+then
 
 mv ${resultfilename} results_${nState}SUps_rap${rap_}_pT${pT_}.root
 
 cp ${storagedir}/${JobID}/polGenRecFitPlot ${storagedir}/${JobID}/polGenRecFitPlot_rap${rap_}_pt${pT_}
-./polGenRecFitPlot_rap${rap_}_pt${pT_} ${nGen_}ThisGen ${JobID}=JobID ${storagedir}=storagedir ${basedir}=basedir ${nGenerations}nGenerations ${polScenSig}polScenSig ${frameSig}frameSig ${polScenBkg}polScenBkg ${frameBkg}frameBkg ${rap_}rapBinMin ${rap_}rapBinMax ${pT_}ptBinMin ${pT_}ptBinMax ${nEff}nEff ${nDileptonEff}nDiEff ${FidCuts}FidCuts ${nSample}nSample ${ConstEvents}ConstEvents ${nSkipGen}nSkipGen UseConstEv=${UseConstEv} gen=false rec=false fit=false plot=${plot} ${TreeID}=TreeID ${datadir}=realdatadir UseMCeff=${UseMCeff} UseMCDileptoneff=${UseMCDileptoneff} ${nRhoFactor}nRhoFactor ${MPValgo}MPValgo scalePlots=true NewAccCalc=${NewAccCalc} useAmapApproach=${useAmapApproach} ${nAmap}nAmap ${nDenominatorAmap}nDenominatorAmap
+./polGenRecFitPlot_rap${rap_}_pt${pT_} ${nGen_}ThisGen ${JobID}=JobID ${storagedir}=storagedir ${basedir}=basedir ${nGenerations}nGenerations ${polScenSig}polScenSig ${frameSig}frameSig ${polScenBkg}polScenBkg ${frameBkg}frameBkg ${rap_}rapBinMin ${rap_}rapBinMax ${pT_}ptBinMin ${pT_}ptBinMax ${nEff}nEff ${nDileptonEff}nDiEff ${FidCuts}FidCuts ${nSample}nSample ${ConstEvents}ConstEvents ${nSkipGen}nSkipGen UseConstEv=${UseConstEv} gen=false rec=false fit=false plot=true ${TreeID}=TreeID ${datadir}=realdatadir UseMCeff=${UseMCeff} UseMCDileptoneff=${UseMCDileptoneff} ${nRhoFactor}nRhoFactor ${MPValgo}MPValgo scalePlots=true NewAccCalc=${NewAccCalc} useAmapApproach=${useAmapApproach} ${nAmap}nAmap ${nDenominatorAmap}nDenominatorAmap
 rm polGenRecFitPlot_rap${rap_}_pt${pT_}
+
+fi
 
 
 pT_=$((pT_+1))
@@ -191,8 +206,6 @@ done
 
 rm *.so
 rm *.d
-#rm polGenRecFitPlot
 
 mkdir ../tmp
-#mv *.C ../tmp
 

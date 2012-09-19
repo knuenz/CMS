@@ -166,8 +166,8 @@ void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff)
 
 		if(nEff==1090) sprintf(EffFileName,"ParametrizedFactDataEff_May20_Central.root");//'soft SF bug fix'
 
-
-		if(nEff==1101) sprintf(EffFileName,"MCTruthEfficiency_coarsePT_18July2012.root");
+		if(nEff==1101) sprintf(EffFileName,"MCTruthEfficiency_coarsePT_18July2012.root");// reco pT (our default for the MC closures)
+		if(nEff==1102) sprintf(EffFileName,"MCTruthEfficiency_coarse-genPT_13Sept2012.root");// gen pT
 
 
 	}
@@ -222,7 +222,15 @@ void EvaluateEffFileName(int nEff, char EffFileName [200], bool singleLeptonEff)
 		if(nEff==12107 || nEff==22107 || nEff==32107) sprintf(EffFileName,"test_newmaps_UPS2S.root");
 		if(nEff==13107 || nEff==23107 || nEff==33107) sprintf(EffFileName,"test_newmaps_UPS3S.root");
 
+		if(nEff==12108 || nEff==22108 || nEff==32108) sprintf(EffFileName,"test_newmaps_UPS2S_correct_rho_1sigma_div_3sigma.root");
+		if(nEff==13108 || nEff==23108 || nEff==33108) sprintf(EffFileName,"test_newmaps_UPS3S_correct_rho_1sigma_div_3sigma.root");
 
+		if(nEff==12109 || nEff==22109 || nEff==32109) sprintf(EffFileName,"newmaps_UPS2S_mass_and_efficiencies_rho_6Aug2012.root");
+		if(nEff==13109 || nEff==23109 || nEff==33109) sprintf(EffFileName,"newmaps_UPS3S_mass_and_efficiencies_rho_6Aug2012.root");
+
+		if(nEff>=31110 && nEff<=31130) sprintf(EffFileName,"rho_maps_UPS1S.root");
+		if(nEff>=32110 && nEff<=32130) sprintf(EffFileName,"rho_maps_UPS2S.root");
+		if(nEff>=33110 && nEff<=33130) sprintf(EffFileName,"rho_maps_UPS3S.root");
 
 	}
 
@@ -295,30 +303,77 @@ double EvaluateAmap( double& costh_Amap, double& phi_Amap, int nAmap, TFile* fIn
 
 	if(nAmap==1) return eff;
 
-	if(nAmap>10000){
+	bool MassEffRho=false;
+	bool LucaRho=false;
+
+	if(nAmap==12109 || nAmap==22109 || nAmap==32109 || nAmap==13109 || nAmap==23109 || nAmap==33109) MassEffRho=true;
+	if(nAmap>=31110 && nAmap<=31130  ||  nAmap>=32110 && nAmap<=32130  ||  nAmap>=33110 && nAmap<=33130) LucaRho=true;
+
+	if(nAmap>10000&&!MassEffRho&&!LucaRho){
 		char EffType[200];
-/*	    if(nAmap>10000 && nAmap<20000) sprintf(EffType,"totEff2D_Onia_CS_pT%d_rap%d",pTbin,rapBin);
-	    if(nAmap>20000 && nAmap<30000) sprintf(EffType,"totEff2D_Onia_HX_pT%d_rap%d",pTbin,rapBin);
-	    if(nAmap>30000 && nAmap<40000) sprintf(EffType,"totEff2D_Onia_PHX_pT%d_rap%d",pTbin,rapBin);
-*/
+
 	    if(nAmap>10000 && nAmap<20000) sprintf(EffType,"htotEff2D_pol_CS_pT%d_rap%d",pTbin,rapBin);
 	    if(nAmap>20000 && nAmap<30000) sprintf(EffType,"htotEff2D_pol_HX_pT%d_rap%d",pTbin,rapBin);
 	    if(nAmap>30000 && nAmap<40000) sprintf(EffType,"htotEff2D_pol_PHX_pT%d_rap%d",pTbin,rapBin);
 
-/*	  TEfficiency* TEff=(TEfficiency*)fInAmap->Get(EffType);
-	  Int_t globalBin = TEff->FindFixBin(costh_Amap, phi_Amap);
-	  eff = TEff->GetEfficiency(globalBin);
-*/
 	  TH1* hEff=(TH1*) fInAmap->Get(EffType);
 	  Int_t binX = hEff->GetXaxis()->FindBin(costh_Amap);
 	  Int_t binY = hEff->GetYaxis()->FindBin(phi_Amap);
 	  eff = hEff->GetBinContent(binX, binY);
 
-//	  cout<<"eff = "<<eff<<endl;
 	  return eff;
 	}
 
+	if(nAmap>10000&&MassEffRho){
 
+		char EffType[200];
+	    if(nAmap>10000 && nAmap<20000) sprintf(EffType,"Mass_rho_CS_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap>20000 && nAmap<30000) sprintf(EffType,"Mass_rho_HX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap>30000 && nAmap<40000) sprintf(EffType,"Mass_rho_PHX_pT%d_rap%d",pTbin,rapBin);
+
+	  TH1* hEffMass=(TH1*) fInAmap->Get(EffType);
+	  Int_t binXMass = hEffMass->GetXaxis()->FindBin(costh_Amap);
+	  Int_t binYMass = hEffMass->GetYaxis()->FindBin(phi_Amap);
+	  double MassRho = hEffMass->GetBinContent(binXMass, binYMass);
+
+	    if(nAmap>10000 && nAmap<20000) sprintf(EffType,"Efficiency_rho_MCTnP_CS_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap>20000 && nAmap<30000) sprintf(EffType,"Efficiency_rho_MCTnP_HX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap>30000 && nAmap<40000) sprintf(EffType,"Efficiency_rho_MCTnP_PHX_pT%d_rap%d",pTbin,rapBin);
+
+	  TH1* hEffEfficiency=(TH1*) fInAmap->Get(EffType);
+	  Int_t binXEfficiency = hEffEfficiency->GetXaxis()->FindBin(costh_Amap);
+	  Int_t binYEfficiency = hEffEfficiency->GetYaxis()->FindBin(phi_Amap);
+	  double EfficiencyRho = hEffEfficiency->GetBinContent(binXEfficiency, binYEfficiency);
+
+	  eff=MassRho*EfficiencyRho;
+
+	  return eff;
+	}
+
+	if(nAmap>10000&&LucaRho){
+
+		char EffType[200];
+	    if(nAmap==31110 || nAmap==32110 || nAmap==33110) sprintf(EffType,"rho_mass_NoDimuonCuts_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31111 || nAmap==32111 || nAmap==33111) sprintf(EffType,"rho_eff_NoDimuonCuts_MCtruth_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31112 || nAmap==32112 || nAmap==33112) sprintf(EffType,"rho_DimuonCuts_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31113 || nAmap==32113 || nAmap==33113) sprintf(EffType,"rho_tot1_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31114 || nAmap==32114 || nAmap==33114) sprintf(EffType,"rho_tot1_EvByEv_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31115 || nAmap==32115 || nAmap==33115) sprintf(EffType,"rho_tot2_MCtruth_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31116 || nAmap==32116 || nAmap==33116) sprintf(EffType,"rho_tot2_EvByEv_MCtruth_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31117 || nAmap==32117 || nAmap==33117) sprintf(EffType,"rho_tot2_MCTnP_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31118 || nAmap==32118 || nAmap==33118) sprintf(EffType,"rho_tot2_EvByEv_MCTnP_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31119 || nAmap==32119 || nAmap==33119) sprintf(EffType,"rho_tot3_MCtruth_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31120 || nAmap==32120 || nAmap==33120) sprintf(EffType,"rho_tot3_EvByEv_MCtruth_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31121 || nAmap==32121 || nAmap==33121) sprintf(EffType,"rho_tot3_MCTnP_PHX_pT%d_rap%d",pTbin,rapBin);
+	    if(nAmap==31122 || nAmap==32122 || nAmap==33122) sprintf(EffType,"rho_tot3_EvByEv_MCTnP_PHX_pT%d_rap%d",pTbin,rapBin);
+
+		  TH1* hEff=(TH1*) fInAmap->Get(EffType);
+		  Int_t binX = hEff->GetXaxis()->FindBin(costh_Amap);
+		  Int_t binY = hEff->GetYaxis()->FindBin(phi_Amap);
+		  eff = hEff->GetBinContent(binX, binY);
+
+	  return eff;
+	}
 
 
 }

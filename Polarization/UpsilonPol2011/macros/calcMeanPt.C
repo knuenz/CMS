@@ -28,6 +28,10 @@ void calcMeanPt(Int_t iRapBin = 1,
   TLorentzVector *lepP;
   TLorentzVector *lepN;
   TTree *treeIn = (TTree *) gDirectory->Get("selectedData");
+  if(gDirectory->Get("selectedData")==NULL){
+    return;
+  }
+
   //==============================
 
   //==========================================================

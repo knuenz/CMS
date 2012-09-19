@@ -13,7 +13,7 @@ for nState in 1 2 3;do
 
 SystID=TheGreatRun_DeltaTilde
 
-JobID=/scratch/knuenz/Polarization/Upsilon/Data/Data_TheGreatApproval_June17_NewestCentrals_SOFT_SOFT_AlteredPPD_June20_BKGlinPLUSRestSquaredGauss_5nRand
+JobID=/scratch/knuenz/Polarization/Upsilon/Data/Data_TowardsPRL_Aug11_FinalResults_1Sigma_AlteredPPD_BKGlinPLUSRestSquaredGauss_5nRand_BiasCorrection_1S2S3SAug12_1Sig
 
 ptBinMin=1
 ptBinMax=10

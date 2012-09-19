@@ -1,5 +1,5 @@
 /*
- * EvaluateSyst.cc
+ * PlotFinalResults.cc
  *
  *  Created on: Dec 3, 2011
  *      Author: valentinknuenz
@@ -127,6 +127,8 @@ int main(int argc, char** argv) {
 	bool DrawPreliminary(true);
 	bool PlotMattForICHEP(false);
 	bool ExtendLegendInX(false);
+	bool ShiftInX(true);
+	bool PlotVsComp(false);
 
 	  for( int i=0;i < argc; ++i ) {
 
@@ -200,13 +202,15 @@ int main(int argc, char** argv) {
 		    if(std::string(argv[i]).find("DrawPreliminary=0") != std::string::npos) {DrawPreliminary=false; cout<<"DrawPreliminary"<<endl;}
 		    if(std::string(argv[i]).find("PlotMattForICHEP=1") != std::string::npos) {PlotMattForICHEP=true; cout<<"PlotMattForICHEP"<<endl;}
 		    if(std::string(argv[i]).find("ExtendLegendInX=1") != std::string::npos) {ExtendLegendInX=true; cout<<"ExtendLegendInX"<<endl;}
+		    if(std::string(argv[i]).find("ShiftInX=0") != std::string::npos) {ShiftInX=false; cout<<"ShiftInX false"<<endl;}
+		    if(std::string(argv[i]).find("PlotVsComp=1") != std::string::npos) {PlotVsComp=false; cout<<"PlotVsComp"<<endl;}
 
 	    }
 
 	    gStyle->SetFrameBorderMode(0);
 	    double ColordBandWidth=1.;
 	    double DeltaXminOVERALL=0.;//0.9999;
-	    if(!PlotSystematics) DeltaXminOVERALL=0.9999;
+	    if(ShiftInX) DeltaXminOVERALL=0.9999;
 	    bool ShiftXminOVERALL=true;
 
 	    int OneSigColor=416;
@@ -502,25 +506,25 @@ int main(int argc, char** argv) {
 		sprintf(endLamLabel,"");
 
 
-		if(iLam==1)  sprintf(axislabel,"%s#lambda^{CS}_{#theta}%s",beginLamLabel,endLamLabel);
-		if(iLam==2)  sprintf(axislabel,"%s#lambda^{CS}_{#phi}%s",beginLamLabel,endLamLabel);
-		if(iLam==3)  sprintf(axislabel,"%s#lambda^{CS}_{#theta#phi}%s",beginLamLabel,endLamLabel);
-		if(iLam==4)  sprintf(axislabel,"%s#lambda^{*CS}_{#theta}%s",beginLamLabel,endLamLabel);
-		if(iLam==5)  sprintf(axislabel,"%s#lambda^{*CS}_{#phi}%s",beginLamLabel,endLamLabel);
+		if(iLam==1)  sprintf(axislabel,"%s#lambda^{CS}_{#vartheta}%s",beginLamLabel,endLamLabel);
+		if(iLam==2)  sprintf(axislabel,"%s#lambda^{CS}_{#varphi}%s",beginLamLabel,endLamLabel);
+		if(iLam==3)  sprintf(axislabel,"%s#lambda^{CS}_{#vartheta#varphi}%s",beginLamLabel,endLamLabel);
+		if(iLam==4)  sprintf(axislabel,"%s#lambda^{*CS}_{#vartheta}%s",beginLamLabel,endLamLabel);
+		if(iLam==5)  sprintf(axislabel,"%s#lambda^{*CS}_{#varphi}%s",beginLamLabel,endLamLabel);
 		if(iLam==6)  sprintf(axislabel,"%s#tilde{#lambda}^{CS}%s",beginLamLabel,endLamLabel);
 
-		if(iLam==7)  sprintf(axislabel,"%s#lambda^{HX}_{#theta}%s",beginLamLabel,endLamLabel);
-		if(iLam==8)  sprintf(axislabel,"%s#lambda^{HX}_{#phi}%s",beginLamLabel,endLamLabel);
-		if(iLam==9)  sprintf(axislabel,"%s#lambda^{HX}_{#theta#phi}%s",beginLamLabel,endLamLabel);
-		if(iLam==10) sprintf(axislabel,"%s#lambda^{*HX}_{#theta}%s",beginLamLabel,endLamLabel);
-		if(iLam==11) sprintf(axislabel,"%s#lambda^{*HX}_{#phi}%s",beginLamLabel,endLamLabel);
+		if(iLam==7)  sprintf(axislabel,"%s#lambda^{HX}_{#vartheta}%s",beginLamLabel,endLamLabel);
+		if(iLam==8)  sprintf(axislabel,"%s#lambda^{HX}_{#varphi}%s",beginLamLabel,endLamLabel);
+		if(iLam==9)  sprintf(axislabel,"%s#lambda^{HX}_{#vartheta#varphi}%s",beginLamLabel,endLamLabel);
+		if(iLam==10) sprintf(axislabel,"%s#lambda^{*HX}_{#vartheta}%s",beginLamLabel,endLamLabel);
+		if(iLam==11) sprintf(axislabel,"%s#lambda^{*HX}_{#varphi}%s",beginLamLabel,endLamLabel);
 		if(iLam==12) sprintf(axislabel,"%s#tilde{#lambda}^{HX}%s",beginLamLabel,endLamLabel);
 
-		if(iLam==13) sprintf(axislabel,"%s#lambda^{PX}_{#theta}%s",beginLamLabel,endLamLabel);
-		if(iLam==14) sprintf(axislabel,"%s#lambda^{PX}_{#phi}%s",beginLamLabel,endLamLabel);
-		if(iLam==15) sprintf(axislabel,"%s#lambda^{PX}_{#theta#phi}%s",beginLamLabel,endLamLabel);
-		if(iLam==16) sprintf(axislabel,"%s#lambda^{*PX}_{#theta}%s",beginLamLabel,endLamLabel);
-		if(iLam==17) sprintf(axislabel,"%s#lambda^{*PX}_{#phi}%s",beginLamLabel,endLamLabel);
+		if(iLam==13) sprintf(axislabel,"%s#lambda^{PX}_{#vartheta}%s",beginLamLabel,endLamLabel);
+		if(iLam==14) sprintf(axislabel,"%s#lambda^{PX}_{#varphi}%s",beginLamLabel,endLamLabel);
+		if(iLam==15) sprintf(axislabel,"%s#lambda^{PX}_{#vartheta#varphi}%s",beginLamLabel,endLamLabel);
+		if(iLam==16) sprintf(axislabel,"%s#lambda^{*PX}_{#vartheta}%s",beginLamLabel,endLamLabel);
+		if(iLam==17) sprintf(axislabel,"%s#lambda^{*PX}_{#varphi}%s",beginLamLabel,endLamLabel);
 		if(iLam==18) sprintf(axislabel,"%s#tilde{#lambda}^{PX}%s",beginLamLabel,endLamLabel);//IfLamTildeClosure no PX
 		if(iLam==18&&DeltaTildeplots) sprintf(axislabel,"%s#tilde{#lambda}%s",beginLamLabel,endLamLabel);
 
@@ -570,8 +574,10 @@ int main(int argc, char** argv) {
 		}
 
 		if(PlotBrazilian){
-			yMin=-1.5;
-			yMax=1.5;
+//			yMin=-1.5;
+//			yMax=1.5;
+			yMin=-1.275;
+			yMax=1.275;
 
 			if(iLam==2||iLam==8||iLam==14||iLam==3||iLam==9||iLam==15){
 				yMin=-0.55;
@@ -579,8 +585,10 @@ int main(int argc, char** argv) {
 			}
 
 			if(iLam==6||iLam==12||iLam==18){
-				yMin=-1.5;
-				yMax=2.1;
+//				yMin=-1.5;
+//				yMax=2.1;
+				yMin=-1.;
+				yMax=1.75;
 			}
 		}
 //		yMin=-5.5; //ifPull
@@ -877,13 +885,15 @@ int main(int argc, char** argv) {
 		TH1F *plotHisto = new TH1F;
 		if(!PlotMatt) plotHisto = plotCanvas->DrawFrame(onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL,yMin,onia::pTRange[rapBin][ptBinMax],yMax);
 		if(PlotMatt) plotHisto = plotCanvas->DrawFrame(0.,yMin,onia::pTRange[rapBin][ptBinMax],yMax);
-		plotHisto->SetXTitle("p_{T} [GeV]");
+		if(PlotVsComp) plotHisto = plotCanvas->DrawFrame(10.1,yMin,10.7,yMax);
+		plotHisto->SetXTitle("#it{p}_{T} [GeV]");
+		if(PlotVsComp) plotHisto->SetXTitle("M_{#mu#mu} [GeV]");
 		plotHisto->SetYTitle(axislabel);
 		plotHisto->GetYaxis()->SetTitleOffset(1.5);
 
 		TLegend* plotcompLegend=new TLegend(0.13,0.12,0.6,0.3);
 		plotcompLegend->SetFillColor(0);
-		plotcompLegend->SetTextFont(72);
+//		plotcompLegend->SetTextFont(72);
 		plotcompLegend->SetTextSize(0.04);
 		plotcompLegend->SetBorderSize(1);
 		char complegendentry[200];
@@ -904,7 +914,7 @@ int main(int argc, char** argv) {
 		double BG0MarkerSize=1.;
 
 
-		if(!PlotBrazilian&&!SBmSigPlots&&!BGratioFits&&!SteerIndividuals&&!PlotMatt) graphSyst->Draw("2");//Comment if PlotBG0plots Low
+		if(!PlotBrazilian&&!SBmSigPlots&&!BGratioFits&&!SteerIndividuals&&!PlotMatt&&!PlotVsComp) graphSyst->Draw("2");//Comment if PlotBG0plots Low
 		graphDefaultRes->SetMarkerColor(ToyMC::MarkerColor[nFrame]);
 		graphDefaultRes->SetLineColor(ToyMC::MarkerColor[nFrame]);
 		graphDefaultRes->SetMarkerStyle(ToyMC::MarkerStyle[nState][rapBin]);
@@ -919,9 +929,9 @@ int main(int argc, char** argv) {
 			graphDefaultRes->SetMarkerSize(BG0MarkerSize);
 
 		}
-		if(!PlotBrazilian&&!SBmSigPlots&&!BGratioFits&&!SteerIndividuals&&!PlotMatt) graphDefaultRes->Draw(drawGraphStyle);//Comment if PlotBG0plots Low
+		if(!PlotBrazilian&&!SBmSigPlots&&!BGratioFits&&!SteerIndividuals&&!PlotMatt&&!PlotVsComp) graphDefaultRes->Draw(drawGraphStyle);//Comment if PlotBG0plots Low
 
-		if(PlotBrazilian&&!SteerIndividuals){
+		if(PlotBrazilian&&!SteerIndividuals&&!PlotVsComp){
 
 
 			int ptOriginal;
@@ -1034,6 +1044,9 @@ int main(int argc, char** argv) {
 			if(PlotAlteredPPDResults) graphDefaultStat->Draw(drawGraphStyle);
 		}
 
+		if(PlotVsComp){
+			//code lambda vs mass plots here
+		}
 
 		if(SteerIndividuals){
 
@@ -1251,31 +1264,31 @@ int main(int argc, char** argv) {
 
 			TLegend* plotSteerIndLegend=new TLegend(0.55,0.7,0.95,0.9);
 			plotSteerIndLegend->SetFillColor(0);
-			plotSteerIndLegend->SetTextFont(72);
+//			plotSteerIndLegend->SetTextFont(72);
 			plotSteerIndLegend->SetTextSize(0.04);
 			plotSteerIndLegend->SetBorderSize(1);
 			char SteerIndlegendentry[200];
 
 			if(rapBin==1){
-			sprintf(SteerIndlegendentry,"#lambda_{#theta#phi}, |y|<0.6, PX");
+			sprintf(SteerIndlegendentry,"#lambda_{#vartheta#varphi}, |y|<0.6, PX");
 			plotSteerIndLegend->AddEntry(SteerIndividualGraph1,SteerIndlegendentry,"elp");
-			sprintf(SteerIndlegendentry,"#lambda_{#theta#phi}, 0.6<|y|<1.2, PX");
+			sprintf(SteerIndlegendentry,"#lambda_{#vartheta#varphi}, 0.6<|y|<1.2, PX");
 			plotSteerIndLegend->AddEntry(SteerIndividualGraph2,SteerIndlegendentry,"elp");
-			sprintf(SteerIndlegendentry,"-#lambda_{#theta#phi}, |y|<0.6, CS");
+			sprintf(SteerIndlegendentry,"-#lambda_{#vartheta#varphi}, |y|<0.6, CS");
 			plotSteerIndLegend->AddEntry(SteerIndividualGraph3,SteerIndlegendentry,"elp");
-			sprintf(SteerIndlegendentry,"-#lambda_{#theta#phi}, 0.6<|y|<1.2, CS");
+			sprintf(SteerIndlegendentry,"-#lambda_{#vartheta#varphi}, 0.6<|y|<1.2, CS");
 			plotSteerIndLegend->AddEntry(SteerIndividualGraph4,SteerIndlegendentry,"elp");
 			plotSteerIndLegend->Draw();
 			}
 
 			if(rapBin==2){
-			sprintf(SteerIndlegendentry,"#lambda_{#phi}, |y|<0.6, PX");
+			sprintf(SteerIndlegendentry,"#lambda_{#varphi}, |y|<0.6, PX");
 			plotSteerIndLegend->AddEntry(SteerIndividualGraph1,SteerIndlegendentry,"elp");
-			sprintf(SteerIndlegendentry,"#lambda_{#phi}, 0.6<|y|<1.2, PX");
+			sprintf(SteerIndlegendentry,"#lambda_{#varphi}, 0.6<|y|<1.2, PX");
 			plotSteerIndLegend->AddEntry(SteerIndividualGraph2,SteerIndlegendentry,"elp");
-			sprintf(SteerIndlegendentry,"-#lambda_{#theta}, |y|<0.6, CS");
+			sprintf(SteerIndlegendentry,"-#lambda_{#vartheta}, |y|<0.6, CS");
 			plotSteerIndLegend->AddEntry(SteerIndividualGraph3,SteerIndlegendentry,"elp");
-			sprintf(SteerIndlegendentry,"-#lambda_{#theta}, 0.6<|y|<1.2, CS");
+			sprintf(SteerIndlegendentry,"-#lambda_{#vartheta}, 0.6<|y|<1.2, CS");
 			plotSteerIndLegend->AddEntry(SteerIndividualGraph4,SteerIndlegendentry,"elp");
 			plotSteerIndLegend->Draw();
 			}
@@ -1317,7 +1330,7 @@ int main(int argc, char** argv) {
 
 		TLegend* plotMattLegend=new TLegend(0.4,0.7,0.95,0.9);
 		plotMattLegend->SetFillColor(0);
-		plotMattLegend->SetTextFont(72);
+//		plotMattLegend->SetTextFont(72);
 		plotMattLegend->SetTextSize(0.04);
 		plotMattLegend->SetBorderSize(1);
 		char Mattlegendentry[200];
@@ -1368,12 +1381,12 @@ int main(int argc, char** argv) {
 
 		TLegend* plotICHEPLegend=new TLegend(0.1375,ICHEPlegendYMin-0.025,0.75,ICHEPlegendYMax);
 		plotICHEPLegend->SetFillColor(0);
-		plotICHEPLegend->SetTextFont(72);
+//		plotICHEPLegend->SetTextFont(72);
 		plotICHEPLegend->SetTextSize(0.039);
 		plotICHEPLegend->SetBorderSize(0);
 		//plotICHEPLegend->SetHeader("Data error bars: tot. uncert., 68.3% CL");
 		char ICHEPlegendentry[200];
-		sprintf(ICHEPlegendentry,"CMS preliminary, tot. uncert., 68.3%% CL");
+		sprintf(ICHEPlegendentry,"CMS, tot. uncert., 68.3%% CL");
 		plotICHEPLegend->AddEntry(graphDefaultRes,ICHEPlegendentry,"elp");
 		sprintf(ICHEPlegendentry,"CDF PRL 108, 151802 (2012), tot. uncert., 68.3%% CL");
 		if(nFrame!=3) plotICHEPLegend->AddEntry(graphMattTotal,ICHEPlegendentry,"elp");
@@ -1405,12 +1418,12 @@ int main(int argc, char** argv) {
 	      double xICHEPrap=33.5;
 	      if(rapBin==2) xICHEPrap=28.;
 
-	      if(nFrame==1&&rapBin==1) sprintf(ICHEPtext,"CS frame, |y| < 0.6");
-	      if(nFrame==2&&rapBin==1) sprintf(ICHEPtext,"HX frame, |y| < 0.6");
-	      if(nFrame==3&&rapBin==1) sprintf(ICHEPtext,"PX frame, |y| < 0.6");
-	      if(nFrame==1&&rapBin==2) sprintf(ICHEPtext,"CS frame, 0.6<|y|<1.2");
-	      if(nFrame==2&&rapBin==2) sprintf(ICHEPtext,"HX frame, 0.6<|y|<1.2");
-	      if(nFrame==3&&rapBin==2) sprintf(ICHEPtext,"PX frame, 0.6<|y|<1.2");
+	      if(nFrame==1&&rapBin==1) sprintf(ICHEPtext,"CS frame, |#it{y}| < 0.6");
+	      if(nFrame==2&&rapBin==1) sprintf(ICHEPtext,"HX frame, |#it{y}| < 0.6");
+	      if(nFrame==3&&rapBin==1) sprintf(ICHEPtext,"PX frame, |#it{y}| < 0.6");
+	      if(nFrame==1&&rapBin==2) sprintf(ICHEPtext,"CS frame, 0.6 < |#it{y}| < 1.2");
+	      if(nFrame==2&&rapBin==2) sprintf(ICHEPtext,"HX frame, 0.6 < |#it{y}| < 1.2");
+	      if(nFrame==3&&rapBin==2) sprintf(ICHEPtext,"PX frame, 0.6 < |#it{y}| < 1.2");
 	      TLatex *texICHEP4 = new TLatex(xICHEPrap,yMin+(yMax-yMin)*0.925,ICHEPtext);
 	      texICHEP4->SetTextSize(ICHEPFontSize)                                                                                                                                                                                                                                             ;
 	      texICHEP4->Draw( "same" )                                                                                                                                                                                                                                                 ;
@@ -1418,7 +1431,7 @@ int main(int argc, char** argv) {
 			plotHisto->GetYaxis()->SetTitleOffset(15);
 
 		  //sprintf(ICHEPtext,"%s",axislabel);
-		  sprintf(ICHEPtext,"#lambda_{#theta}");
+		  sprintf(ICHEPtext,"#lambda_{#vartheta}");
 		  TLatex *texICHEP5 = new TLatex(-7.65,yMin+(yMax-yMin)*0.485,ICHEPtext);
 		  texICHEP5->SetTextSize(ICHEPFontSize*1.75)                                                                                                                                                                                                                                             ;
 		  texICHEP5->Draw( "same" )                                                                                                                                                                                                                                                 ;
@@ -2192,8 +2205,8 @@ int main(int argc, char** argv) {
 		graphCompareFile3->SetMarkerColor(kGreen-2);
 		graphCompareFile3->SetLineColor(kGreen-2);
 		graphCompareFile3->SetMarkerStyle(3);
-		graphCompareFile4->SetMarkerColor(kGreen+2);
-		graphCompareFile4->SetLineColor(kGreen+2);
+		graphCompareFile4->SetMarkerColor(kOrange);
+		graphCompareFile4->SetLineColor(kOrange);
 		graphCompareFile4->SetMarkerStyle(5);
 		if(PlotBG0plots||SetCompStyle){
 			graphCompareFile1->SetMarkerStyle(24);
@@ -2241,12 +2254,12 @@ int main(int argc, char** argv) {
 		}
 
 		char texTex[200];
-		if(rapBin==1) sprintf(texTex,"      |y| < 0.6");
-		if(rapBin==2) sprintf(texTex,"0.6 < |y| < 1.2");
-		if(rapBinComb) sprintf(texTex,"      |y| < 1.2");
+		if(rapBin==1) sprintf(texTex,"      |#it{y}| < 0.6");
+		if(rapBin==2) sprintf(texTex,"0.6 < |#it{y}| < 1.2");
+		if(rapBinComb) sprintf(texTex,"      |#it{y}| < 1.2");
 		 TLatex *text = new TLatex(onia::pTRange[rapBin][ptBinMax]*0.8,yMin+(yMax-yMin)*0.066,texTex);
 		 text->SetTextSize(0.035);
-		 if(!SteerIndividuals&&!PlotMattForICHEP) text->Draw( "same" );
+		 if(!SteerIndividuals&&!PlotMattForICHEP&&!PlotVsComp) text->Draw( "same" );
 
 		 if(PlotBG0plots){
 			char texTex2[200];
@@ -2454,7 +2467,7 @@ int main(int argc, char** argv) {
 		   if(MPframe==2)MPhist = MPcanvasHX->DrawFrame(onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL,yMinMP,onia::pTRange[rapBin][ptBinMax],yMaxMP);
 		   if(MPframe==3)MPhist = MPcanvasPX->DrawFrame(onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL,yMinMP,onia::pTRange[rapBin][ptBinMax],yMaxMP);
 
-		   MPhist->SetXTitle("p_{T} [GeV]");
+		   MPhist->SetXTitle("#it{p}_{T} [GeV]");
 		   MPhist->GetXaxis()->SetTitleOffset(-1.35);
 
 		   MPhist->SetYTitle(axislabel);
@@ -2480,7 +2493,7 @@ int main(int argc, char** argv) {
 		   MPframedepLegend=new TLegend(errorLegendX1,errorLegendY1,errorLegendX2,errorLegendY2);
 		   if((nState==2||nState==3)&&MPframe==1) MPframedepLegend=new TLegend(errorLegendX1,errorLegendY2-(errorLegendY2-errorLegendY1)*(1-lowestBottomMargin),errorLegendX2,errorLegendY2);
 		   MPframedepLegend->SetFillColor(0);
-		   MPframedepLegend->SetTextFont(72);
+//		   MPframedepLegend->SetTextFont(72);
 		   MPframedepLegend->SetTextSize(errorLegendFontSize);
 		   if((nState==2||nState==3)&&MPframe==1) MPframedepLegend->SetTextSize(errorLegendFontSize*(1-lowestBottomMargin));
 		   MPframedepLegend->SetBorderSize(0);
@@ -2550,9 +2563,9 @@ int main(int argc, char** argv) {
 		   whereTexteInPlotY=(yMaxMP+yMinMP)/2.-(yMaxMP-yMinMP)*XtitlePositionYshift;
 
 		   char axistitleMPdep[200];
-			if(iLam==1||iLam==7||iLam==13)  sprintf(axistitleMPdep,"#lambda_{#theta}");
-			if(iLam==2||iLam==8||iLam==14)  sprintf(axistitleMPdep,"#lambda_{#phi}");
-			if(iLam==3||iLam==9||iLam==15)  sprintf(axistitleMPdep,"#lambda_{#theta#phi}");
+			if(iLam==1||iLam==7||iLam==13)  sprintf(axistitleMPdep,"#lambda_{#vartheta}");
+			if(iLam==2||iLam==8||iLam==14)  sprintf(axistitleMPdep,"#lambda_{#varphi}");
+			if(iLam==3||iLam==9||iLam==15)  sprintf(axistitleMPdep,"#lambda_{#vartheta#varphi}");
 
 		   if(iPanel==nPanels) YaxistitleLatexSize=YaxistitleLatexSize*(1-lowestBottomMargin);
 		   TLatex *MPYtitletext = new TLatex(whereTexteInPlotX,whereTexteInPlotY ,axistitleMPdep);
@@ -2570,8 +2583,8 @@ int main(int argc, char** argv) {
 		   if(MPframe==2) sprintf(frameMPtex,"HX");
 		   if(MPframe==3) sprintf(frameMPtex,"PX");
 		   char texTexMP[200];
-		   if(rapBin==1) sprintf(texTexMP,"|y| < 0.6", nState, frameMPtex);
-		   if(rapBin==2) sprintf(texTexMP,"0.6 < |y| < 1.2", nState, frameMPtex);
+		   if(rapBin==1) sprintf(texTexMP,"|#it{y}| < 0.6", nState, frameMPtex);
+		   if(rapBin==2) sprintf(texTexMP,"0.6 < |#it{y}| < 1.2", nState, frameMPtex);
 		   TLatex *textMP = new TLatex(xRapText,yMin+(yMax-yMin)*yRapText,texTexMP);
 		   textMP->SetTextSize(textSizeRap);
 		   if(iPanel==nPanels) textMP->SetTextSize(textSizeRap*(1-lowestBottomMargin));
@@ -2737,7 +2750,7 @@ int main(int argc, char** argv) {
 		   TH1F *MPhist = new TH1F;
 		   MPhist = MPcanvasTilde->DrawFrame(onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL,yMinMP,onia::pTRange[rapBin][ptBinMax],yMaxMP);
 
-		   MPhist->SetXTitle("p_{T} [GeV]");
+		   MPhist->SetXTitle("#it{p}_{T} [GeV]");
 		   MPhist->GetXaxis()->SetTitleOffset(-1.35);
 
 		   MPhist->SetYTitle(axislabel);
@@ -2761,7 +2774,7 @@ int main(int argc, char** argv) {
 		   TLegend* MPframedepLegendError;
 		   MPframedepLegendError=new TLegend(errorLegendX1,errorLegendY1,errorLegendX2,errorLegendY2);
 		   MPframedepLegendError->SetFillColor(0);
-		   MPframedepLegendError->SetTextFont(72);
+//		   MPframedepLegendError->SetTextFont(72);
 		   MPframedepLegendError->SetTextSize(errorLegendFontSize);
 		   MPframedepLegendError->SetBorderSize(0);
 
@@ -2785,7 +2798,7 @@ int main(int argc, char** argv) {
 		   TLegend* MPtildeLegend;
 			MPtildeLegend=new TLegend(0.8,0.75,1.,0.95);
 			MPtildeLegend->SetFillColor(0);
-			MPtildeLegend->SetTextFont(72);
+//			MPtildeLegend->SetTextFont(72);
 			MPtildeLegend->SetTextSize(0.07);
 			MPtildeLegend->SetBorderSize(0);
 			char MPtildeLegendEntry[200];
@@ -3073,8 +3086,8 @@ int main(int argc, char** argv) {
 
 
 		   char texTexMP[200];
-		   if(rapBin==1) sprintf(texTexMP,"#Upsilon(%dS), |y| < 0.6", iPanel);
-		   if(rapBin==2) sprintf(texTexMP,"#Upsilon(%dS), 0.6 < |y| < 1.2", iPanel);
+		   if(rapBin==1) sprintf(texTexMP,"#Upsilon(%dS), |#it{y}| < 0.6", iPanel);
+		   if(rapBin==2) sprintf(texTexMP,"#Upsilon(%dS), 0.6 < |#it{y}| < 1.2", iPanel);
 		   TLatex *textMP = new TLatex(xRapTextTilde,yMin+(yMax-yMin)*yRapText*0.92,texTexMP);
 		   textMP->SetTextSize(textSizeRap);
 		   if(iPanel==nPanels) textMP->SetTextSize(textSizeRap*(1-lowestBottomMargin));
@@ -3403,7 +3416,7 @@ int main(int argc, char** argv) {
 				   if(MPframe==2&&rapBin==2)MPhist = MPcanvasHX_rap2->DrawFrame(onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL-deltaXaxisMin,yMinMP,onia::pTRange[rapBin][ptBinMax],yMaxMP);
 				   if(MPframe==3&&rapBin==2)MPhist = MPcanvasPX_rap2->DrawFrame(onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL-deltaXaxisMin,yMinMP,onia::pTRange[rapBin][ptBinMax],yMaxMP);
 
-				   MPhist->SetXTitle("p_{T} [GeV]");
+				   MPhist->SetXTitle("#it{p}_{T} [GeV]");
 				   MPhist->GetXaxis()->SetTitleOffset(-1.35);
 
 				   MPhist->SetYTitle(axislabel);
@@ -3430,7 +3443,7 @@ int main(int argc, char** argv) {
 				   MPframedepLegend=new TLegend(errorLegendX1,errorLegendY1,errorLegendX2,errorLegendY2);
 				   if(MPframe==1) MPframedepLegend=new TLegend(errorLegendX1,errorLegendY2-(errorLegendY2-errorLegendY1)*(1-lowestBottomMargin)+SpecialShift,errorLegendX2,errorLegendY2+SpecialShift);
 				   MPframedepLegend->SetFillColor(0);
-				   MPframedepLegend->SetTextFont(72);
+//				   MPframedepLegend->SetTextFont(72);
 				   MPframedepLegend->SetTextSize(errorLegendFontSize);
 				   if(MPframe==1) MPframedepLegend->SetTextSize(errorLegendFontSize*(1-lowestBottomMargin));
 				   MPframedepLegend->SetBorderSize(0);
@@ -3599,9 +3612,9 @@ int main(int argc, char** argv) {
 				   whereTexteInPlotY=(yMaxMP+yMinMP)/2.-(yMaxMP-yMinMP)*XtitlePositionYshift;
 
 				   char axistitleMPdep[200];
-					if(iLam==1||iLam==7||iLam==13)  sprintf(axistitleMPdep,"#lambda_{#theta}");
-					if(iLam==2||iLam==8||iLam==14)  sprintf(axistitleMPdep,"#lambda_{#phi}");
-					if(iLam==3||iLam==9||iLam==15)  sprintf(axistitleMPdep,"#lambda_{#theta#phi}");
+					if(iLam==1||iLam==7||iLam==13)  sprintf(axistitleMPdep,"#lambda_{#vartheta}");
+					if(iLam==2||iLam==8||iLam==14)  sprintf(axistitleMPdep,"#lambda_{#varphi}");
+					if(iLam==3||iLam==9||iLam==15)  sprintf(axistitleMPdep,"#lambda_{#vartheta#varphi}");
 
 				   if(iPanel==nPanels) YaxistitleLatexSize=YaxistitleLatexSize*(1-lowestBottomMargin);
 				   TLatex *MPYtitletext = new TLatex(whereTexteInPlotX,whereTexteInPlotY ,axistitleMPdep);
@@ -3616,6 +3629,7 @@ int main(int argc, char** argv) {
 				   double increaseSize=1.45;
 				   double SpecialShiftUpsilonLabel=0.9;
 				   double SpecialShiftUpsilonLabelx=-3;
+				   SpecialShiftUpsilonLabel=14;//1.25;//FRchange
 
 				   char frameMPtex[200];
 				   if(MPframe==1) sprintf(frameMPtex,"CS");
@@ -3657,17 +3671,18 @@ int main(int argc, char** argv) {
 						extreme1MP->SetLineWidth( 1 );
 						extreme1MP->SetLineStyle( 2 );
 						extreme1MP->SetLineColor( kBlack );
-						if(iLam==1||iLam==7||iLam==13) extreme1MP->Draw( "same" );
+//						if(iLam==1||iLam==7||iLam==13) extreme1MP->Draw( "same" );
 
 						TLine* extreme2MP = new TLine( onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL, -1, onia::pTRange[rapBin][ptBinMax] ,-1);
 						extreme2MP->SetLineWidth( 1 );
 						extreme2MP->SetLineStyle( 2 );
 						extreme2MP->SetLineColor( kBlack );
-						if(iLam==1||iLam==7||iLam==13) extreme2MP->Draw( "same" );
-						if(iLam==6||iLam==12||iLam==18) extreme2MP->Draw( "same" );
+//						if(iLam==1||iLam==7||iLam==13) extreme2MP->Draw( "same" );
+//						if(iLam==6||iLam==12||iLam==18) extreme2MP->Draw( "same" );
 
 					 }
 
+					 MPlatexYmax=(yMax-yMin)*0.08+yMin;//FRchange
 
 					 if(iStateMP==1&&iPanel==1){
 					 cout<<"DRAW CMS preliminary Latex"<<endl;
@@ -3677,7 +3692,7 @@ int main(int argc, char** argv) {
 					 CentralsText1MP->SetTextSize(CentralsFontSizeMP);
 					 CentralsText1MP->Draw( "same" );
 					 sprintf(text,"preliminary");
-					 CentralsText1MP = new TLatex(MPlatexX-DeltaXminOVERALL,(yMax-yMin)*0.72+yMin,text);
+					 CentralsText1MP = new TLatex(MPlatexX-DeltaXminOVERALL,(yMax-yMin)*0.2+yMin,text);
 					 CentralsText1MP->SetTextSize(CentralsFontSizeMP);
 					 if(DrawPreliminary) CentralsText1MP->Draw( "same" );
 		/*			 sprintf(text,"L = 4.9 fb^{-1}");
@@ -3722,20 +3737,23 @@ int main(int argc, char** argv) {
 
 					 }
 
-					 if(iStateMP==2&&iPanel==1){
+//					 if(iStateMP==2&&iPanel==1){
+					if(iStateMP==2&&iPanel==1){//FRchange
 
 						 double DeltaXRap;
 						 if(rapBin==1) DeltaXRap=19.5-DeltaXminOVERALL;
 						 if(rapBin==2) DeltaXRap=14-DeltaXminOVERALL;
 
+						 MPlatexYmax=(yMax-yMin)*0.08+yMin;//FRchange
+//						 DeltaXRap=-DeltaXminOVERALL;//FRchange
 
 						   char frameMPtex[200];
 						   if(MPframe==1) sprintf(frameMPtex,"CS frame");
 						   if(MPframe==2) sprintf(frameMPtex,"HX frame");
 						   if(MPframe==3) sprintf(frameMPtex,"PX frame");
 							 char textStateFrame[200];
-							 if(rapBin==1) sprintf(textStateFrame,"%s, |y| < 0.6", frameMPtex);
-							 if(rapBin==2) sprintf(textStateFrame,"%s, 0.6 < |y| < 1.2", frameMPtex);
+							 if(rapBin==1) sprintf(textStateFrame,"%s, |#it{y}| < 0.6", frameMPtex);
+							 if(rapBin==2) sprintf(textStateFrame,"%s, 0.6 < |#it{y}| < 1.2", frameMPtex);
 						 TLatex *TexStateFrame = new TLatex(MPlatexX+DeltaXRap,MPlatexYmax,textStateFrame);
 						 TexStateFrame->SetTextSize(CentralsFontSizeMP);
 						 TexStateFrame->Draw( "same" );
@@ -3872,7 +3890,7 @@ int main(int argc, char** argv) {
 		   TH1F *MPhist = new TH1F;
 		   MPhist = MPcanvasTilde->DrawFrame(onia::pTRange[rapBin][ptBinMin-1]-DeltaXminOVERALL,yMinMP,onia::pTRange[rapBin][ptBinMax],yMaxMP);
 
-		   MPhist->SetXTitle("p_{T} [GeV]");
+		   MPhist->SetXTitle("#it{p}_{T} [GeV]");
 		   MPhist->GetXaxis()->SetTitleOffset(-1.35);
 
 		   MPhist->SetYTitle(axislabel);
@@ -3897,7 +3915,7 @@ int main(int argc, char** argv) {
 //		   MPframedepLegendError=new TLegend(errorLegendX1-Left_margin,errorLegendY1,errorLegendX2-Left_margin,errorLegendY2);
 		   MPframedepLegendError=new TLegend(errorLegendX1,errorLegendY2-(errorLegendY2-errorLegendY1)*(1-lowestBottomMargin),errorLegendX2,errorLegendY2);
 		   MPframedepLegendError->SetFillColor(0);
-		   MPframedepLegendError->SetTextFont(72);
+//		   MPframedepLegendError->SetTextFont(72);
 		   MPframedepLegendError->SetTextSize(errorLegendFontSize*(1-lowestBottomMargin));
 		   MPframedepLegendError->SetBorderSize(0);
 
@@ -3921,7 +3939,7 @@ int main(int argc, char** argv) {
 		   TLegend* MPtildeLegend;
 			MPtildeLegend=new TLegend(0.8,0.75,1.,0.95);
 			MPtildeLegend->SetFillColor(0);
-			MPtildeLegend->SetTextFont(72);
+//			MPtildeLegend->SetTextFont(72);
 			MPtildeLegend->SetTextSize(0.07);
 			MPtildeLegend->SetBorderSize(0);
 			char MPtildeLegendEntry[200];
@@ -3956,7 +3974,7 @@ int main(int argc, char** argv) {
 				double lmean_errhighMP[nBinspT];
 
 				double ShiftTildePlot;
-				double ShiftTildePlotZero=0.5;
+				double ShiftTildePlotZero=0.75;
 
 				if(MarkerDefinitionForThisBin[mainframe][iFrameMP]==1) ShiftTildePlot=0.;
 				if(MarkerDefinitionForThisBin[mainframe][iFrameMP]==2) ShiftTildePlot=ShiftTildePlotZero;
@@ -4384,8 +4402,8 @@ int main(int argc, char** argv) {
 		   double SpecialShiftUpsilonLabelx=-3;
 
 		   char texTexMP[200];
-		   if(rapBin==1) sprintf(texTexMP,"#Upsilon(%dS), |y| < 0.6", iStateMP);
-		   if(rapBin==2) sprintf(texTexMP,"#Upsilon(%dS), 0.6 < |y| < 1.2", iStateMP);
+		   if(rapBin==1) sprintf(texTexMP,"#Upsilon(%dS), |#it{y}| < 0.6", iStateMP);
+		   if(rapBin==2) sprintf(texTexMP,"#Upsilon(%dS), 0.6 < |#it{y}| < 1.2", iStateMP);
 		   TLatex *textMP = new TLatex(xRapTextTilde-DeltaXminOVERALL+SpecialShiftUpsilonLabelx,yMin+(yMax-yMin)*yRapText*0.92*SpecialShiftUpsilonLabel,texTexMP);
 		   textMP->SetTextSize(textSizeRap*increaseSize);
 		   if(iPanel==nPanels_MPnew) textMP->SetTextSize(textSizeRap*(1-lowestBottomMargin)*increaseSize);
@@ -4423,7 +4441,7 @@ int main(int argc, char** argv) {
 				extreme2MP->SetLineStyle( 2 );
 				extreme2MP->SetLineColor( kBlack );
 				if(iLam==1||iLam==7||iLam==13) extreme2MP->Draw( "same" );
-				if(iLam==6||iLam==12||iLam==18) extreme2MP->Draw( "same" );
+//				if(iLam==6||iLam==12||iLam==18) extreme2MP->Draw( "same" );
 
 			 }
 
@@ -4436,7 +4454,7 @@ int main(int argc, char** argv) {
 			 CentralsText1MP->SetTextSize(CentralsFontSizeMP);
 			 CentralsText1MP->Draw( "same" );
 			 sprintf(text,"preliminary");
-			 CentralsText1MP = new TLatex(MPlatexX-DeltaXminOVERALL,(yMax-yMin)*0.72+yMin,text);
+			 CentralsText1MP = new TLatex(MPlatexX-DeltaXminOVERALL,(yMax-yMin)*0.75+yMin,text);
 			 CentralsText1MP->SetTextSize(CentralsFontSizeMP);
 			 if(DrawPreliminary) CentralsText1MP->Draw( "same" );
 /*			 sprintf(text,"L = 4.9 fb^{-1}");
@@ -4482,8 +4500,8 @@ int main(int argc, char** argv) {
 
 				 double xStatErrorLine=13.06-DeltaXminOVERALL+DeltaXminOVERALL*0.075;
 				 double StatErrorLineShift=0.75;
-				 double errorLegendY1Tilde=errorLegendY2-(errorLegendY2-errorLegendY1)*(1-lowestBottomMargin);
-				 double StatErrorLineLength=(errorLegendY2-errorLegendY1Tilde)*1.1;
+				 double errorLegendY1Tilde=errorLegendY2-(errorLegendY2-errorLegendY1)*(1-lowestBottomMargin)+0.05;
+				 double StatErrorLineLength=(errorLegendY2-errorLegendY1Tilde)*0.95;
 				 double yMeanStatErrorLine=yMin+(yMax-yMin)*errorLegendY2-(errorLegendY2-errorLegendY1Tilde)*StatErrorLineShift;
 
 
@@ -4642,7 +4660,7 @@ for(int iStateMP=1;iStateMP<4;iStateMP++){
    TH1F *MPhist = new TH1F;
    MPhist = MPcanvasCDF->DrawFrame(PlotMattpTMin,yMinMP,onia::pTRange[rapBin][ptBinMax],yMaxMP);
 
-   MPhist->SetXTitle("p_{T} [GeV]");
+   MPhist->SetXTitle("#it{p}_{T} [GeV]");
    MPhist->GetXaxis()->SetTitleOffset(-1.35);
 
    MPhist->SetYTitle(axislabel);
@@ -4668,7 +4686,7 @@ for(int iStateMP=1;iStateMP<4;iStateMP++){
 //		   MPframedepLegendError=new TLegend(errorLegendX1-Left_margin,errorLegendY1,errorLegendX2-Left_margin,errorLegendY2);
    MPframedepLegendError=new TLegend(errorLegendX1,errorLegendY2-(errorLegendY2-errorLegendY1)*(1-lowestBottomMargin),errorLegendX2,errorLegendY2);
    MPframedepLegendError->SetFillColor(0);
-   MPframedepLegendError->SetTextFont(72);
+//   MPframedepLegendError->SetTextFont(72);
    MPframedepLegendError->SetTextSize(errorLegendFontSize*(1-lowestBottomMargin));
    MPframedepLegendError->SetBorderSize(0);
 
@@ -4738,7 +4756,7 @@ for(int iStateMP=1;iStateMP<4;iStateMP++){
    TLegend* MPtildeLegend;
 	MPtildeLegend=new TLegend(0.8,0.75,1.,0.95);
 	MPtildeLegend->SetFillColor(0);
-	MPtildeLegend->SetTextFont(72);
+//	MPtildeLegend->SetTextFont(72);
 	MPtildeLegend->SetTextSize(0.07);
 	MPtildeLegend->SetBorderSize(0);
 	char MPtildeLegendEntry[200];
@@ -4959,7 +4977,7 @@ int CDFFillStyle=1001;//3002
 
 			TLegend* plotCDFLegend=new TLegend(0.165,0.8,0.5,0.95);
 			plotCDFLegend->SetFillColor(0);
-			plotCDFLegend->SetTextFont(72);
+//			plotCDFLegend->SetTextFont(72);
 			plotCDFLegend->SetTextSize(0.05);
 			plotCDFLegend->SetBorderSize(0);
 			char Mattlegendentry[200];
@@ -4981,7 +4999,7 @@ int CDFFillStyle=1001;//3002
 
 			TLegend* plotCDFLegend2=new TLegend(0.8,0.8,0.95,0.95);
 			plotCDFLegend2->SetFillColor(0);
-			plotCDFLegend2->SetTextFont(72);
+//			plotCDFLegend2->SetTextFont(72);
 			plotCDFLegend2->SetTextSize(0.05);
 			plotCDFLegend2->SetBorderSize(0);
 
@@ -5118,7 +5136,7 @@ MPcanvasCDF->cd();
 
 		TLegend* plotLegend=new TLegend(LegendXmin,LegendYmin[nSystematics-1],0.95,0.9);
 		plotLegend->SetFillColor(kWhite);
-		plotLegend->SetTextFont(72);
+//		plotLegend->SetTextFont(72);
 		plotLegend->SetTextSize(ParametrizedFontSize[nSystematics-1]);
 		plotLegend->SetBorderSize(1);
 		char legendentry[200];
@@ -5129,7 +5147,7 @@ MPcanvasCDF->cd();
 
 		TH1F *SystHisto = new TH1F;
 		SystHisto = SystCanvas->DrawFrame(onia::pTRange[rapBin][ptBinMin-1],yMin,onia::pTRange[rapBin][ptBinMax],yMax);
-		SystHisto->SetXTitle("p_{T} [GeV]");
+		SystHisto->SetXTitle("#it{p}_{T} [GeV]");
 		SystHisto->SetYTitle(axislabel);
 		SystHisto->GetYaxis()->SetTitleOffset(1.5);
 
@@ -5259,8 +5277,8 @@ MPcanvasCDF->cd();
 
 
 
-		if(rapBin==1) sprintf(texTex,"      |y| < 0.6");
-		if(rapBin==2) sprintf(texTex,"0.6 < |y| < 1.2");
+		if(rapBin==1) sprintf(texTex,"      |#it{y}| < 0.6");
+		if(rapBin==2) sprintf(texTex,"0.6 < |#it{y}| < 1.2");
 		 TLatex *Systtext = new TLatex(onia::pTRange[rapBin][ptBinMax]*0.75,yMin+(yMax-yMin)*0.1,texTex);
 		 Systtext->SetTextSize(0.035);
 		 Systtext->Draw( "same" );
@@ -5470,13 +5488,13 @@ MPcanvasCDF->cd();
 
 				fprintf(SuppFile,"                                                       MEASUREMENT OF THE Y(1S), Y(2S) AND Y(3S) POLARIZATIONS\n                                                                 IN PP COLLISIONS AT SQRT(S) = 7 TeV\n\n                                                                        SUPPLEMENTAL MATERIAL\n\n\n");
 
-				fprintf(SuppFile,"These tables list the results of the angular anisotropy parameters Lambda-Theta, Lambda-Phi, Lambda-Theta-Phi and the frame invariant parameter Lambda-Tilde, for the Y(nS)\nstates in the Collins-Soper (CS), helicity (HX) and perpendicular helicity (PX) frames, along with their total uncertainties (68.3%%, 95.5%% and 99.7%% CL) and uncertainties\nof statistical nature (68.3%%CL).\n\n");
+				fprintf(SuppFile,"These tables list the results of the angular anisotropy parameters Lambda-Theta, Lambda-Phi, Lambda-Theta-Phi and the frame-invariant parameter Lambda-Tilde, for the Y(nS)\nstates in the Collins-Soper (CS), helicity (HX), and perpendicular helicity (PX) frames, along with their total uncertainties (TU) (68.3%%, 95.5%%, and 99.7%% CL) and statistical\nuncertainties (SU) only (68.3%% CL) for different bins of Y transverse momentum pT and rapidity y.\n\n");
 
 				fprintf(SuppFile,"Column headings are:\n");
-				fprintf(SuppFile,"      pT-min: lower border of dimuon transverse momentum (GeV)\n");
-				fprintf(SuppFile,"      pT-max: upper border of dimuon transverse momentum (GeV)\n");
-				fprintf(SuppFile,"     |y|-min: lower border of dimuon rapidity\n");
-				fprintf(SuppFile,"     |y|-max: upper border of dimuon rapidity\n");
+				fprintf(SuppFile,"      pT-min: lower border of Y transverse momentum (GeV)\n");
+				fprintf(SuppFile,"      pT-max: upper border of Y transverse momentum (GeV)\n");
+				fprintf(SuppFile,"     |y|-min: lower border of Y rapidity\n");
+				fprintf(SuppFile,"     |y|-max: upper border of Y rapidity\n");
 				fprintf(SuppFile,"    Lambda-*: central value of the result\n");
 				fprintf(SuppFile,"-T.U.68.3%%CL: negative total uncertainty, 68.3%% CL\n");
 				fprintf(SuppFile,"+T.U.68.3%%CL: positive total uncertainty, 68.3%% CL\n");

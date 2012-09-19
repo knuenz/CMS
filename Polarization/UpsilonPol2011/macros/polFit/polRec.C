@@ -52,7 +52,7 @@ void polRec(double rapdilepton_min = 1,
 
   gROOT->Reset();
 
-  bool ForceEpsSmallerOne=true;
+  bool ForceEpsSmallerOne=false;
 
 //Get single Lepton Efficiency File name
   char EffFile[200];
@@ -173,7 +173,7 @@ void polRec(double rapdilepton_min = 1,
 }
 
 
-  if( nEff==1101 ){
+  if( nEff==1101||nEff==1102 ){
   const int etaBinsTotal = 16;
   double etaBinningParametrized[etaBinsTotal+1]={0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6};
   int pTBinsNew = 2000;

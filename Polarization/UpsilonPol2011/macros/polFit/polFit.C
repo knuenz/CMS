@@ -217,6 +217,7 @@ void polFit(int n_sampledPoints=1,
 		Char_t *dirstruct = "OutputDirectory_Default",
 		Char_t *realdatadir = "RealDataDirectory_Default",
 		Char_t *TreeBinID = "TreeBinID_Default",
+		Char_t *TreeBinID_dataFile = "TreeBinID_Default",
 		bool RealData=false,
 		Char_t *effDir = "effDir_Default",
 		bool MCeff=false,
@@ -359,7 +360,7 @@ void polFit(int n_sampledPoints=1,
 }
 
 
-  if( nEff==1101 ){
+  if( nEff==1101||nEff==1102 ){
   const int etaBinsTotal = 16;
   double etaBinningParametrized[etaBinsTotal+1]={0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6};
   int pTBinsNew = 2000;
@@ -501,8 +502,11 @@ if(nDenominatorAmap==105 || nDenominatorAmap==106){
 
   char filename [500];
   sprintf(filename,"%s/data.root",dirstruct);
-  if(RealData) sprintf(filename,"%s/data_%s.root",realdatadir,TreeBinID);
+  if(RealData) sprintf(filename,"%s/data_%s.root",realdatadir,TreeBinID_dataFile);
   TFile* dataFile = new TFile(filename);
+
+	cout<<TreeBinID_dataFile<<endl;
+	cout<<TreeBinID<<endl;
 
   TH2D* background_costhphiPX  = (TH2D*)dataFile->Get("background_costhphiPHX");
   TH3D* background_pTrapMass   = (TH3D*)dataFile->Get("background_pTrapMass");
