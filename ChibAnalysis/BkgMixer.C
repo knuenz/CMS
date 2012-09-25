@@ -212,7 +212,7 @@ void BkgMixer(
 //        	    		  if(jpsipt_>-100){
 
 
-        	    double cosalpha = (m_jpsipx*gammapx + m_jpsipy*gammapy + m_jpsipz*gammapz)/gammae/m_jpsip;
+        	     double cosalpha = (m_jpsipx*gammapx + m_jpsipy*gammapy + m_jpsipz*gammapz)/gammae/m_jpsip;
         		double chibmass_corr = Q + DimuonMassPDG;
         		if(iIter==1) hCosAlphaNonEqu->Fill(cosalpha);
         		if(iIter==2) {

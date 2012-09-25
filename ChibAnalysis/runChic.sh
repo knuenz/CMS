@@ -6,7 +6,7 @@ for cutVar in Reference;do
 
 FitID=${cutVar}
 
-Additionals=June2_chic_ErnestCutsMay30_FirstTry_
+Additionals=Sept25_chic_ErnestCutsJune4_BkgAnalytical_
 fileName=ChicMay03_Qcut
 SaveAll=true
 

@@ -1,0 +1,4 @@
+bsub -q 1nh $PWD/optimizeSig.sh _A10 chib
+bjobs
+bkill ${JobID from bjobs}
+touch stopjob_A10 #to stop job and kill root running in background 

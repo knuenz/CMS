@@ -6,7 +6,7 @@ for cutVar in Reference;do
 
 FitID=${cutVar}
 
-Additionals=June5_chib_ErnestcutsJune4_NewBkgMixer_nYsigCorr_Max11_WithX_
+Additionals=Sept25_chib_ErnestcutsJune4_BkgMixerC_nYsigCorr_Max11_WithX_
 fileName=April9
 SaveAll=false
 
@@ -14,8 +14,8 @@ SaveAll=false
 useAnalyticalBKG=false
 
 BkgMixer=true
-useExistingMixFile=true #OldMixer
-useNewExistingMixFile=true #NewMixer, if set true, the old mixer is inactive
+useExistingMixFile=false #OldMixer
+useNewExistingMixFile=false #NewMixer, if set true, the old mixer is inactive
 nMix=5000000
 
 BkgToy=false
