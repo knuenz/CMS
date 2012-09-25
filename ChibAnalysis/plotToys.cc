@@ -56,7 +56,7 @@
 int main(int argc, char** argv) {
 
 
-	Char_t *FitID = "Default"; //Storage Directory
+	 Char_t *FitID = "Default"; //Storage Directory
 	int nToy;
 	int niBkg;
 	int niSig;

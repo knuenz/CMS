@@ -44,7 +44,7 @@ void FitScales(){
 	   gStyle->SetTitleOffset(1.4, "y");
 	   gStyle->SetTitleFillColor(kWhite);
 
-	   gStyle->SetFrameBorderMode(0);
+	    gStyle->SetFrameBorderMode(0);
 
 	   double M_chic1=3.51066;
 	   double M_chic2=3.55620;
