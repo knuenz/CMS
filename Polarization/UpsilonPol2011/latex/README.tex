@@ -29,8 +29,8 @@
 
 This \textsc{Readme} will explain how to manage the scripts for following steps:
 \begin{itemize}
-\item{Preparation of the input TTrees for the polarization fit}
-\item{Running and plotting the polarization fits to real data}
+\item{Preparation of the input files for the polarization fit}
+\item{Running and plotting the polarization fits of data}
 \item{Running and plotting ToyMC fits}
 \end{itemize}
 
@@ -41,49 +41,55 @@ The base directory will be referred to as \emph{basedir}. The basedir contains t
 \item{\emph{latex} - All latex files for the production of summary files of the produced plots}
 \item{\emph{macros} - This is the folder containing the relevant code. All source code files and scripts used for the Preparation of the TTrees are in this folder. All source code files and scripts used for the fits (data and ToyMC) are in the subfolder \emph{polFit}}
 \end{itemize}
+The storage directory will be referred to as \emph{storagedir}. {\bf Important:} The storagedir has to be defined by creating a file basedir/macros/polFit/storagedir, containing the path, where you wish to save all the result files (which can be large). 
 
 \subsection{General Comments}
 
-The framework should work \emph{out of the box}, no need to change any directories (other than the input data TTrees). There are five scripts, that steer everything (if no further options have to be implemented, that is all you have to look at, no need to look at the source code). The five scripts are executed by sh script.sh and are introduced here:
+The framework should work \emph{out of the box}, no need to change any directories (other than the input data TTrees and defining the storagedir). There are seven main scripts, that steer everything (if no further options have to be implemented, that is all you have to look at, no need to look at the source code). The five scripts are executed by sh script.sh and are introduced here:
 
 \begin{itemize}
-\item{\emph{macros/PrepareTTree.sh} - Preparation of input TTrees for the data polarization fit}
-\item{\emph{macros/polFit/runDataFits.sh} - Steering real data fits}
-\item{\emph{macros/polFit/PlotDataFits.sh} - Steering plotting of real data fits}
+\item{\emph{macros/PrepareTTree.sh} - Preparation of input files for the data polarization fit}
+\item{\emph{macros/polFit/runDataFits.sh} - Steering real data fits (and external MC, background polarization)}
+\item{\emph{macros/polFit/PlotDataFits.sh} - Steering extraction of results from PPDs of real data fits}
 \item{\emph{macros/polFit/runToyMC.sh} - Steering ToyMC tests}
-\item{\emph{macros/polFit/runDataFits.sh} - Steering plotting of ToyMC tests}
+\item{\emph{macros/polFit/PlotToyMC.sh} - Steering extraction of results from PPDs of ToyMC tests}
+\item{\emph{macros/polFit/PlotResults.sh} - Steering the plotting of all simple $\lambda$ plots}
+\item{\emph{macros/polFit/PlotCentrals.sh} - Steering the plotting of the multi-panel $\lambda$ plots and the production of the SupplementalMaterial.txt file}
 \end{itemize}
 
 \section{Preparation of Input TTrees for Polarization Fit}
 
 \subsection{The Preparation Script}  
 
-{\bf macros/PrepareTTree.sh} steers all the steps discussed below. Execute it by \emph{sh PrepareTTree.sh}. The individual steps can be activated/deactivated by setting the flags \emph{execute\_runXXX} = 1 or 0. The input Trees can be defined by \emph{inputTreeX}. The set of cuts are defined by \emph{FidCuts} (see macros/polFit/effsAndCuts.h for the definitions of the values), the fraction of the left mass sideband with respect to the right sideband for the evaluation of the background angular distribution is defined by \emph{FracLSB}. The mass region about the pole mass in which the events are projected are defined by \emph{nSigma}. (Multiple values can be chosen, then the script loops over the values)
+{\bf macros/PrepareTTree.sh} steers all the steps discussed below. Execute it by \emph{sh PrepareTTree.sh}. The individual steps can be activated/deactivated by setting the flags \emph{execute\_runXXX} = 1 or 0. The input Trees can be defined by \emph{inputTreeX}. The set of cuts are defined by \emph{FidCuts} (see macros/polFit/effsAndCuts.h for the definitions of the values), the fraction of the left mass sideband with respect to the right sideband for the evaluation of the background angular distribution is defined by \emph{FracLSB}. The mass region about the pole mass in which the events are projected are defined by \emph{nSigma}. (Multiple values can be chosen, then the script loops over the values).
+You have to define a JobID, which identifies the specific dataset.
 
 Output Structure:
 
-$macros/DataFiles/SetOfCuts\{FidCuts\}/AllStates\_\{nSigma\}Sigma\_FracLSB\{FracLSB\}Percent/$
+$macros/DataFiles/SetOfCuts\{FidCuts\}\_ JobID/AllStates\_\{nSigma\}Sigma\_FracLSB\{FracLSB\}Percent/$
 
-A file for each of the three states and each kinematic bin is saved in this directory (and for each cut, nSigma and FracLSB in a separate directory). 
+A file for each of the three states and each kinematic bin is saved in this directory (and for each cut, nSigma and FracLSB in a separate directory). Further, in this directory some tex files are saved, containing tables of the estimated number of signal events, background fraction, mean $p_T$, ...
 
-$macros/DataFiles/SetOfCuts\{FidCuts\}/PDF$: Here, the mass plot pdf and background cos$\vartheta$/$\varphi$ plot pdf are saved.
+$macros/DataFiles/SetOfCuts\{FidCuts\}\_JobID/PDF$: Here, the mass plot pdf and background cos$\vartheta$/$\varphi$ plot pdf are saved.
+
+Some additional interesting plots (dataset characteristics, performance plots, pedagogical plots) are saved to $macros/DataFiles/SetOfCuts\{FidCuts\}\_JobID/Figures$.
 
 \subsection{The Individual Steps (Details)}
 
-The preparation of the input TTrees for the polarization fit is subdivided in several macros, written by Hermine. The structure of the macros was altered, to allow for easy scripting. All steps are steered by one script ({\bf macros/PrepareTTree.sh}). The individual necessary steps are (from Hermine's README.txt):
+The preparation of the input files for the polarization fit is subdivided in several macros, written by Hermine. The structure of the macros was altered, to allow for easy scripting. All steps are steered by one script ({\bf macros/PrepareTTree.sh}). The individual necessary steps are:
 \newline
 \newline
 1.) {\bf runData.cc} is the steering macro for PolData.C/h which loops over
 the TTree produced from the JPsiAnalyzerPAT.cc macro, applies a series
-of muon quality and kinematical cuts, and stores the TLorentzVector of
+of muon quality and kinematical cuts, trigger matching, and stores the TLorentzVector of
 the two muons of the selected events, as well as a series of mass
 histograms in an output file. The default name of the root output file is:
 \newline
 \newline
-	   $macros/DataFiles/SetOfCuts\{FidCuts\}/tmpFiles/selEvents\_data\_Ups.root$
+	   $macros/DataFiles/SetOfCuts\{FidCuts\}\_JobID/tmpFiles/selEvents\_data\_Ups.root$
 \newline
 \newline
-2.) {\bf runMassFit..cc} is the steering macro for upsilon\_2StepFit.C which
+2.) {\bf runMassFit.cc} is the steering macro for upsilon\_2StepFit.C which
 loops over all pT / $|y|$ bins and performs a fit to the invariant mass
 region in the upsilon mass region. The fit is a 2-step fit in which
 the BG shape and normalization is fixed from the L and R mass sideband
@@ -102,7 +108,7 @@ The fitted TF1 objects for the signal (3 CB functions) as well as the
 BG function are stored in output files called
 \newline
 \newline
-   $macros/DataFiles/SetOfCuts\{FidCuts\}/tmpFiles/data\_Ups\_rap1\_pT1.root$
+   $macros/DataFiles/SetOfCuts\{FidCuts\}\_JobID/tmpFiles/data\_Ups\_rap1\_pT1.root$
 \newline
 \newline
 This macro also saves the graphical representation of the fit in
@@ -142,49 +148,82 @@ the macro are the
 The final input files for the polarization fit are saved to
 \newline
 \newline
-$macros/DataFiles/SetOfCuts\{FidCuts\}/\\AllStates\_\{nSigma\}Sigma\_FracLSB\{FracLSB\}Percent/data_\{nState\}SUps\_rap1\_pT1.root$
+$macros/DataFiles/SetOfCuts\{FidCuts\}\_JobID/\\AllStates\_\{nSigma\}Sigma\_FracLSB\{FracLSB\}Percent/data_\{nState\}SUps\_rap1\_pT1.root$
 \newline
 \newline
 5.) {\bf runMeanPt.cc} again loops over the files previously produced, calculating the mean pT, number of signal events and background fraction. It produces a text file containing arrays of these quantities, which are used for plotting and as input for the ToyMC studies (one needs to copy these arrays to ToyMC.h, if one wants to change the settings of the toys). The text file can be found on
 \newline
 \newline
-$macros/DataFiles/SetOfCuts\{FidCuts\}/\\AllStates\_\{nSigma\}Sigma\_FracLSB\{FracLSB\}Percent/meanPt.txt$
+$macros/DataFiles/SetOfCuts\{FidCuts\}\_JobID/\\AllStates\_\{nSigma\}Sigma\_FracLSB\{FracLSB\}Percent/meanPt.txt$
 
 
+\subsection{Additional features}
 
-\section{Data Fits}
+With PrepareTTree.sh, other features can be used, differing from the ``default'' preparation of the data set as described above:
+\newline
+\newline
+1.) {\bf Preparing data for external MC tests:} For this feature, set \emph{UpsMC=1} and \emph{UpsMCstate =$n$} for a $\Upsilon$(nS) MC sample. The code will then prepare the inputs for the polarization fits as follows:
+\begin{itemize}
+\item The background fraction will be set to 0.001 - so effectively no event will be subtracted in the polarization fit.
+\item The background histograms are filled with the distributions of the MC sample itself, to avoid any problems in the polarization code.
+\item Please note that the mass window of the external MC preparation is hard-coded in TrimEventContent.C, as we want to have numerically the exact same window as in data. 
+\end{itemize}
+2.) {\bf Preparing data for measurement of the background polariztion:} For this feature, set \emph{ProjectLSBdata =1} or \emph{ProjectRSBdata =1} or \emph{CombineSignalPeaks =1} . In the first case, the data of the LSB will be projected, in the second case the data in the RSB, in the third case, the data in the full  signal region (combining the $\Upsilon$(nS) mass windows). The third option only makes sense, if you change the lifetime cuts in interface/commonVar.h, to be able to measure the background enriched high lifetime region.
+The code will then prepare the inputs for the polarization fits as follows:
+\begin{itemize}
+\item The background fraction will be set to 0.001 - so effectively no event will be subtracted in the polarization fit.
+\item The background histograms are filled with the distributions of the background sample itself, to avoid any problems in the polarization code.
+\end{itemize}
+3.) {\bf Additional settings:}
+\begin{itemize}
+\item \emph{RequestTrigger:} If set to 1, trigger-matching is active (as defined in mactos/PolData.C)
+\item \emph{DoCPUconsumingPlots:} If set to 0, you can avoid the production of CPU consuming plots (for debugging purposes)
+\item \emph{adjustOverlapBorders:} If set to 1, the code will avoid that the $\Upsilon$(nS) mass windows overlap, and therfore avoids the doubled use of events. This is only important, if nSigma is chosen to be large.
+\end{itemize}
 
+\section{Data fits}
 \subsection{The runDataFits.sh Script}
 
-This script steers the polarization fits to real data, as prepared by the previous step. It is important that the same fiducial cuts are applied in the fitting code, as in the preparation code. This is ensured, if the cuts in macros/polFit/effsAndCuts.h are not changed inbetween preparation and fitting. Following settings can be altered:
+This script steers the polarization fits to real data (and external MC), as prepared by the previous step. It is important that the same fiducial cuts are applied in the fitting code, as in the preparation code. This is ensured, if the cuts in macros/polFit/effsAndCuts.h are not changed in between preparation and fitting. The result files containing the information of the PPD are saved in the directory storagedir/Data/JobID.
+Additionally, output Figures for each state and bin are saved to storagedir/Data/JobID/Figures (projections of the PPD, background subtraction performance plots, plots of the distributions of cos$\vartheta$, $\varphi$ and $\tilde{\varphi}$, ...)
+
+Following settings can be altered:
 \newline *) fracL (in percent, needed to find the correct data set)
 \newline *) nSigma (needed in 2 decimal accuracy (x.yz), needed to find the correct data set)
 \newline *) nState (which state to fit, all three can be fit in a loop)
 \newline *) JobID (The results and plots are saved in macros/polFit/\{JobID\}, Please define nSigma and fracL yourself in the JobID, if needed)
 \newline *) rapBinMin, rapBinMax, ptBinMin, ptBinMax (which bins to fit)
-\newline *) nEff (which efficiency definion to use, see macros/polFit/effsAndCuts.h for the definitions. Our TnP efficiencies have to be implemented in this file, I suggest as nEff=4, see effsAndCuts.h)
+\newline *) nEff............... defines the efficiency to be used for the
+fitting (see macros/polFit/effsAndCuts.h)
+\newline *) UseMCeff...............boolean, if true, the MC efficiency in the file nEff is used
+\newline *) nDileptonEff............... defines the online dilepton efficiency to be used for the
+fitting (see macros/polFit/effsAndCuts.h)
+\newline *) UseMCDileptoneff.... boolean, if true, the MC efficiency in the file nDileptonEff is used
+\newline *) nRhoFactor............... defines the $\rho$ maps to be used for the
+fitting (see macros/polFit/effsAndCuts.h)
 \newline *) FidCuts (needed to find the correct data set and used to define the cuts applied in polFit.C)
-\newline *) nSample (defines the number of iterations in polFit.C. Testing: 6000 is enough, for the final results, 100000 should be used)
-\newline *) datadir can be defined different optionally. As it is now, it finds the correct dataset via the previously mentioned values.
-\newline *) nFits defines the number of fits (as background subtraction is based on random process, the fit should be repeated nFits times). The result root files of the individual fits are merged, the merged file is used to extract the mean and error from the parameter probability distributions.
-\newline *) nSkipGen can be used, if after nFits fits additional fits are to be made. Then nSkipGen can be set to nFits (from before). This can not be done in parallel!
+\newline *) nSample (defines the number of iterations in polFit.C. Testing: 20000 is enough, for the final results, 100000 should be used, 10000 burn-in iterations are included in this number)
+\newline *) DataID (This should be identical to \_JobID with JobID the one from PrepareTTree.sh)
+\newline *) nFits defines the number of fits (as background subtraction is based on random process, the fit should be repeated nFits times). The result root files of the individual fits are merged, the merged file is used to extract the mean and error from the parameter probability distributions. nFit=50 is the default for the central data results. nFit=10 is good enough for systematic tests, nFit=1 is enough if you work with external MC.
+\newline *) nSkipGen can be used, if after nFits fits additional fits are to be made. Then nSkipGen can be set to nFits (from before). This can not be done in parallel.
 
 
 \subsection{The PlotDataFits.sh Script}
 
-This script plots the results of a certain fit of state \{nState\} with JobID \{JobID\}. The summary pdf (plots and numerical values) files are then saved in macros/polFit/FiguresData/\{JobID\}. Define following variables:
+This script analyzes the results of a certain fit of state \{nState\} with JobID \{JobID\}. From the 1D PPD of the $\lambda$ parameters, the most probable value (MPV) and the statistical uncertainties (positive and negative) corresponding to the nSigma confidence level are evaluated, and saved as function of pT and rapidity in TGraph objects in the directory storagedir/Data/JobID (The TGraphs are the input for the plotting step, as described below).
+Further, Summary pdf (plots and numerical values) files are then saved in macros/polFit/FiguresData/\{JobID\}. Define following variables:
 \newline *) JobID (which JobID's to plot, can be several in a loop)
 \newline *) nState (which state to plot, all three can be plotted in a loop)
 \newline *) ptBinMin, ptBinMax (which bins to plot)
-
+\newline *) nSigma (defines the CL of the uncertainties) - this can be run over a loop (e.g. ``for nSigma in 3 2 1;do'')
 
 \section{ToyMC Fits}
 
 \subsection{The runToyMC.sh Script}
 
-This script steers all generation, reconstruction fitting and the storage of the result
+This script steers all generation, reconstruction, fitting and the storage of the result
 files. This script can be run in parallel for any scenario, bins, efficiencies, fiducial
-cuts. The results are stored in storagedir/JobID/...
+cuts. The results are stored in storagedir/ToyMC/JobID/...\\
 Following variables need to be defined:
 \newline gen................ boolean, if true, polGen.C is executed
 \newline rec................ boolean, if true, polRec.C is executed
@@ -200,30 +239,32 @@ Following variables need to be defined:
 \newline frameSig........... natural polarization frame signal (1...CS, 2...HX, 3...PX)
 \newline frameBkg........... natural polarization frame background (1...CS, 2...HX, 3...PX)
 \newline nGenerations....... number of pseudo samples to be generated and fit
-\newline nEff............... defines the efficiency to be used for the
-fitting (see macros/polFit/effsAndCuts.h)
 \newline FidCuts............ defines,
 which set of cuts will be used (see macros/polFit/effsAndCuts.h)
-\newline nSample............ numer of iterations in the algorithm (see polFit.C, 2000 burn-in iterations are included in this number)
+\newline nSample............ number of iterations in the algorithm (see polFit.C, 2000 burn-in iterations are included in this number)
 \newline ConstEvents........ integer, see below
 \newline UseConstEv......... boolean, if true it generates ConstEvents events, if false, it uses the number of events
 stored in ToyMC.h
-\newline storagedir......... can to be set optionally (if there is not enough storage space in the code directory) to the directory where all datasets results and figures will be stored
-\newline nEffRec............ defines the efficiency to be used for the
-generation of the pseudo set (see macros/polFit/effsAndCuts.h)
-\newline UseDifferingEff.... boolean, if true it generates the pseudo sample
-according to the efficiency definition nEffRec, if false, it uses the same
-efficiency for the generation as well as for the fitting macro, both with nEff.
+\newline nEff............... defines the efficiency to be used for the
+fitting (see macros/polFit/effsAndCuts.h)
+\newline UseMCeff...............boolean, if true, the MC efficiency in the file nEff is used
+\newline nDileptonEff............... defines the online dilepton efficiency to be used for the
+fitting (see macros/polFit/effsAndCuts.h)
+\newline UseMCDileptoneff.... boolean, if true, the MC efficiency in the file nDileptonEff is used
+\newline nRhoFactor............... defines the $\rho$ maps to be used for the
+fitting (see macros/polFit/effsAndCuts.h)
+\newline UseDifferingEff.... boolean, if true it generates/reconstructs the pseudo sample
+according to the efficiency definitions as in nEffRec, UseMCReceff, nDileptonEffRec, UseMCDileptonReceff, nRecRhoFactor (same meanings and notations as above). If false, it uses the same
+efficiency for the generation/reconstruction as well as for the fitting macro, therefore ignoring the five variables mentioned in this point.
 
 
 
 \subsection{The PlotToyMC.sh Script}
 
 When all fits, bins, scenarios are finished, or if one wants to get a snapshot of the
-results in between, run this script. It plots the results and
-further produces two summary pdfs, one pdf for each bin showing all parameter and pull
+results in between, run this script. It evaluates the median of the nGenerations toyMC-results and saves a TGraph object in storagedir/ToyMC/JobID (The TGraphs are the input for the plotting step, as described below).\\
+This script further produces two summary pdfs, one pdf for each bin showing all parameter and pull
 distributions and one pdf containing numerical results, saved in the directory macros/polFit/FiguresToyMC/\{JobID\}
-\newline storagedir......... same as above
 \newline JobID.............. same as above
 \newline ptBinMin........... can be same as above, this just defines the minpT of the plots
 \newline ptBinMax........... can be same as above, this just defines the maxpT of the plots
@@ -232,10 +273,75 @@ distributions and one pdf containing numerical results, saved in the directory m
 \newline frameBkg........... same as above
 \newline polScenBkg......... same as above
 \newline nGenerations....... same as above
-\newline additionalName..... can be set optionally, if one wants to add a certain extension to the pdf summary files
 
 
-\subsection{The Source Code}
+
+
+\section{Plotting}
+
+The plotting of the data, toyMC, systematics or any other results ($\lambda$ vs $p_T$) is done with the source file PlotFinalResults.cc, which is steered by two scripts:
+\begin{itemize}
+\item{\emph{macros/polFit/PlotResults.sh} - Steering the plotting of all simple $\lambda$ plots}
+\item{\emph{macros/polFit/PlotCentrals.sh} - Steering the plotting of the multi-panel $\lambda$ plots and the production of the SupplementalMaterial.txt file}
+\end{itemize}
+
+
+\subsection*{PlotResults.sh}
+
+There are two different kinds of plots, that you can switch on and off with 0 and 1:
+\begin{itemize}
+\item PlotFinalData=1
+\item PlotSystematics=0
+\end{itemize}
+Both kinds of plots are saved in the directories macros/polFit/FinalResults/JobID/nSUps/Figures\_ additionalName (you have to define \emph{additionalName} and \emph{JobID} in the options). The corresponding summary pdf files are saved to macros/polFit/FinalResults/JobID/nSUps, containing the \emph{additionalName} in the filename.
+
+The {\bf PlotFinalData} plots take the input files from the storagedir/Data subfolders and are specified with  \emph{DefaultID=XXX}.
+
+The produced plots show the central values and uncertainties. If you want to compare TGraphs from data results in this way, use \emph{PlotCompare=1}. Specify how many graphs you want to compare with
+\emph{nComp=XXX} (default + nComp) and specify which subfolders of storagedir/Data to compare to the default with (\emph{CompareID1=XXX, CompareID2=XXX, ...}).
+
+With this, you can specify the legend entries of the individual graphs: \emph{LegendEntryDefID=XXX, LegendEntryCompID1=XXX, LegendEntryCompID2=XXX,...} and decide if you want to plot the legend at all with
+\emph{PlotLegend=1}.
+
+In these PlotFinalData plots, the individual systematics (explained below) will be added in quadrature and be added as uncertainty to the plot. If you do not want that, you must specify \emph{nSystematics=0}.
+
+Now, concerning the {\bf ``systematics'' plots} (\emph{PlotSystematics=1}): There are two different kinds of systematic plots. The systematic overview plots (e.g. AN-2012-140, Fig 35) and Figures like AN-2012-140, Fig 24, showing the systematics as lines connecting the points of the TGraphs.
+Fot the latter plot, use \emph{PlotAsymm=1}, for the overview type use \emph{PlotAsymm=0}
+
+Then, it will use a number of nSystematics that you specified with \emph{nSystematics=3} (as example).
+From the Systematics folder polFit/Systematics/SystIDXBase/SystIDXSpecify (systematics are evaluated and saved with the help of additional scripts, see Section~\ref{sec:additional_scripts}), it will take TGraphs from this folder and plot the graphs. I have commented (in the PlotResults.sh file in CVS) all the settings for all $\lambda$ vs. $p_T$ plots of the AN-2012-140. For example, if you want to plot the ``FrameworkI'' systematics, you can use these settings:
+\\
+SystID1Base=TheGreatRun\_FrameworkI\\
+SystID1Specify=FrameworkI\_3S\\
+SystID1Title=Upsilon3S\\
+\\
+SystID2Base=TheGreatRun\_FrameworkI\\
+SystID2Specify=FrameworkI\_2S\\
+SystID2Title=Upsilon2S\\
+\\
+SystID3Base=TheGreatRun\_FrameworkI\\
+SystID3Specify=FrameworkI\_1S\\
+SystID3Title=Upsilon1S\\
+
+PlotFinalResults.cc then takes the corresponding three TGraphs and plots it with legend entries \emph{SystIDXTitle}. So in order to make these systematics plots, in basedir/Systematics/SystIDXBase/SystIDXSpecify these TGraphs have to exist. Either you copy the TGraphs from the storagedir/XXX (in case of systematics evaluated with toyMC, where the toyMC-bias is equivalent to one of the systematics) directory, or use one of the scripts listed in Section~\ref{sec:additional_scripts} (e.g. difference of two data results). The plotting macro only compares TGraphs from one state (e.g. 1SUps). So, if you want to compare 1S and 2S toys, you should rename the 2S-TGraph to look like a 1S TGraph make a new SystIDXSpecify.
+
+There are a few other bools that are not important (If you need more information, ask for help)
+
+\subsection*{PlotCentrals.sh}
+
+PlotCentrals.sh works essentially the same as PlotResults.sh - The only difference is that the settings are fixed to those needed to produce the multi-panel $\lambda$ plots and the supplemental material file basedir/macros/polFit/FinalResults/JobID/SupplementalMaterial.txt.
+
+The specific settings that are needed to produce the publication-quality multi-panel plots are:
+\\PlotBrazilian=1
+\\DrawLatexStuff=1
+\\DrawPreliminary=0 (unless the plots are preliminary, e.g. for the approval)
+\\MultiPanelPlots=1
+\\MPCentralsWithTotalSystID=XXX
+\\PlotAlteredPPDResults=1
+\\
+This script needs as input a DefaultID and a MPCentralsWithTotalSystID. The folder storagedir/Data/DefaultID must contain the TGraphs coresponding to the 1, 2 and 3 sigma total uncertainty (as obtained after including the systematics in the PPD, see Section~\ref{sec:additional_scripts}). The folder basedir/macros/polFit/Systematics/TotalSyst/ MPCentralsWithTotalSystID must contain the central results, with the 1 sigma statistical uncertainty.
+
+\section{The ``polFit'' Source Code}
 
 {\bf macros/polFit/ToyMC.h}
 This file contains all relevant information that is needed for the tests. Polarization scenario
@@ -248,7 +354,7 @@ Macro needed to generate pseudo sample
 \newline Output:
 \newline-genData.root, containing the pseudo sample on generator level
 \newline-GenResults.root, containing information about the actual injected polarization in all frames,
-needed for plotting the results
+needed for the evaluation of the toyMC-result and toyMC-bias
 \newline
 \newline
 {\bf macros/polFit/polRec.C}
@@ -278,15 +384,57 @@ This macro can plot the individually generated data sets vs. the fit result.
 \newline
 \newline
 {\bf macros/polFit/polRapPtPlot.cc}
-This is the source file for the executable that plots the real data fit results and ToyMC results and produces latex tables.
+This is the source file for the executable that evaluates the real data fit results and ToyMC results from the individual PPDs, and produces latex tables.
 \newline
 \newline
 {\bf macros/polFit/polGenRecFitPlot.cc}
 This is the source file for the executable that generates, reconstructs and fits the data sets (real data and Toys)
 \newline
 \newline
+{\bf macros/polFit/PlotFinalResults.cc}
+This file plots the TGraphs as produced by polRapPtPlot.cc
+\newline
+\newline
 {\bf macros/polFit/Makefile}
-This file steers the compilation of polRapPtPlot.cc and polGenRecFitPlot.cc.
+This file steers the compilation of polRapPtPlot.cc, PlotFinalResults.cc and polGenRecFitPlot.cc (among others).
 \newline
 \newline
+
+\section{Additional useful scripts and macros}
+\label{sec:additional_scripts}
+
+This section introduces additional useful scripts and macros that are available in the framework, mostly to handle the systematics. These scripts and macros are all located in basedir/macros/polFit. Only basic information about the purpose of the scripts is provided:
+\begin{itemize}
+\item {\bf AlterPPD.sh:} Adds a smearing to the PPD, corresponding to the systematics and the assumed probability distribution, that you specify
+\item {\bf AverageSyst.sh:} Adds a number of systematics quadratically, or calculates the mean of a number of systematics (changes in the source code needed)
+\item {\bf ChangeTGraph.sh:} Changes a TGraph very flexibly - you have to change the source code according to your needs
+\item {\bf EvalSyst.sh:} Calculates the difference between two TGraphs, which is useful to define systematics
+\item {\bf MergeDataFiles.sh:} Merges the result files of the nFit data fits
+\item {\bf BinExamplePlots.C:} Produces some important plots corresponding to the results of data fits with specified JobID (background subtraction control plots, nFit individual results scatterplot, Metropolis-Hastigs-efficiency, ...)
+\item {\bf ScaleMCtruth.C:} Marco used to parametrize the T\&P efficiencies
+\item {\bf Chi2FitBGratio.C:} See code for more information 
+\item {\bf FitBGratio.C:} See code for more information 
+\item {\bf FitRho.C:} See code for more information 
+\end{itemize}
+
+\section{Pitfalls}
+
+\begin{itemize}
+\item If you use a new efficiency file, make sure that it is read correctly. The formats of the efficiency files are changed many times. To cope with that, the code was made very flexible, but this can lead to problems, in case the format changes again.
+\item If you use a $\rho$ correction, make sure that the binning in pT and rapidity of the maps is correct. This is hardcoded in effsAndCuts.h, as there is no information about it in the file. 
+\end{itemize}
+
+
 \end{document}
+
+
+
+
+
+
+
+
+
+
+
+
